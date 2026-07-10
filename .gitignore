@@ -129,3 +129,8 @@ Generated\ Files/
 *.vsidx
 DocumentLayout.json
 .idea
+
+# AI Agent Artifacts
+.agents/
+findings.md
+progress.md
