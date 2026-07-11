@@ -37,6 +37,26 @@ graph TD
 > **Is it easy / what is the blast radius?** Yes, it is very easy. The change is isolated purely to `Program.cs` / DI registration (adding `.AddStandardResilienceHandler()` to our `HttpClient`) and deleting the `RateLimitService.cs` class. The blast radius is completely contained to the HTTP pipeline; no business logic is affected. Standard Serilog logging will automatically capture retry attempts, so no custom telemetry migration is necessary.
 
 ## Phase 4 — High Effort (Pipeline Architecture & Domain Separation)
-> **Goal:** Dismantle God objects and split large domain files.
-- **Models:** Split `ApiResponses.cs` into isolated file-scoped records (`ModSearchResponses.cs`, etc).
-- **Services:** Dismantle the 14-dependency God object `ApplicationService` into a Pipeline or MediatR pattern for each workflow phase (e.g., `IWorkflowStep<WorkflowContext>`).
+> **Goal:** Dismantle the massive 14-dependency `ApplicationService` God Object into a clean, testable Pipeline pattern, while structurally separating massive domain files.
+
+To mitigate regression risks, this phase is systematically broken down into bite-sized, testable sub-phases:
+
+### Phase 4.1: Domain Models Split (Zero-Risk Refactoring)
+- **Goal:** Deconstruct the massive `ApiResponses.cs` file into individual, focused records (e.g., `SptVersionResponse.cs`, `ForgeModSearchResponse.cs`).
+- **Validation:** Purely a structural file shift. Run `dotnet build` to ensure namespaces remain intact. No business logic is altered.
+
+### Phase 4.2: Pipeline Skeleton & Interfaces (Zero-Impact Additive)
+- **Goal:** Define the `WorkflowContext` data bag (which will hold state as it passes through the pipeline) and the `IWorkflowStep` interface contract in a dedicated `Pipeline/` folder.
+- **Validation:** Purely additive. Ensures the target architectural shape compiles perfectly before any legacy code is touched.
+
+### Phase 4.3: Integration Test Fortification (Safety Net)
+- **Goal:** Audit and shore up `ApplicationServiceTests.cs` to ensure 100% end-to-end integration coverage for all outcomes (Success, API Failure, User Cancellation, Missing Dependencies).
+- **Validation:** Provides the ultimate safety net. If we change the structure but keep the behavior identical, these tests will prevent any behavioral drift during the teardown.
+
+### Phase 4.4: Step Migration & Service Teardown (High Effort)
+- **Goal:** Inside an isolated `git worktree`, systematically strip the logic out of `ApplicationService.cs` and migrate it into discrete, single-responsibility pipeline steps (e.g., `ScanLocalModsStep`, `FetchRemoteUpdatesStep`, `ReconciliationStep`).
+- **Validation:** Each individual step can now be unit tested in isolation. The fortified integration tests from 4.3 must continue to pass seamlessly.
+
+### Phase 4.5: Dependency Injection & Cleanup (Final Swap)
+- **Goal:** Wire the new pipeline steps together via an orchestrator (or standard DI) in `ServiceCollectionExtensions.cs`. Delete the legacy `ApplicationService.cs` entirely, permanently ripping out its 14 constructor dependencies.
+- **Validation:** Final `dotnet test CheckMods.slnx` and `dotnet run` verification.
