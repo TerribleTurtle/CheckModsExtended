@@ -30,8 +30,22 @@ public static class SecurityHelper
 
             var baseFullPath = Path.GetFullPath(basePath);
 
+            if (!baseFullPath.EndsWith(Path.DirectorySeparatorChar) && !baseFullPath.EndsWith(Path.AltDirectorySeparatorChar))
+            {
+                baseFullPath += Path.DirectorySeparatorChar;
+            }
+            
+            var fullPathWithSep = fullPath;
+            if (!fullPathWithSep.EndsWith(Path.DirectorySeparatorChar) && !fullPathWithSep.EndsWith(Path.AltDirectorySeparatorChar))
+            {
+                fullPathWithSep += Path.DirectorySeparatorChar;
+            }
+
+            var isWindows = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows);
+            var comparison = isWindows ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
             // Return null if a path traversal attempt is detected
-            return !fullPath.StartsWith(baseFullPath, StringComparison.OrdinalIgnoreCase) ? null : fullPath;
+            return !fullPathWithSep.StartsWith(baseFullPath, comparison) ? null : fullPath;
         }
         catch (ArgumentException)
         {

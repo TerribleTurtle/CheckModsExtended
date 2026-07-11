@@ -1,0 +1,57 @@
+using System;
+using System.ComponentModel;
+using System.Threading;
+using System.Threading.Tasks;
+using CheckModsExtended.Services.Interfaces;
+using Spectre.Console.Cli;
+
+namespace CheckModsExtended.Commands;
+
+/// <summary>
+/// The main execution command for the application.
+/// </summary>
+public sealed class CheckModsCommand : AsyncCommand<CheckModsCommand.Settings>
+{
+    private readonly IUpdateWorkflowOrchestrator _orchestrator;
+    private readonly IIgnoredUpdateWorkflow _ignoredUpdateWorkflow;
+
+    /// <summary>
+    /// Command line settings.
+    /// </summary>
+    public sealed class Settings : CommandSettings
+    {
+        [CommandArgument(0, "[SptPath]")]
+        [Description("The path to your SPT installation directory. Defaults to the current directory.")]
+        public string? SptPath { get; set; }
+
+        [CommandOption("-y|--no-prompt")]
+        [Description("Run in headless mode and skip interactive prompts. Also infers all defaults.")]
+        public bool NoPrompt { get; set; }
+        
+        [CommandOption("-v|--verbose")]
+        [Description("Enable verbose/debug logging output.")]
+        public bool Verbose { get; set; }
+    }
+
+    public CheckModsCommand(IUpdateWorkflowOrchestrator orchestrator, IIgnoredUpdateWorkflow ignoredUpdateWorkflow)
+    {
+        _orchestrator = orchestrator;
+        _ignoredUpdateWorkflow = ignoredUpdateWorkflow;
+    }
+
+    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+    {
+        var args = string.IsNullOrWhiteSpace(settings.SptPath) 
+            ? Array.Empty<string>() 
+            : new[] { settings.SptPath };
+
+        var mods = await _orchestrator.RunPipelineAsync(args, cancellationToken);
+        
+        if (mods is not null)
+        {
+            await _ignoredUpdateWorkflow.RunAsync(mods, cancellationToken);
+        }
+
+        return 0; // Success
+    }
+}

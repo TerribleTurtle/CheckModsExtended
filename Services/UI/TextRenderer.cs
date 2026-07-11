@@ -234,9 +234,20 @@ public sealed class TextRenderer : ITextRenderer
         AnsiConsole.WriteLine();
     }
 
+    private static bool IsHeadless()
+    {
+        return Console.IsInputRedirected || 
+               System.Environment.GetCommandLineArgs().Contains("--no-prompt") || 
+               System.Environment.GetCommandLineArgs().Contains("-y");
+    }
+
     /// <inheritdoc />
     public bool PromptFetchRemoteIgnores()
     {
+        if (IsHeadless())
+        {
+            return false;
+        }
         return AnsiConsole.Prompt(
             new ConfirmationPrompt("Fetch the latest community ignore list from the Forge?") { DefaultValue = false }
         );
@@ -261,6 +272,11 @@ public sealed class TextRenderer : ITextRenderer
     /// <inheritdoc />
     public EndOfRunChoice PromptEndOfRun(int openableUpdateCount, bool canManageIgnoredUpdates)
     {
+        if (IsHeadless())
+        {
+            return EndOfRunChoice.Exit;
+        }
+
         DrainBufferedKeys();
         AnsiConsole.WriteLine();
 
@@ -287,6 +303,19 @@ public sealed class TextRenderer : ITextRenderer
     /// <inheritdoc />
     public IReadOnlyList<Mod> SelectUpdatesToIgnore(IReadOnlyList<Mod> candidates, ISet<int> preIgnoredApiModIds)
     {
+        if (IsHeadless())
+        {
+            var results = new List<Mod>();
+            foreach (var mod in candidates)
+            {
+                if (mod.Api.ApiModId.HasValue && preIgnoredApiModIds.Contains(mod.Api.ApiModId.Value))
+                {
+                    results.Add(mod);
+                }
+            }
+            return results;
+        }
+
         AnsiConsole.WriteLine();
 
         var prompt = new MultiSelectionPrompt<Mod>()
@@ -336,6 +365,10 @@ public sealed class TextRenderer : ITextRenderer
     /// <inheritdoc />
     public bool PromptReportIgnores()
     {
+        if (IsHeadless())
+        {
+            return false;
+        }
         return AnsiConsole.Prompt(
             new ConfirmationPrompt("Report these ignored versions so other users benefit?") { DefaultValue = false }
         );

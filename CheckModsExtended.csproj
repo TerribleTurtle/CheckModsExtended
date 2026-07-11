@@ -115,6 +115,7 @@
     <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
     <PackageReference Include="Spectre.Console" Version="0.57.2" />
+    <PackageReference Include="Spectre.Console.Cli" Version="0.55.0" />
     <PackageReference Include="SPTarkov.DI" Version="4.0.13" />
 
   </ItemGroup>

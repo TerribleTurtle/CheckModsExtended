@@ -1,3 +1,4 @@
+using CheckModsExtended.Commands;
 using CheckModsExtended.Configuration;
 using CheckModsExtended.Extensions;
 using CheckModsExtended.Models;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
+using Spectre.Console.Cli;
 
 namespace CheckModsExtended;
 
@@ -20,6 +22,14 @@ public sealed class Program
     private static bool _wasCancelled;
 
     /// <summary>
+    /// Exposes the global cancellation token for commands.
+    /// </summary>
+    public static CancellationToken CancellationToken
+    {
+        get { return _cts?.Token ?? CancellationToken.None; }
+    }
+
+    /// <summary>
     /// Sets up dependency injection, runs the application, and handles any unhandled exceptions.
     /// </summary>
     /// <param name="args">Command line arguments. The only argument is the SPT installation path.</param>
@@ -27,20 +37,15 @@ public sealed class Program
     {
         int exitCode = 0;
         ILogger<Program>? logger = null;
-
-        // Path reported at the end of the run; falls back to the static default if DI setup fails.
-        var logFilePath = LoggingOptions.CurrentLogFilePath;
+        ServiceProvider? serviceProvider = null;
+        string? logFilePath = null;
 
         _wasCancelled = false;
         _cts = new CancellationTokenSource();
         Console.CancelKeyPress += OnCancelKeyPress;
 
-        ServiceProvider? serviceProvider = null;
-
         WindowsConsoleHelper.TryEnableVirtualTerminalProcessing();
 
-        // Trimming breaks Spectre.Console's detection of terminal capabilities because it relies on P/Invokes.
-        // We explicitly enabled VT processing on Windows above, so we can now safely force Spectre to emit ANSI codes.
         if (!Console.IsOutputRedirected)
         {
             AnsiConsole.Profile.Capabilities.Ansi = true;
@@ -57,29 +62,32 @@ public sealed class Program
 
             var services = new ServiceCollection();
             services.AddCheckModsExtendedServices(configuration);
+            
+            var registrar = new TypeRegistrar(services);
+            var app = new CommandApp<CheckModsCommand>(registrar);
+
+            app.Configure(config =>
+            {
+                config.SetApplicationName("check-mods");
+                config.SetApplicationVersion(VersionInfo.SemVer);
+                config.PropagateExceptions(); // Let the try-catch block handle exceptions
+            });
+
+            // We must build the service provider manually to get the logger and log file path for the footer
             serviceProvider = services.BuildServiceProvider();
-
             logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-            logger.LogInformation("CheckModsExtended application starting. Args: {Args}", string.Join(", ", args));
-
             logFilePath = serviceProvider.GetRequiredService<IOptions<LoggingOptions>>().Value.LogFilePath;
 
-            var applicationService = serviceProvider.GetRequiredService<IUpdateWorkflowOrchestrator>();
-            var ignoredUpdateWorkflow = serviceProvider.GetRequiredService<IIgnoredUpdateWorkflow>();
+            logger.LogInformation("CheckModsExtended application starting. Args: {Args}", string.Join(", ", args));
 
-            var mods = await applicationService.RunPipelineAsync(args, _cts.Token);
+            exitCode = await app.RunAsync(args);
 
-            if (mods is not null)
-            {
-                await ignoredUpdateWorkflow.RunAsync(mods, _cts.Token);
-            }
-
-            logger.LogInformation("CheckModsExtended application completed successfully");
+            logger.LogInformation("CheckModsExtended application completed with exit code {ExitCode}", exitCode);
         }
         catch (OperationCanceledException)
         {
             logger?.LogInformation("Application was cancelled by user");
-            throw;
+            exitCode = 0; // Usually cancelled is a zero exit code
         }
         catch (Exception ex)
         {
@@ -96,12 +104,14 @@ public sealed class Program
             AnsiConsole.WriteLine();
 
             AnsiConsole.MarkupLine($"[grey]Check Mods v{VersionInfo.SemVer} (build {VersionInfo.GitHash})[/]");
-            AnsiConsole.MarkupLine($"[grey]Log file: {logFilePath}[/]");
+            if (logFilePath != null)
+            {
+                AnsiConsole.MarkupLine($"[grey]Log file: {logFilePath}[/]");
+            }
 
-            // Prevent the console window from closing instantly when the user double-clicks the executable on Windows.
-            // Console.IsInputRedirected will be true if the application is run from a script or piping environment,
-            // in which case we don't want to block the thread.
-            if (!_wasCancelled && !Console.IsInputRedirected)
+            var isHeadless = Console.IsInputRedirected || args.Contains("--no-prompt") || args.Contains("-y");
+
+            if (!_wasCancelled && !isHeadless)
             {
                 while (Console.KeyAvailable)
                 {
@@ -121,11 +131,6 @@ public sealed class Program
         return exitCode;
     }
 
-    /// <summary>
-    /// Handles the Ctrl+C event to cancel the application.
-    /// </summary>
-    /// <param name="sender">The event sender.</param>
-    /// <param name="e">The console cancel event arguments.</param>
     private static void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
     {
         e.Cancel = true;
