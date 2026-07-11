@@ -1,8 +1,9 @@
+using CheckMods.Tests.Fakes;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CheckMods.Models;
 using CheckMods.Services;
-using CheckMods.Tests; // To get the right FakeForgeApiService
+
 using SemanticVersioning;
 using Xunit;
 using Version = SemanticVersioning.Version;
@@ -20,7 +21,7 @@ public sealed class ModResolutionServiceTests
     }
 
     [Fact]
-    public async Task FetchSourceCodeUrlsForModsAsync_matches_by_guid_if_present()
+    public async Task fetchsourcecodeurlsformodsasync_matches_by_guid_if_present()
     {
         // Arrange
         var sptVersion = new Version("3.9.0");
@@ -61,7 +62,7 @@ public sealed class ModResolutionServiceTests
     }
 
     [Fact]
-    public async Task FetchSourceCodeUrlsForModsAsync_falls_back_to_name_search_and_exact_match()
+    public async Task fetchsourcecodeurlsformodsasync_falls_back_to_name_search_and_exact_match()
     {
         // Arrange
         var sptVersion = new Version("3.9.0");
@@ -105,7 +106,7 @@ public sealed class ModResolutionServiceTests
     }
 
     [Fact]
-    public async Task FetchSourceCodeUrlsForModsAsync_falls_back_to_fuzzy_match_above_threshold()
+    public async Task fetchsourcecodeurlsformodsasync_falls_back_to_fuzzy_match_above_threshold()
     {
         // Arrange
         var sptVersion = new Version("3.9.0");
@@ -146,7 +147,7 @@ public sealed class ModResolutionServiceTests
     }
 
     [Fact]
-    public async Task FetchSourceCodeUrlsForModsAsync_rejects_fuzzy_match_below_threshold()
+    public async Task fetchsourcecodeurlsformodsasync_rejects_fuzzy_match_below_threshold()
     {
         // Arrange
         var sptVersion = new Version("3.9.0");
@@ -186,7 +187,7 @@ public sealed class ModResolutionServiceTests
     }
 
     [Fact]
-    public async Task FetchSourceCodeUrlsForModsAsync_extracts_url_from_NoCompatibleVersion_fallback()
+    public async Task fetchsourcecodeurlsformodsasync_extracts_url_from_nocompatibleversion_fallback()
     {
         // Arrange
         var sptVersion = new Version("3.9.0");
