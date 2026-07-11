@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CheckMods.Models;
+using CheckMods.Tests.Fakes;
 using CheckMods.Services;
 using CheckMods.Tests; // To get the right FakeForgeApiService
 using SemanticVersioning;

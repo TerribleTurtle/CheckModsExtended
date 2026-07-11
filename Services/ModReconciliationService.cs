@@ -22,181 +22,72 @@ public sealed class ModReconciliationService(ILogger<ModReconciliationService> l
             clientMods.Count
         );
 
-        List<ModPair> reconciledPairs = [];
-        var matchedServerIndices = new HashSet<int>();
-        var matchedClientIndices = new HashSet<int>();
+        // Pass 1: Exact GUID pairs first using Join and Zip for duplicates.
+        var guidPairs = clientMods
+            .Where(c => !string.IsNullOrWhiteSpace(c.Local.Guid))
+            .GroupBy(c => c.Local.Guid, StringComparer.OrdinalIgnoreCase)
+            .Join(
+                serverMods.Where(s => !string.IsNullOrWhiteSpace(s.Local.Guid))
+                          .GroupBy(s => s.Local.Guid, StringComparer.OrdinalIgnoreCase),
+                cg => cg.Key,
+                sg => sg.Key,
+                (cg, sg) => cg.Zip(sg, (c, s) => new { Client = c, Server = s }),
+                StringComparer.OrdinalIgnoreCase
+            )
+            .SelectMany(pairs => pairs)
+            .ToList();
 
-        var serverByGuid = new Dictionary<string, List<int>>(StringComparer.OrdinalIgnoreCase);
-        var serverByNormName = new Dictionary<string, List<int>>(StringComparer.Ordinal);
-        var serverByNormGuidName = new Dictionary<string, List<int>>(StringComparer.Ordinal);
-        var serverHasGuidName = new bool[serverMods.Count];
+        var matchedClients = guidPairs.Select(p => p.Client).ToHashSet();
+        var matchedServers = guidPairs.Select(p => p.Server).ToHashSet();
 
-        for (int i = 0; i < serverMods.Count; i++)
+        var remainingClients = clientMods.Where(c => !matchedClients.Contains(c)).ToList();
+        var remainingServers = serverMods.Where(s => !matchedServers.Contains(s)).ToList();
+
+        // Pass 2: Pair the rest by any normalized name match using ToLookup.
+        var serverByName = remainingServers
+            .SelectMany(s => GetMatchableNames(s).Select(name => (Name: name, Mod: s)))
+            .ToLookup(x => x.Name, x => x.Mod, StringComparer.Ordinal);
+
+        var namePairs = new List<(Mod Client, Mod Server)>();
+        var usedServers = new HashSet<Mod>();
+
+        foreach (var client in remainingClients)
         {
-            var serverMod = serverMods[i];
+            var matchedServer = GetMatchableNames(client)
+                .SelectMany(name => serverByName[name])
+                .FirstOrDefault(s => !usedServers.Contains(s));
 
-            if (!string.IsNullOrWhiteSpace(serverMod.Local.Guid))
+            if (matchedServer != null)
             {
-                if (!serverByGuid.TryGetValue(serverMod.Local.Guid, out var list))
-                {
-                    list = [];
-                    serverByGuid[serverMod.Local.Guid] = list;
-                }
-                list.Add(i);
-            }
-
-            var normName = ModNameNormalizer.Normalize(serverMod.Local.LocalName, removeComponentSuffixes: true);
-            if (!string.IsNullOrEmpty(normName))
-            {
-                if (!serverByNormName.TryGetValue(normName, out var list))
-                {
-                    list = [];
-                    serverByNormName[normName] = list;
-                }
-                list.Add(i);
-            }
-
-            var guidName = ModNameNormalizer.ExtractNameFromGuid(serverMod.Local.Guid);
-            if (!string.IsNullOrEmpty(guidName))
-            {
-                serverHasGuidName[i] = true;
-                var normGuidName = ModNameNormalizer.Normalize(guidName, removeComponentSuffixes: true);
-                if (!string.IsNullOrEmpty(normGuidName))
-                {
-                    if (!serverByNormGuidName.TryGetValue(normGuidName, out var list))
-                    {
-                        list = [];
-                        serverByNormGuidName[normGuidName] = list;
-                    }
-                    list.Add(i);
-                }
+                namePairs.Add((client, matchedServer));
+                usedServers.Add(matchedServer);
             }
         }
 
-        void Match(int serverIdx, int clientIdx)
+        matchedClients.UnionWith(namePairs.Select(p => p.Client));
+        matchedServers.UnionWith(namePairs.Select(p => p.Server));
+
+        var allPairs = guidPairs.Select(p => (p.Client, p.Server)).Concat(namePairs).ToList();
+
+        var reconciledPairs = allPairs.Select(p =>
         {
-            var serverMod = serverMods[serverIdx];
-            var clientMod = clientMods[clientIdx];
-            var (selectedMod, notes) = SelectBestMod(serverMod, clientMod);
+            var updatedServer = p.Server with { Local = p.Server.Local with { PairedComponentPath = p.Client.Local.FilePath } };
+            var updatedClient = p.Client with { Local = p.Client.Local with { PairedComponentPath = p.Server.Local.FilePath } };
 
-            serverMod = serverMod with { Local = serverMod.Local with { PairedComponentPath = clientMod.Local.FilePath } };
-            clientMod = clientMod with { Local = clientMod.Local with { PairedComponentPath = serverMod.Local.FilePath } };
+            var (selectedMod, notes) = SelectBestMod(updatedServer, updatedClient);
 
-            reconciledPairs.Add(
-                new ModPair
-                {
-                    ServerMod = serverMod,
-                    ClientMod = clientMod,
-                    SelectedMod = selectedMod,
-                    Notes = notes,
-                }
-            );
-
-            matchedServerIndices.Add(serverIdx);
-            matchedClientIndices.Add(clientIdx);
-        }
-
-        // Pass 1: Exact GUID pairs first.
-        for (int clientIdx = 0; clientIdx < clientMods.Count; clientIdx++)
-        {
-            var clientMod = clientMods[clientIdx];
-            if (string.IsNullOrWhiteSpace(clientMod.Local.Guid))
+            return new ModPair
             {
-                continue;
-            }
+                ServerMod = updatedServer,
+                ClientMod = updatedClient,
+                SelectedMod = selectedMod,
+                Notes = notes,
+            };
+        }).ToList();
 
-            if (serverByGuid.TryGetValue(clientMod.Local.Guid, out var serverIndices))
-            {
-                foreach (var serverIdx in serverIndices)
-                {
-                    if (!matchedServerIndices.Contains(serverIdx))
-                    {
-                        Match(serverIdx, clientIdx);
-                        break;
-                    }
-                }
-            }
-        }
+        var unmatchedClientMods = clientMods.Where(c => !matchedClients.Contains(c)).ToList();
+        var unmatchedServerMods = serverMods.Where(s => !matchedServers.Contains(s)).ToList();
 
-        // Pass 2: Pair the rest by name.
-        var candidateIndices = new HashSet<int>();
-        for (int clientIdx = 0; clientIdx < clientMods.Count; clientIdx++)
-        {
-            if (matchedClientIndices.Contains(clientIdx))
-            {
-                continue;
-            }
-
-            var clientMod = clientMods[clientIdx];
-            var normName = ModNameNormalizer.Normalize(clientMod.Local.LocalName, removeComponentSuffixes: true);
-            var guidName = ModNameNormalizer.ExtractNameFromGuid(clientMod.Local.Guid);
-            var hasGuidName = !string.IsNullOrEmpty(guidName);
-            var normGuidName = hasGuidName
-                ? ModNameNormalizer.Normalize(guidName, removeComponentSuffixes: true)
-                : null;
-
-            candidateIndices.Clear();
-
-            if (!string.IsNullOrEmpty(normName) && serverByNormName.TryGetValue(normName, out var nameMatches))
-            {
-                candidateIndices.UnionWith(nameMatches);
-            }
-
-            if (hasGuidName)
-            {
-                if (
-                    !string.IsNullOrEmpty(normGuidName)
-                    && serverByNormGuidName.TryGetValue(normGuidName, out var guidNameMatches)
-                )
-                {
-                    candidateIndices.UnionWith(guidNameMatches);
-                }
-
-                if (
-                    !string.IsNullOrEmpty(normName)
-                    && serverByNormGuidName.TryGetValue(normName, out var guidNameToNameMatches)
-                )
-                {
-                    candidateIndices.UnionWith(guidNameToNameMatches);
-                }
-
-                if (
-                    !string.IsNullOrEmpty(normGuidName)
-                    && serverByNormName.TryGetValue(normGuidName, out var nameToGuidNameMatches)
-                )
-                {
-                    foreach (var idx in nameToGuidNameMatches)
-                    {
-                        if (serverHasGuidName[idx])
-                        {
-                            candidateIndices.Add(idx);
-                        }
-                    }
-                }
-            }
-
-            int bestIdx = -1;
-            foreach (var idx in candidateIndices)
-            {
-                if (!matchedServerIndices.Contains(idx))
-                {
-                    if (bestIdx == -1 || idx < bestIdx)
-                    {
-                        bestIdx = idx;
-                    }
-                }
-            }
-
-            if (bestIdx != -1)
-            {
-                Match(bestIdx, clientIdx);
-            }
-        }
-
-        var unmatchedServerMods = serverMods.Where((_, idx) => !matchedServerIndices.Contains(idx)).ToList();
-        var unmatchedClientMods = clientMods.Where((_, idx) => !matchedClientIndices.Contains(idx)).ToList();
-
-        // Build full mod list.
         var allMods = reconciledPairs
             .Select(p => p.SelectedMod)
             .Concat(unmatchedServerMods)
@@ -217,6 +108,25 @@ public sealed class ModReconciliationService(ILogger<ModReconciliationService> l
             UnmatchedServerMods = unmatchedServerMods,
             UnmatchedClientMods = unmatchedClientMods,
         };
+    }
+
+    private static IEnumerable<string> GetMatchableNames(Mod mod)
+    {
+        var normName = ModNameNormalizer.Normalize(mod.Local.LocalName, removeComponentSuffixes: true);
+        if (!string.IsNullOrEmpty(normName))
+        {
+            yield return normName;
+        }
+
+        var guidName = ModNameNormalizer.ExtractNameFromGuid(mod.Local.Guid);
+        if (!string.IsNullOrEmpty(guidName))
+        {
+            var normGuidName = ModNameNormalizer.Normalize(guidName, removeComponentSuffixes: true);
+            if (!string.IsNullOrEmpty(normGuidName) && normGuidName != normName)
+            {
+                yield return normGuidName;
+            }
+        }
     }
 
     /// <summary>

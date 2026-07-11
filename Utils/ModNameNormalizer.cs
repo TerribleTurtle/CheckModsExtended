@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+
 namespace CheckMods.Utils;
 
 /// <summary>
@@ -6,7 +8,7 @@ namespace CheckMods.Utils;
 public static class ModNameNormalizer
 {
     private static readonly char[] _charsToRemove = ['-', '_', ' ', '.'];
-    public static readonly IReadOnlyList<string> SuffixesToRemove = ["server", "client", "plugin", "api"];
+    public static readonly ImmutableArray<string> SuffixesToRemove = ["server", "client", "plugin", "api"];
     /// <summary>
     /// Normalizes a mod name for comparison by removing special characters,
     /// converting to lowercase, and optionally removing server/client/plugin suffixes.
