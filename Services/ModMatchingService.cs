@@ -81,7 +81,7 @@ public sealed class ModMatchingService(IModLookupStrategy modLookupStrategy, ILo
             modList.Select((mod, index) => (mod, index)),
             new ParallelOptions
             {
-                MaxDegreeOfParallelism = 5,
+                MaxDegreeOfParallelism = 2,
                 CancellationToken = cancellationToken
             },
             async (item, ct) =>

@@ -87,16 +87,19 @@ public static class ServiceCollectionExtensions
             "ForgeApi",
             (serviceProvider, client) =>
             {
-
-                client.Timeout = TimeSpan.FromSeconds(30);
-
                 var version = CheckMods.Utils.VersionInfo.SemVer;
                 client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("SPT-Check-Mods", version));
                 client.DefaultRequestHeaders.UserAgent.Add(
                     new ProductInfoHeaderValue("(+https://github.com/TerribleTurtle/SPT-Check-Mods)")
                 );
             }
-        ).AddStandardResilienceHandler();
+        ).AddStandardResilienceHandler(options =>
+        {
+            // Allow up to 5 minutes total to survive 429 Retry-After delays
+            options.TotalRequestTimeout.Timeout = TimeSpan.FromMinutes(5);
+            // Limit each individual network attempt to 30 seconds
+            options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(30);
+        });
 
         services.AddTransient<IForgeApiService, CachedForgeApiService>(sp =>
         {
