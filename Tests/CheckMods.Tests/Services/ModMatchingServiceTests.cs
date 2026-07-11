@@ -1,5 +1,10 @@
+
 using CheckMods.Models;
 using CheckMods.Tests.Fakes;
+
+using CheckMods.Tests.Fakes;
+using CheckMods.Models;
+
 using CheckMods.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -398,3 +403,4 @@ public sealed class ModMatchingServiceTests
         Assert.DoesNotContain(queries, q => q.Contains("Unknown"));
     }
 }
+
