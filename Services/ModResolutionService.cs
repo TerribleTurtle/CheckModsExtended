@@ -115,6 +115,10 @@ public sealed class ModResolutionService(IForgeApiService forgeApiService) : IMo
             {
                 apiResult = match;
             }
+            else if (guidResult.TryPickT2(out var noCompat, out _))
+            {
+                apiResult = noCompat.Mod;
+            }
         }
 
         // If not found by GUID, try searching by name with fuzzy matching
@@ -167,7 +171,17 @@ public sealed class ModResolutionService(IForgeApiService forgeApiService) : IMo
         foreach (var guid in guidsToTry)
         {
             var guidResult = await forgeApiService.GetModByGuidAsync(guid, sptVersion, cancellationToken);
-            if (!guidResult.TryPickT0(out var match, out _))
+            ModSearchResult? match = null;
+            if (guidResult.TryPickT0(out var t0Match, out _))
+            {
+                match = t0Match;
+            }
+            else if (guidResult.TryPickT2(out var noCompat, out _))
+            {
+                match = noCompat.Mod;
+            }
+
+            if (match is null)
             {
                 continue;
             }

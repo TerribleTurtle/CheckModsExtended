@@ -14,6 +14,8 @@ public sealed class FakeUpdateOrchestrationService : IUpdateOrchestrationService
     public bool CheckForCheckModsUpdateCalled { get; private set; }
     public bool ApplyIgnoredUpdatesCalled { get; private set; }
 
+    public IReadOnlyList<Mod> ModsToReturn { get; set; } = [];
+
     public Task CheckForSptUpdatesAsync(Version currentVersion, CancellationToken cancellationToken = default)
     {
         CheckForSptUpdatesCalled = true;
@@ -32,6 +34,10 @@ public sealed class FakeUpdateOrchestrationService : IUpdateOrchestrationService
     )
     {
         ApplyIgnoredUpdatesCalled = true;
+        if (ModsToReturn.Count > 0)
+        {
+            return Task.FromResult(ModsToReturn);
+        }
         return Task.FromResult<IReadOnlyList<Mod>>(mods.ToList());
     }
 }

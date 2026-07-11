@@ -184,4 +184,46 @@ public sealed class ModResolutionServiceTests
         // Assert
         Assert.False(mod.IsMatched);
     }
+
+    [Fact]
+    public async Task FetchSourceCodeUrlsForModsAsync_extracts_url_from_NoCompatibleVersion_fallback()
+    {
+        // Arrange
+        var sptVersion = new Version("3.9.0");
+        var mod = new Mod
+        {
+            Local = new LocalModIdentity
+            {
+                Guid = "outdated-guid",
+                FilePath = "test",
+                LocalName = "OutdatedMod",
+                LocalAuthor = "Author",
+                LocalVersion = "1.0.0",
+                IsServerMod = true,
+            },
+        };
+
+        var apiResult = new ModSearchResult(
+            5,
+            null,
+            "Outdated Mod",
+            "outdated-mod",
+            null,
+            null,
+            0,
+            [new SourceCodeLink("https://github.com/outdated/mod", null)],
+            null,
+            new ModAuthor(1, "Author", null),
+            []
+        );
+        _forgeApiService.OnGetModByGuid = _ => new NoCompatibleVersion(apiResult);
+
+        // Act
+        mod = (await _sut.FetchSourceCodeUrlsForModsAsync([mod], sptVersion))[0];
+
+        // Assert
+        Assert.True(mod.IsMatched);
+        Assert.Equal(5, mod.Api.ApiModId);
+        Assert.Equal("https://github.com/outdated/mod", mod.Api.ApiSourceCodeUrl);
+    }
 }

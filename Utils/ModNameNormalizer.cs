@@ -6,8 +6,7 @@ namespace CheckMods.Utils;
 public static class ModNameNormalizer
 {
     private static readonly char[] _charsToRemove = ['-', '_', ' ', '.'];
-    public static readonly string[] SuffixesToRemove = ["server", "client", "plugin", "api", "core"];
-
+    public static readonly string[] SuffixesToRemove = ["server", "client", "plugin", "api"];
     /// <summary>
     /// Normalizes a mod name for comparison by removing special characters,
     /// converting to lowercase, and optionally removing server/client/plugin suffixes.

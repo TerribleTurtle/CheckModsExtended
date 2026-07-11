@@ -109,7 +109,9 @@ public sealed class ApplicationService(
             await EnrichModsWithVersionDataAsync(mods, sptVersion, cancellationToken);
 
             logger.LogDebug("Applying ignored updates");
-            await updateOrchestrationService.ApplyIgnoredUpdatesAsync(mods, cancellationToken);
+            var modsWithIgnores = await updateOrchestrationService.ApplyIgnoredUpdatesAsync(mods, cancellationToken);
+            mods.Clear();
+            mods.AddRange(modsWithIgnores);
 
             // Suppressed false positives are skipped.
             logger.LogDebug("Checking mod version compatibility");
@@ -239,7 +241,7 @@ public sealed class ApplicationService(
         var modsWithWarnings = serverMods.Concat(clientMods).Where(m => m.HasWarnings).ToList();
         if (modsWithWarnings.Count > 0)
         {
-            await modResolutionService.FetchSourceCodeUrlsForModsAsync(modsWithWarnings, sptVersion, cancellationToken);
+            modsWithWarnings = (await modResolutionService.FetchSourceCodeUrlsForModsAsync(modsWithWarnings, sptVersion, cancellationToken)).ToList();
         }
 
         reporter.LoadingWarnings(modsWithWarnings);
@@ -255,11 +257,22 @@ public sealed class ApplicationService(
         var pairsWithNotes = result.ReconciledPairs.Where(p => p.Notes.Count > 0).ToList();
         if (pairsWithNotes.Count > 0)
         {
-            await modResolutionService.FetchSourceCodeUrlsForPairedModsAsync(
+            var (updatedPairs, _) = await modResolutionService.FetchSourceCodeUrlsForPairedModsAsync(
                 pairsWithNotes,
                 sptVersion,
                 cancellationToken
             );
+            
+            var newPairs = result.ReconciledPairs.ToList();
+            foreach (var updatedPair in updatedPairs)
+            {
+                var idx = newPairs.FindIndex(p => p.SelectedMod.Local.Guid == updatedPair.SelectedMod.Local.Guid);
+                if (idx >= 0)
+                {
+                    newPairs[idx] = updatedPair;
+                }
+            }
+            result = new ModReconciliationResult { Mods = result.Mods, ReconciledPairs = newPairs, UnmatchedServerMods = result.UnmatchedServerMods, UnmatchedClientMods = result.UnmatchedClientMods };
         }
 
         reporter.ReconciliationResults(result);
@@ -366,7 +379,20 @@ public sealed class ApplicationService(
             return;
         }
 
-        await modEnrichmentService.EnrichAllWithVersionDataAsync(matchedMods, sptVersion, cancellationToken);
+        var enrichedMods = await modEnrichmentService.EnrichAllWithVersionDataAsync(
+            matchedMods, sptVersion, cancellationToken
+        );
+
+        var enrichedByGuid = enrichedMods.ToDictionary(m => m.Local.Guid, StringComparer.OrdinalIgnoreCase);
+
+        for (var i = 0; i < mods.Count; i++)
+        {
+            if (!string.IsNullOrWhiteSpace(mods[i].Local.Guid) && 
+                enrichedByGuid.TryGetValue(mods[i].Local.Guid, out var enriched))
+            {
+                mods[i] = enriched;
+            }
+        }
     }
 
     /// <summary>

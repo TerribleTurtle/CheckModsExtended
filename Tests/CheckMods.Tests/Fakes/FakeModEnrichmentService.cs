@@ -11,6 +11,8 @@ public sealed class FakeModEnrichmentService : IModEnrichmentService
     /// <summary> Gets or sets if service was called. </summary>
     public bool WasCalled { get; set; }
 
+    public IReadOnlyList<Mod> EnrichedModsToReturn { get; set; } = [];
+
     /// <inheritdoc />
     public Task<IReadOnlyList<Mod>> EnrichAllWithVersionDataAsync(
         IEnumerable<Mod> mods,
@@ -19,6 +21,10 @@ public sealed class FakeModEnrichmentService : IModEnrichmentService
     )
     {
         WasCalled = true;
+        if (EnrichedModsToReturn.Count > 0)
+        {
+            return Task.FromResult(EnrichedModsToReturn);
+        }
         return Task.FromResult<IReadOnlyList<Mod>>(mods.ToList());
     }
 }

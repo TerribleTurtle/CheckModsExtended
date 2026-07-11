@@ -163,4 +163,57 @@ public sealed class ApplicationServiceTests
         Assert.True(_compatibilityValidationService.CheckModVersionCompatibilityCalled);
         Assert.Contains(_reporter.Headings, h => h.Contains("Verifying Forge records"));
     }
+
+    [Fact]
+    public async Task Run_async_mutates_state_when_subservices_return_updated_immutable_records()
+    {
+        // Arrange
+        var currentDir = Directory.GetCurrentDirectory();
+        _sptInstallationService.ValidatedVersion = new Version("3.9.0");
+
+        var mod = new Mod
+        {
+            Local = new CheckMods.Models.LocalModIdentity
+            {
+                Guid = "test-guid",
+                FilePath = "test",
+                LocalName = "TestMod",
+                LocalAuthor = "Author",
+                LocalVersion = "1.0.0",
+                IsServerMod = true,
+            },
+        };
+
+        // Scanner finds the initial mod
+        _modScannerService.ServerModsToReturn = [mod];
+
+        // Reconciliation pairs it
+        _modReconciliationService.ResultToReturn = new ModReconciliationResult
+        {
+            Mods = [mod],
+            ReconciledPairs = [],
+            UnmatchedServerMods = [mod],
+            UnmatchedClientMods = [],
+        };
+
+        // The enrichment service will return a mutated mod (e.g. with ApiModId)
+        var enrichedMod = mod.WithApiMatch(new ModSearchResult(
+            99, null, "Test", "test", null, null, 0, null, null, new ModAuthor(1, "A", null), []
+        ));
+        _modEnrichmentService.EnrichedModsToReturn = [enrichedMod];
+
+        // The update orchestration service will return the mod mutated again (e.g. Ignored)
+        var ignoredMod = enrichedMod.WithUpdateSuppressed(true);
+        _updateOrchestrationService.ModsToReturn = [ignoredMod];
+
+        // Act
+        var result = await _sut.RunAsync([currentDir]);
+
+        // Assert
+        var finalMod = Assert.Single(result);
+        
+        // Ensure the final returned list contains the fully mutated mod
+        Assert.Equal(99, finalMod.Api.ApiModId);
+        Assert.True(finalMod.Update.UpdateSuppressed);
+    }
 }

@@ -107,4 +107,19 @@ public sealed class ModReconciliationServiceTests
         var pair = Assert.Single(result.ReconciledPairs);
         Assert.Contains(pair.Notes, n => n.Contains("GUID mismatch"));
     }
+
+    [Fact]
+    public void Fika_server_and_client_are_not_falsely_paired()
+    {
+        var service = CreateService();
+
+        var result = service.ReconcileMods(
+            [ServerMod("Fika", "Fika", "1.0.0")],
+            [ClientMod("com.fika.core", "Fika.Core", "1.0.0")]
+        );
+
+        Assert.Empty(result.ReconciledPairs);
+        Assert.Single(result.UnmatchedServerMods);
+        Assert.Single(result.UnmatchedClientMods);
+    }
 }
