@@ -20,6 +20,7 @@ public sealed class ProgressRenderer : IProgressRenderer
             {
                 var task = ctx.AddTask("[grey]Querying Forge API[/]", maxValue: total);
                 await work(current => task.Value = current);
+                task.Value = task.MaxValue;
                 task.StopTask();
             });
     }
@@ -33,6 +34,7 @@ public sealed class ProgressRenderer : IProgressRenderer
             {
                 var task = ctx.AddTask("[grey]Querying Forge API[/]", maxValue: total);
                 var result = await work(current => task.Value = current);
+                task.Value = task.MaxValue;
                 task.StopTask();
                 return result;
             });
