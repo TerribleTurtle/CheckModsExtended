@@ -2,24 +2,30 @@
 
 Welcome to the first official release of **Check Mods Extended**! 
 
-First and foremost, a massive thank you to Refringe for their incredible foundational work on the original SPT-Check-Mods. This fork builds directly upon their excellent vision, expanding it with new architectural changes and security features.
+First and foremost, a massive thank you to Refringe for their incredible foundational work on the original SPT-Check-Mods. This fork builds directly upon their excellent vision, expanding it with new features, better performance, and enhanced security.
 
 ### What's Changed
 
-- **Security & Integrity Enhancements**
-  We've transitioned the mod scanning engine from dynamic loading (`AssemblyLoadContext`) to Static IL Bytecode Analysis (`Mono.Cecil`). This ensures third-party mod metadata is read safely without executing any code.
-- **Verifiable Builds**
-  All releases are now cryptographically signed via GitHub Artifact Attestations (Build Provenance), hashed with SHA256, and automatically scanned by VirusTotal to guarantee download safety.
-- **Performance Adjustments**
-  The update checker has been updated to use `Parallel.ForEachAsync` to speed up dependency fetching for large mod lists.
-- **API Rate Limiting**
-  Added native `.NET 9` Resilience and Polly `TokenBucketRateLimiter` to gracefully handle API rate limits and keep connections stable.
-- **Pipeline Architecture**
-  The core mod-checking logic has been restructured into discrete, testable workflow steps to make the codebase easier to maintain and extend over time.
-- **Project Rename**
-  Officially renamed to Check Mods Extended to reflect the massive divergence and distinguish it as a standalone, independent fork.
-- **Official Linux Support**
-  The application is now officially cross-platform! Releases include a pre-compiled, trimmed Linux binary (`linux-x64`) for running natively on Linux servers, WSL, and Steam Deck. Both Windows and Linux builds have feature parity and will run flawlessly.
+- **Safer Mod Scanning**
+  We completely changed how mods are read. The tool now safely scans mod files without ever needing to "run" or load their code, meaning there is zero risk of malicious mods doing harm during a check.
+  
+- **Guaranteed Safe Downloads**
+  Every release is now automatically scanned by over 70 antivirus engines (via VirusTotal) and cryptographically signed. You can download with 100% confidence that the files are safe and untampered.
+  
+- **Much Faster Update Checks**
+  Checking massive mod lists is now significantly faster because the application fetches updates for multiple mods at the exact same time rather than one by one.
+  
+- **No More Connection Drops**
+  We added smart, automated rate-limiting. If you are checking hundreds of mods, the tool will gracefully pace itself so it doesn't get blocked by the servers for asking too quickly.
+  
+- **More Reliable Foundations**
+  The underlying code has been completely rewritten from the ground up to be far more stable, testable, and easier to update in the future.
+  
+- **New Name**
+  Officially renamed to "Check Mods Extended" to reflect the massive divergence and distinguish it as a major standalone upgrade from the original tool.
+  
+- **Linux & Steam Deck Support**
+  The application is now officially cross-platform! Releases include a native Linux version so you can easily run it on Linux servers, WSL, or your Steam Deck.
 
 Enjoy the update!
 
