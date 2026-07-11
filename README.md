@@ -1,69 +1,84 @@
-# SPT CheckMods
+# SPT Check Mods
 
-> **Note:** This is an experimental, AI-assisted fork of Refringe's excellent `SPT-Check-Mods`. I am adding custom features for my own workflow. I will not be submitting Pull Requests upstream to respect the original author's non-AI development process, but anyone is welcome to use or borrow ideas from this fork!
+A .NET 9 console application that validates Single Player Tarkov (SPT) mod compatibility using the Forge API.
 
-A robust, lightning-fast .NET 9.0 command-line application for verifying, validating, and updating mods for Single Player Tarkov (SPT). 
-
-By analyzing local mod metadata and communicating securely with the SPT Forge API, CheckMods ensures your installation is up-to-date, structurally valid, and dependency-compliant.
-
-## 🚨 Critical Security Patch (RCE Vulnerability)
-
-**The original upstream codebase contained a severe Arbitrary Code Execution (RCE) vulnerability.** By using `AssemblyLoadContext` to dynamically load untrusted third-party Server Mods, it intrinsically executed potential malicious module initializers or constructors via `Activator.CreateInstance`. This effectively allowed any malicious mod to run arbitrary code on your machine simply by being scanned.
-
-**This fork completely eliminates this vulnerability.** We replaced the dangerous dynamic assembly loading with static IL (Intermediate Language) byte code analysis using `Mono.Cecil`. CheckMods now securely extracts metadata (such as GUIDs, versions, and names) by statically analyzing the assembly structure, guaranteeing that no untrusted mod code is ever executed.
-
-In addition to this critical security fix, this fork introduces several architectural improvements:
-- **Decoupled UI:** A strict separation of business logic from the user interface.
-- **Decorator Caching:** Enhanced performance via transparent caching decorators.
-- **O(1) Reconciliation:** Algorithmic optimizations for rapid mod dependency resolution.
+<img width="1013" height="314" alt="image" src="https://github.com/user-attachments/assets/00878387-024c-4961-b66f-b977f4e550c0" />
 
 ## Features
 
-- **Deep Metadata Extraction:** Securely reads metadata (GUID, version, name) directly from server mods (`user/mods/**/*.dll`) and client plugins (`BepInEx/plugins/**/*.dll`) using static IL analysis via `Mono.Cecil`.
-- **Misplacement & Structure Detection:** Intelligently flags incorrectly installed mods (e.g., client DLLs placed in server directories) and detects "cross-installed" directories where unrelated mods share the same subfolder.
-- **Smart Mod Grouping:** Automatically groups multi-DLL client mods by analyzing assembly references and author namespaces.
-- **Authoritative API Validation:** Securely queries the [SPT Forge API](https://forge.sp-tarkov.com/) (using exact GUIDs or fuzzy-name matching) to verify mod legitimacy and fetch update metadata.
-- **Dependency & Compatibility Checking:** Resolves recursive dependency trees and verifies that your installed mods are strictly compatible with your local SPT version.
-- **Smart Ignore Lists:** Allows users to suppress false-positive updates locally, and fetches remote, author-maintained ignore lists for seamless validation.
-- **Performance Optimized:** Employs built-in rate-limiting, exponential backoff, memory caching, and parallel processing for optimal API interactions.
+- **Forge API Integration**: Verifies mods against the official SPT Forge database
+- **Version Compatibility**: Checks installed mod versions against SPT version requirements
+- **Update Detection**: Identifies mods with available updates and provides download links
+- **Bulk Update Pages**: Opens every out-of-date mod's Forge page in your browser from the end-of-run menu
+- **Dependency Analysis**: Builds dependency trees, identifies missing dependencies, and detects conflicts
+- **Dependency Change Notices**: When an update is available, shows the dependencies it adds or removes, flagging ones you'll need to download or update
+- **Installation Checks**: Detects mods installed in the wrong folder and excludes them from the rest of the run
+- **Dismissable Update Prompts**: Lets you ignore false-positive "update available" prompts for mods whose files are already current, with an optional shared community list
+- **SPT Update Checking**: Notifies you when a new SPT version is available
+- **Self-Update Checking**: Notifies you when a newer version of Check Mods is available
+- **Secure Static Analysis**: Securely reads mod metadata directly from server mods and client plugins using static IL analysis via `Mono.Cecil` to prevent arbitrary code execution
+- **Decoupled Architecture**: Highly optimized dependency reconciliation with O(1) matching and aggressive caching for fast processing
 
-## Prerequisites
+## Requirements
 
-To build or run CheckMods from source, you will need:
-- [.NET 9.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) (or Runtime if running published binaries).
+- A valid SPT 4.0+ installation
+
+## Installation
+
+### Option 1: Download Release
+Download the latest release (`CheckMods-win-x64.exe`) from the [Releases](https://github.com/TerribleTurtle/SPT-Check-Mods/releases) page, then move it into the root of your SPT installation directory. Running it from there checks the mods in that installation.
+
+### Option 2: Build from Source
+```bash
+git clone https://github.com/TerribleTurtle/SPT-Check-Mods.git
+cd SPT-Check-Mods
+dotnet build
+```
 
 ## Usage
 
-CheckMods is compiled as a standalone, single-file executable. Run it from your terminal, passing the path to your SPT installation as the only argument:
+If you downloaded the release executable and placed it in your SPT installation directory, run it from there:
 
 ```bash
-# Example (Windows)
-CheckMods.exe "C:\Path\To\SPT"
-
-# Example (Cross-platform/Source)
-dotnet run -- "C:\Path\To\SPT"
+CheckMods-win-x64.exe
 ```
 
-The application provides a rich, interactive CLI experience via `Spectre.Console`. 
+It checks the mods in the current directory. You can also point it at an SPT installation elsewhere by passing the path:
 
-## Configuration & Logs
+```bash
+CheckMods-win-x64.exe "C:\path\to\spt"
+```
 
-CheckMods creates a local application data directory to store logs and ignored updates. On Windows, this defaults to `%AppData%/SptCheckMods/`.
-- **Logs:** Rolling log files are stored at `%AppData%/SptCheckMods/logs/checkmod.log`.
-- **Ignored Updates:** Your dismissed update alerts are stored in `%AppData%/SptCheckMods/ignored-updates.json`.
+If you built from source, use `dotnet run` instead. The `--` passes the path through to the application rather than to the .NET CLI:
 
-Internally, you can tweak the application settings by modifying configuration models:
-- **`ForgeApiOptions`:** Override the default API URL (`https://forge.sp-tarkov.com/api/v0/`).
-- **`RateLimitOptions`:** Adjust API burst limits and token refill rates.
-- **`ModScannerOptions`:** Adjust file size limits for DLL scanning.
+```bash
+# Run from your SPT installation directory
+dotnet run
 
-## Architecture (For Contributors)
+# Or specify the SPT path as an argument
+dotnet run -- /path/to/spt
+```
 
-This project leverages modern C# 13 features with strict nullability enabled. 
-- **Core Stack:** Built entirely on standard `Microsoft.Extensions.*` libraries (Dependency Injection, Logging, Http).
-- **Execution Flow:** `Program.cs` bootstraps the DI container, sets up a graceful cancellation token (listening for `Ctrl+C`), and passes control to `ApplicationService.cs`.
-- **Build Process:** Uses custom MSBuild targets (`CheckMods.csproj`) to embed the active git commit hash into the executable and automatically rename/zip the published artifacts by Runtime Identifier (RID).
-- **Testing:** The test suite (`Tests/CheckMods.Tests/`) uses xUnit. Instead of heavy mocking libraries, it relies on custom fakes (e.g., `FakeForgeApiService`) and temp workspace wrappers for robust, high-fidelity testing.
+## Configuration
 
-### Submitting a Pull Request
-Please ensure all changes pass the xUnit test suite (`dotnet test`). Test files are strictly excluded from main compilations (`DefaultItemExcludes`).
+### Local Storage
+Check Mods keeps its data under `%APPDATA%\SptCheckMods`:
+
+- **Logs**: `%APPDATA%\SptCheckMods\logs\checkmod.log`
+- **Ignored updates**: `%APPDATA%\SptCheckMods\ignored-updates.json`
+
+### Supported Mod Formats
+- **Server Mods**: SPT mods with `AbstractModMetadata` in `SPT/user/mods`
+- **Client Mods**: BepInEx plugins with `BepInPlugin` attribute in `BepInEx/plugins`
+
+## Contributing
+
+Please read [CONTRIBUTING.md](.github/CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## Security
+
+For security concerns, please review our [Security Policy](.github/SECURITY.md).
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
