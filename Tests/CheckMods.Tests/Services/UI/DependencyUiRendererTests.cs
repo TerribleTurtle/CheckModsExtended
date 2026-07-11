@@ -7,6 +7,8 @@ using Spectre.Console;
 using Spectre.Console.Testing;
 using Xunit;
 
+using CheckMods.Tests.Fixtures;
+
 namespace CheckMods.Tests.Services.UI;
 
 [Collection("ConsoleTests")]
@@ -25,18 +27,7 @@ public sealed class DependencyUiRendererTests
             {
                 new DependencyNode
                 {
-                    Mod = new Mod
-                    {
-                        Local = new LocalModIdentity
-                        {
-                            Guid = "test.mod",
-                            FilePath = "test.dll",
-                            IsServerMod = false,
-                            LocalName = "Test Mod",
-                            LocalAuthor = "Author",
-                            LocalVersion = "1.0.0",
-                        },
-                    },
+                    Mod = ModFixture.CreateClientMod("test.mod", "Test Mod"),
                     IsInstalled = true,
                 },
             },
@@ -74,18 +65,7 @@ public sealed class DependencyUiRendererTests
             {
                 new DependencyNode
                 {
-                    Mod = new Mod
-                    {
-                        Local = new LocalModIdentity
-                        {
-                            Guid = "test.mod",
-                            FilePath = "test.dll",
-                            IsServerMod = false,
-                            LocalName = "Test Mod",
-                            LocalAuthor = "Author",
-                            LocalVersion = "1.0.0",
-                        },
-                    },
+                    Mod = ModFixture.CreateClientMod("test.mod", "Test Mod"),
                     IsInstalled = true,
                 },
             },
@@ -146,18 +126,7 @@ public sealed class DependencyUiRendererTests
             {
                 new DependencyNode
                 {
-                    Mod = new Mod
-                    {
-                        Local = new LocalModIdentity
-                        {
-                            Guid = "test.mod",
-                            FilePath = "test.dll",
-                            IsServerMod = false,
-                            LocalName = "Test Mod",
-                            LocalAuthor = "Author",
-                            LocalVersion = "1.0.0",
-                        },
-                    },
+                    Mod = ModFixture.CreateClientMod("test.mod", "Test Mod"),
                     IsInstalled = true,
                 },
             },

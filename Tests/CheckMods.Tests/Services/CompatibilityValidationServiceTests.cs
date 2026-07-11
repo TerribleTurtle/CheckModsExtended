@@ -6,6 +6,8 @@ using SemanticVersioning;
 using Xunit;
 using Version = SemanticVersioning.Version;
 
+using CheckMods.Tests.Fixtures;
+
 namespace CheckMods.Tests.Services;
 
 public sealed class CompatibilityValidationServiceTests
@@ -23,18 +25,7 @@ public sealed class CompatibilityValidationServiceTests
     {
         // Arrange
         var sptVersion = new Version("3.9.0");
-        var mod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "test",
-                FilePath = "test",
-                LocalName = "TestMod",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-                IsServerMod = true,
-            },
-        };
+        var mod = ModFixture.CreateServerMod("test", "TestMod");
 
         // Mod has to be matched to be checked
         var apiResult = new ModSearchResult(
@@ -64,18 +55,7 @@ public sealed class CompatibilityValidationServiceTests
     {
         // Arrange
         var sptVersion = new Version("3.9.0");
-        var mod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "test",
-                FilePath = "test",
-                LocalName = "TestMod",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-                IsServerMod = true,
-            },
-        };
+        var mod = ModFixture.CreateServerMod("test", "TestMod");
 
         var apiResult = new ModSearchResult(
             1,
@@ -109,18 +89,7 @@ public sealed class CompatibilityValidationServiceTests
     {
         // Arrange
         var sptVersion = new Version("3.9.0");
-        var mod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "test",
-                FilePath = "test",
-                LocalName = "TestMod",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-                IsServerMod = true,
-            },
-        };
+        var mod = ModFixture.CreateServerMod("test", "TestMod");
 
         var apiResult = new ModSearchResult(
             1,

@@ -1,5 +1,7 @@
 using CheckMods.Models;
 
+using CheckMods.Tests.Fixtures;
+
 namespace CheckMods.Tests.Fixtures;
 
 /// <summary>

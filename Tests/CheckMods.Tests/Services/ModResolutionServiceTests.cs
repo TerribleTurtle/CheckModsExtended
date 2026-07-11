@@ -7,6 +7,8 @@ using SemanticVersioning;
 using Xunit;
 using Version = SemanticVersioning.Version;
 
+using CheckMods.Tests.Fixtures;
+
 namespace CheckMods.Tests.Services;
 
 public sealed class ModResolutionServiceTests
@@ -24,18 +26,7 @@ public sealed class ModResolutionServiceTests
     {
         // Arrange
         var sptVersion = new Version("3.9.0");
-        var mod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "exact-guid",
-                FilePath = "test",
-                LocalName = "TestMod",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-                IsServerMod = true,
-            },
-        };
+        var mod = ModFixture.CreateServerMod("exact-guid", "TestMod");
 
         var apiResult = new ModSearchResult(
             1,
@@ -65,18 +56,7 @@ public sealed class ModResolutionServiceTests
     {
         // Arrange
         var sptVersion = new Version("3.9.0");
-        var mod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "unknown",
-                FilePath = "test",
-                LocalName = "Exact Name Match",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-                IsServerMod = true,
-            },
-        };
+        var mod = ModFixture.CreateServerMod("unknown", "Exact Name Match");
 
         // Guid lookup fails
         _forgeApiService.OnGetModByGuid = _ => new NotFound();
@@ -109,18 +89,7 @@ public sealed class ModResolutionServiceTests
     {
         // Arrange
         var sptVersion = new Version("3.9.0");
-        var mod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "unknown",
-                FilePath = "test",
-                LocalName = "Some Plugin Mod",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-                IsServerMod = true,
-            },
-        };
+        var mod = ModFixture.CreateServerMod("unknown", "Some Plugin Mod");
 
         var apiResult = new ModSearchResult(
             3,
@@ -150,18 +119,7 @@ public sealed class ModResolutionServiceTests
     {
         // Arrange
         var sptVersion = new Version("3.9.0");
-        var mod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "unknown",
-                FilePath = "test",
-                LocalName = "Short",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-                IsServerMod = true,
-            },
-        };
+        var mod = ModFixture.CreateServerMod("unknown", "Short");
 
         var apiResult = new ModSearchResult(
             4,
@@ -190,18 +148,7 @@ public sealed class ModResolutionServiceTests
     {
         // Arrange
         var sptVersion = new Version("3.9.0");
-        var mod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "outdated-guid",
-                FilePath = "test",
-                LocalName = "OutdatedMod",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-                IsServerMod = true,
-            },
-        };
+        var mod = ModFixture.CreateServerMod("outdated-guid", "OutdatedMod");
 
         var apiResult = new ModSearchResult(
             5,

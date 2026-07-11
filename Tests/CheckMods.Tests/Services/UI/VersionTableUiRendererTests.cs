@@ -6,6 +6,8 @@ using Spectre.Console;
 using Spectre.Console.Testing;
 using Xunit;
 
+using CheckMods.Tests.Fixtures;
+
 namespace CheckMods.Tests.Services.UI;
 
 [Collection("ConsoleTests")]
@@ -18,18 +20,7 @@ public sealed class VersionTableUiRendererTests
         AnsiConsole.Console = console;
         var renderer = new VersionTableUiRenderer(new FakeTextRenderer());
 
-        var mod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "test.mod",
-                FilePath = "test.dll",
-                IsServerMod = false,
-                LocalName = "Test Mod",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-            },
-        };
+        var mod = ModFixture.CreateClientMod("test.mod", "Test Mod");
         mod = mod.WithUpToDate(new UpToDateMod(null, 123, null, null, "1.0.0", null));
         mod = mod.WithApiMatch(
             new ModSearchResult(123, null, "Test Mod", "test-mod", null, null, 0, null, null, null, null)
@@ -50,18 +41,7 @@ public sealed class VersionTableUiRendererTests
         AnsiConsole.Console = console;
         var renderer = new VersionTableUiRenderer(new FakeTextRenderer());
 
-        var mod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "test.mod",
-                FilePath = "test.dll",
-                IsServerMod = false,
-                LocalName = "Test Mod Update",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-            },
-        };
+        var mod = ModFixture.CreateClientMod("test.mod", "Test Mod Update");
         mod = mod.WithSafeToUpdate(
             new SafeToUpdateMod(null, new ModUpdateVersion(null, 123, null, null, null, "2.0.0", null, null), null)
         );
@@ -84,18 +64,7 @@ public sealed class VersionTableUiRendererTests
         AnsiConsole.Console = console;
         var renderer = new VersionTableUiRenderer(new FakeTextRenderer());
 
-        var mod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "test.mod",
-                FilePath = "test.dll",
-                IsServerMod = false,
-                LocalName = "Incompatible Mod",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-            },
-        };
+        var mod = ModFixture.CreateClientMod("test.mod", "Incompatible Mod");
         mod = mod.WithLocalSptIncompatible("Requires SPT 4.0.0", "1.1.0");
 
         renderer.VersionCompatibilityResults(new List<Mod> { mod }, new SemanticVersioning.Version(3, 9, 0));
@@ -113,18 +82,7 @@ public sealed class VersionTableUiRendererTests
         AnsiConsole.Console = console;
         var renderer = new VersionTableUiRenderer(new FakeTextRenderer());
 
-        var mod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "test.mod",
-                IsServerMod = false,
-                LocalName = "Test Mod Update",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-                FilePath = "test.dll",
-            },
-        };
+        var mod = ModFixture.CreateClientMod("test.mod", "Test Mod Update");
 
         mod = mod.WithApiMatch(new ModSearchResult(123, null, "Test Mod Update", "test-mod", null, null, 0, null, null, null, null));
         mod = mod.WithSafeToUpdate(new SafeToUpdateMod(

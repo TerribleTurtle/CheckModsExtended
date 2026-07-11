@@ -7,6 +7,8 @@ using Spectre.Console;
 using Spectre.Console.Testing;
 using Xunit;
 
+using CheckMods.Tests.Fixtures;
+
 namespace CheckMods.Tests.Services.UI;
 
 [Collection("ConsoleTests")]
@@ -19,18 +21,7 @@ public sealed class ReconciliationUiRendererTests
         AnsiConsole.Console = console;
         var renderer = new ReconciliationUiRenderer(new FakeTextRenderer());
 
-        var mod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "unverified.mod",
-                FilePath = "unverified.dll",
-                IsServerMod = false,
-                LocalName = "Unverified Mod",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-            },
-        };
+        var mod = ModFixture.CreateClientMod("unverified.mod", "Unverified Mod");
         mod = mod.MarkUnmatched();
 
         renderer.UnverifiedMods(new List<Mod> { mod });
@@ -76,31 +67,9 @@ public sealed class ReconciliationUiRendererTests
         AnsiConsole.Console = console;
         var renderer = new ReconciliationUiRenderer(new FakeTextRenderer());
 
-        var clientMod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "client.mod",
-                FilePath = "client.dll",
-                IsServerMod = false,
-                LocalName = "Client Mod",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-            },
-        };
+        var clientMod = ModFixture.CreateClientMod("client.mod", "Client Mod");
 
-        var serverMod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "server.mod",
-                FilePath = "server.dll",
-                IsServerMod = true,
-                LocalName = "Server Mod",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-            },
-        };
+        var serverMod = ModFixture.CreateServerMod("server.mod", "Server Mod");
 
         var result = new ModReconciliationResult
         {
@@ -139,18 +108,7 @@ public sealed class ReconciliationUiRendererTests
             Api = new ForgeApiMetadata { ApiUrl = "https://forge.com/mod" },
         };
 
-        var clientMod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "client.guid",
-                IsServerMod = false,
-                LocalName = "Test Mod",
-                FilePath = "client.dll",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-            },
-        };
+        var clientMod = ModFixture.CreateClientMod("client.guid", "Test Mod");
 
         var pair = new ModPair
         {

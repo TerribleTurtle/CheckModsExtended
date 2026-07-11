@@ -9,6 +9,8 @@ using SemanticVersioning;
 using Xunit;
 using Version = SemanticVersioning.Version;
 
+using CheckMods.Tests.Fixtures;
+
 namespace CheckMods.Tests.Services;
 
 public sealed class UpdateOrchestrationServiceTests
@@ -34,18 +36,7 @@ public sealed class UpdateOrchestrationServiceTests
     public async Task Applyignoredupdates_suppresses_update_when_ignored()
     {
         // Arrange
-        var mod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "test",
-                FilePath = "test",
-                LocalName = "Test Mod",
-                LocalAuthor = "Author",
-                IsServerMod = true,
-                LocalVersion = "1.0.0",
-            },
-        };
+        var mod = ModFixture.CreateServerMod("test", "Test Mod");
 
         var apiResult = new ModSearchResult(
             1,
