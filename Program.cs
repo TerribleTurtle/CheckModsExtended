@@ -37,6 +37,16 @@ public sealed class Program
 
         ServiceProvider? serviceProvider = null;
 
+        WindowsConsoleHelper.TryEnableVirtualTerminalProcessing();
+
+        // Trimming breaks Spectre.Console's detection of terminal capabilities because it relies on P/Invokes.
+        // We explicitly enabled VT processing on Windows above, so we can now safely force Spectre to emit ANSI codes.
+        if (!Console.IsOutputRedirected)
+        {
+            AnsiConsole.Profile.Capabilities.Ansi = true;
+            AnsiConsole.Profile.Capabilities.ColorSystem = ColorSystem.Standard;
+        }
+
         try
         {
             var configuration = new ConfigurationBuilder()
