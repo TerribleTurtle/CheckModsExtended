@@ -24,10 +24,10 @@ public sealed class UpdateWorkflowOrchestratorTests
         };
 
         var orchestrator = new UpdateWorkflowOrchestrator(
-            new[] { step1, step2 },
+            [step1, step2],
             NullLogger<UpdateWorkflowOrchestrator>.Instance);
 
-        var args = Array.Empty<string>();
+        string[] args = [];
 
         // Act
         var result = await orchestrator.RunPipelineAsync(args, CancellationToken.None);
@@ -50,10 +50,10 @@ public sealed class UpdateWorkflowOrchestratorTests
         var step2 = new FakeWorkflowStep();
 
         var orchestrator = new UpdateWorkflowOrchestrator(
-            new[] { step1, step2 },
+            [step1, step2],
             NullLogger<UpdateWorkflowOrchestrator>.Instance);
 
-        var args = Array.Empty<string>();
+        string[] args = [];
 
         // Act
         var result = await orchestrator.RunPipelineAsync(args, CancellationToken.None);
@@ -76,10 +76,10 @@ public sealed class UpdateWorkflowOrchestratorTests
         var step2 = new FakeWorkflowStep();
 
         var orchestrator = new UpdateWorkflowOrchestrator(
-            new[] { step1, step2 },
+            [step1, step2],
             NullLogger<UpdateWorkflowOrchestrator>.Instance);
 
-        var args = Array.Empty<string>();
+        string[] args = [];
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
