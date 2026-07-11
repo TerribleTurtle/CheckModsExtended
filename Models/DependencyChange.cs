@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Collections.Immutable;
+
 namespace CheckMods.Models;
 
 /// <summary>
@@ -56,10 +59,10 @@ public sealed record DependencyChange
 /// </summary>
 public sealed class UpdateDependencyDelta
 {
-    public UpdateDependencyDelta(IReadOnlyList<DependencyChange> added, IReadOnlyList<DependencyChange> removed)
+    public UpdateDependencyDelta(IEnumerable<DependencyChange> added, IEnumerable<DependencyChange> removed)
     {
-        Added = added;
-        Removed = removed;
+        Added = added.ToImmutableArray();
+        Removed = removed.ToImmutableArray();
     }
 
     /// <summary>Dependencies required by the update that the installed version did not require.</summary>
