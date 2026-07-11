@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using CheckMods.Models;
 using CheckMods.Services.Interfaces;
 using CheckMods.Utils;
@@ -51,13 +52,13 @@ public sealed class ModDependencyService(IForgeApiService forgeApiService, ILogg
         List<DependencyConflict> conflicts = [];
 
         // Fetch dependencies for each matched mod individually
-        var modDependencyCache = new Dictionary<int, List<ModDependency>>();
+        var modDependencyCache = new ConcurrentDictionary<int, List<ModDependency>>();
 
-        // Get unique mod IDs to fetch
-        var uniqueModIds = matchedMods
+        // Get unique mods to fetch (by mod ID)
+        var uniqueModsToFetch = matchedMods
             .Where(m => m.Api.ApiModId.HasValue)
-            .Select(m => m.Api.ApiModId!.Value)
-            .Distinct()
+            .GroupBy(m => m.Api.ApiModId!.Value)
+            .Select(g => g.First())
             .ToList();
 
         // Mods with an available update get a second dependency fetch at the proposed version. Dedupe by API mod ID
@@ -72,74 +73,80 @@ public sealed class ModDependencyService(IForgeApiService forgeApiService, ILogg
             .GroupBy(m => m.Api.ApiModId!.Value)
             .ToList();
 
-        var totalToFetch = uniqueModIds.Count + updatableGroups.Count;
+        var totalToFetch = uniqueModsToFetch.Count + updatableGroups.Count;
         var fetchedCount = 0;
 
-        foreach (var mod in matchedMods)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var modId = mod.Api.ApiModId!.Value;
-            if (modDependencyCache.ContainsKey(modId))
+        await Parallel.ForEachAsync(
+            uniqueModsToFetch,
+            new ParallelOptions { CancellationToken = cancellationToken },
+            async (mod, ct) =>
             {
-                continue;
+                var modId = mod.Api.ApiModId!.Value;
+
+                var depsResult = await forgeApiService.GetModDependenciesAsync(
+                    [(modId.ToString(), mod.Local.LocalVersion)],
+                    ct
+                );
+
+                // Extract dependencies or use empty list on error/not found
+                var deps = depsResult.Match(
+                    dependencies => dependencies,
+                    _ => [], // NotFound
+                    _ => [] // ApiError
+                );
+
+                modDependencyCache[modId] = deps;
+                var current = Interlocked.Increment(ref fetchedCount);
+                progressCallback?.Invoke(current, totalToFetch);
             }
+        );
 
-            var depsResult = await forgeApiService.GetModDependenciesAsync(
-                [(modId.ToString(), mod.Local.LocalVersion)],
-                cancellationToken
-            );
-
-            // Extract dependencies or use empty list on error/not found
-            var deps = depsResult.Match(
-                dependencies => dependencies,
-                _ => [], // NotFound
-                _ => [] // ApiError
-            );
-
-            modDependencyCache[modId] = deps;
-            fetchedCount++;
-            progressCallback?.Invoke(fetchedCount, totalToFetch);
-        }
+        // Store updates to apply sequentially
+        var updateDeltas = new ConcurrentBag<(List<Mod> GroupMods, UpdateDependencyDelta Delta)>();
 
         // Second pass: for each updatable mod, fetch dependencies at the proposed version and diff them against the
         // installed version's dependencies (already cached above).
-        foreach (var group in updatableGroups)
+        await Parallel.ForEachAsync(
+            updatableGroups,
+            new ParallelOptions { CancellationToken = cancellationToken },
+            async (group, ct) =>
+            {
+                var modId = group.Key;
+                var targetVersion = group.First().Update.LatestVersion!;
+
+                var targetResult = await forgeApiService.GetModDependenciesAsync(
+                    [(modId.ToString(), targetVersion)],
+                    ct
+                );
+
+                var current = Interlocked.Increment(ref fetchedCount);
+                progressCallback?.Invoke(current, totalToFetch);
+
+                // Skip the diff on a not-found/error response; an empty success list is a valid "no dependencies".
+                var targetDeps = targetResult.Match(
+                    dependencies => (List<ModDependency>?) dependencies,
+                    _ => null,
+                    _ => null
+                );
+                if (targetDeps is null)
+                {
+                    return;
+                }
+
+                var installedDeps = modDependencyCache.GetValueOrDefault(modId, []);
+                var delta = BuildUpdateDependencyDelta(installedDeps, targetDeps, modByGuid, modById, installedModGuids);
+                if (delta.HasChanges)
+                {
+                    updateDeltas.Add((group.ToList(), delta));
+                }
+            }
+        );
+
+        // Apply deltas
+        foreach (var (groupMods, delta) in updateDeltas)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var modId = group.Key;
-            var targetVersion = group.First().Update.LatestVersion!;
-
-            var targetResult = await forgeApiService.GetModDependenciesAsync(
-                [(modId.ToString(), targetVersion)],
-                cancellationToken
-            );
-
-            fetchedCount++;
-            progressCallback?.Invoke(fetchedCount, totalToFetch);
-
-            // Skip the diff on a not-found/error response; an empty success list is a valid "no dependencies".
-            var targetDeps = targetResult.Match(
-                dependencies => (List<ModDependency>?) dependencies,
-                _ => null,
-                _ => null
-            );
-            if (targetDeps is null)
+            foreach (var mod in groupMods)
             {
-                continue;
-            }
-
-            var installedDeps = modDependencyCache.GetValueOrDefault(modId, []);
-            var delta = BuildUpdateDependencyDelta(installedDeps, targetDeps, modByGuid, modById, installedModGuids);
-            if (!delta.HasChanges)
-            {
-                continue;
-            }
-
-            for (int i = 0; i < group.Count(); i++)
-            {
-                var mod = group.ElementAt(i);
                 var idx = modList.IndexOf(mod);
                 if (idx >= 0)
                 {
