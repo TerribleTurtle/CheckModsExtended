@@ -7,16 +7,16 @@ body:
     attributes:
       value: |
         Some mods are published to the Forge with a new version number, but the files they distribute still report the
-        old version. Check Mods then shows an "update available" that never goes away. If you've confirmed you already
+        old version. CheckModsExtended then shows an "update available" that never goes away. If you've confirmed you already
         have the latest files, you can suggest that version be ignored for everyone.
 
-        **If you used the "report" option inside Check Mods, the list below is already filled in for you. Just review and submit.**
+        **If you used the "report" option inside CheckModsExtended, the list below is already filled in for you. Just review and submit.**
 
   - type: textarea
     id: ignored_versions
     attributes:
       label: Ignored Versions
-      description: The mod versions to ignore, as JSON. Check Mods fills this in for you; only edit it if you know what you're doing.
+      description: The mod versions to ignore, as JSON. CheckModsExtended fills this in for you; only edit it if you know what you're doing.
       placeholder: |
         ```json
         [
@@ -46,4 +46,4 @@ body:
       label: Confirmation
       options:
         - label: I downloaded the latest version from the Forge and confirmed the files are the same despite the version mismatch.
-        - label: I understand this is a data suggestion for other users, not a bug in Check Mods.
+        - label: I understand this is a data suggestion for other users, not a bug in CheckModsExtended.

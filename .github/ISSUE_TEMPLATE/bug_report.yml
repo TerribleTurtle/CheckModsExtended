@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a bug or unexpected behavior in Check Mods.
+description: Report a bug or unexpected behavior in CheckModsExtended.
 labels: ["bug"]
 body:
   - type: markdown
@@ -7,7 +7,7 @@ body:
       value: |
         Thank you for reporting a bug! Please fill out the sections below so we can reproduce and fix the issue.
 
-        **Note:** If Check Mods keeps showing an "update available" for a mod you've confirmed is already up to date, that's a version-data mismatch on the Forge, not a bug. You can suggest that version be ignored for everyone using the [Ignored Update Suggestion](https://github.com/TerribleTurtle/SPT-Check-Mods/issues/new?template=report-ignored-updates.yml) form.
+        **Note:** If CheckModsExtended keeps showing an "update available" for a mod you've confirmed is already up to date, that's a version-data mismatch on the Forge, not a bug. You can suggest that version be ignored for everyone using the [Ignored Update Suggestion](https://github.com/TerribleTurtle/CheckModsExtended/issues/new?template=report-ignored-updates.yml) form.
 
   - type: textarea
     id: description
@@ -23,7 +23,7 @@ body:
       label: Steps to Reproduce
       description: Step-by-step instructions to reproduce the behavior.
       placeholder: |
-        1. Run Check Mods with '...'
+        1. Run CheckModsExtended with '...'
         2. Observe '...'
         3. See error
     validations:
@@ -55,10 +55,10 @@ body:
       required: true
 
   - type: input
-    id: CheckModsExtendedExtended-version
+    id: check-mods-extended-version
     attributes:
-      label: Check Mods Version
-      description: The version of Check Mods you are running.
+      label: CheckModsExtended Version
+      description: The version of CheckModsExtended you are running.
       placeholder: "e.g. 1.2.3"
     validations:
       required: true
@@ -76,7 +76,7 @@ body:
     id: logs
     attributes:
       label: Log Output
-      description: Paste any relevant log output or error messages. Logs are located at `%APPDATA%\SptCheckModsExtendedExtended\logs\checkmod.log`.
+      description: Paste any relevant log output or error messages. Logs are located at `%APPDATA%\SptCheckModsExtended\logs\checkmod.log`.
       render: text
     validations:
       required: false

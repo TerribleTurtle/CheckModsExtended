@@ -1,6 +1,6 @@
-# Contributing to SPT Check Mods
+# Contributing to CheckModsExtended
 
-Thank you for your interest in contributing to SPT Check Mods! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to CheckModsExtended! This document provides guidelines for contributing to the project.
 
 ## Code of Conduct
 
@@ -15,8 +15,8 @@ This project adheres to the Contributor Covenant [Code of Conduct](CODE_OF_CONDU
 
 ### Development Setup
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/your-username/SPT-Check-Mods.git`
-3. Navigate to the project: `cd SPT-Check-Mods`
+2. Clone your fork: `git clone https://github.com/your-username/CheckModsExtended.git`
+3. Navigate to the project: `cd CheckModsExtended`
 4. Restore dependencies: `dotnet restore`
 5. Build the project: `dotnet build`
 
@@ -32,7 +32,7 @@ This project adheres to the Contributor Covenant [Code of Conduct](CODE_OF_CONDU
 ### Architecture Patterns
 - Use dependency injection for services
 - Follow the existing pipeline-based service architecture
-- Register services via `ServiceCollectionExtensions.AddCheckModsServices()`
+- Register services via `ServiceCollectionExtensions.AddCheckModsExtendedServices()`
 - Use async/await for I/O operations
 
 ### Testing

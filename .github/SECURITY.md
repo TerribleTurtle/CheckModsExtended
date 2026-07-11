@@ -8,7 +8,7 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in SPT Check Mods, please report it responsibly by following these steps:
+If you discover a security vulnerability in CheckModsExtended, please report it responsibly by following these steps:
 
 1. **Do NOT** create a public GitHub issue for security vulnerabilities
 2. Send an email to the project maintainers with details about the vulnerability
@@ -20,7 +20,7 @@ If you discover a security vulnerability in SPT Check Mods, please report it res
 
 ## Security Considerations
 
-SPT Check Mods handles:
+CheckModsExtended handles:
 - File system access for mod scanning
 - Network requests to `forge.sp-tarkov.com` API
 

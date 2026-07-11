@@ -1,12 +1,12 @@
 # Security Advisory: Arbitrary Code Execution (RCE) via AssemblyLoadContext
 
 ## Overview
-During an architectural review of the `SPT-Check-Mods` codebase, a severe Arbitrary Code Execution (RCE) vulnerability was discovered in how third-party server mods were scanned for metadata.
+During an architectural review of the `CheckModsExtended` codebase, a severe Arbitrary Code Execution (RCE) vulnerability was discovered in how third-party server mods were scanned for metadata.
 
 ## The Vulnerability
 The original upstream implementation used `AssemblyLoadContext` alongside `Activator.CreateInstance` to dynamically load and inspect third-party `.dll` files in the `user/mods` directory. 
 
-Because `AssemblyLoadContext` actively loads the assembly into the application domain, any malicious code placed inside a module initializer or a constructor would be immediately executed simply by running the `SPT-Check-Mods` scanner. This effectively turned the mod scanner into an execution vector for untrusted code.
+Because `AssemblyLoadContext` actively loads the assembly into the application domain, any malicious code placed inside a module initializer or a constructor would be immediately executed simply by running the `CheckModsExtended` scanner. This effectively turned the mod scanner into an execution vector for untrusted code.
 
 ### Vulnerable Code Pattern
 ```csharp

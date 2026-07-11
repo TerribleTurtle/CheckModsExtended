@@ -37,7 +37,7 @@ graph TD
 > **Is it easy / what is the blast radius?** Yes, it is very easy. The change is isolated purely to `Program.cs` / DI registration (adding `.AddStandardResilienceHandler()` to our `HttpClient`) and deleting the `RateLimitService.cs` class. The blast radius is completely contained to the HTTP pipeline; no business logic is affected. Standard Serilog logging will automatically capture retry attempts, so no custom telemetry migration is necessary.
 
 ## Phase 4 — High Effort (Pipeline Architecture & Domain Separation)
-> **Goal:** Dismantle the massive 14-dependency `ApplicationService` God Object into a clean, testable Pipeline pattern, while structurally separating massive domain files.
+> **Goal:** Dismantle the massive 14-dependency `ApplicationService` God Object into a clean, testable 13-step `IWorkflowStep` pipeline pattern, utilizing `Parallel.ForEachAsync` for concurrency, while structurally separating massive domain files.
 
 To mitigate regression risks, this phase is systematically broken down into bite-sized, testable sub-phases:
 
@@ -59,4 +59,4 @@ To mitigate regression risks, this phase is systematically broken down into bite
 
 ### Phase 4.5: Dependency Injection & Cleanup (Final Swap)
 - **Goal:** Wire the new pipeline steps together via an orchestrator (or standard DI) in `ServiceCollectionExtensions.cs`. Delete the legacy `ApplicationService.cs` entirely, permanently ripping out its 14 constructor dependencies.
-- **Validation:** Final `dotnet test CheckMods.slnx` and `dotnet run` verification.
+- **Validation:** Final `dotnet test CheckModsExtended.slnx` and `dotnet run` verification.
