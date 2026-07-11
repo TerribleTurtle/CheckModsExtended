@@ -1,4 +1,5 @@
 using CheckModsExtended.Tests.Fakes;
+using CheckModsExtended.Tests.Fixtures;
 using CheckModsExtended.Models;
 using CheckModsExtended.Services;
 using CheckModsExtended.Utils;
@@ -20,18 +21,8 @@ public sealed class ModDependencyServiceTests
 
     private static Mod UnmatchedMod(string guid, string name)
     {
-        return new Mod
-        {
-            Local = new CheckModsExtended.Models.LocalModIdentity
-            {
-                Guid = guid,
-                FilePath = $"{name}.dll",
-                IsServerMod = true,
-                LocalName = name,
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-            },
-        };
+        var mod = ModFixture.CreateServerMod(guid, name, "1.0.0", "Author");
+        return mod with { Local = mod.Local with { FilePath = $"{name}.dll" } };
     }
 
     private static Mod MatchedMod(string guid, string name, int apiModId)
@@ -45,18 +36,8 @@ public sealed class ModDependencyServiceTests
 
     private static Mod MatchedModWithVersion(string guid, string name, int apiModId, string localVersion)
     {
-        var mod = new Mod
-        {
-            Local = new CheckModsExtended.Models.LocalModIdentity
-            {
-                Guid = guid,
-                FilePath = $"{name}.dll",
-                IsServerMod = true,
-                LocalName = name,
-                LocalAuthor = "Author",
-                LocalVersion = localVersion,
-            },
-        };
+        var mod = ModFixture.CreateServerMod(guid, name, localVersion, "Author");
+        mod = mod with { Local = mod.Local with { FilePath = $"{name}.dll" } };
         mod = mod.WithApiMatch(
             new ModSearchResult(apiModId, null, name, "slug", null, null, 0, null, null, null, null)
         );

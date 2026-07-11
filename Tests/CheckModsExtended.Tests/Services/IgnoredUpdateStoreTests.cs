@@ -5,7 +5,7 @@ using CheckModsExtended.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
-namespace CheckModsExtended.Tests;
+namespace CheckModsExtended.Tests.Services;
 
 /// <summary>
 /// Tests for <see cref="IgnoredUpdateStore"/>: file round-tripping, the match predicate (including that a genuinely
@@ -115,4 +115,5 @@ public sealed class IgnoredUpdateStoreTests : IDisposable
         Assert.False(File.Exists(_path + ".tmp"));
     }
 }
+
 

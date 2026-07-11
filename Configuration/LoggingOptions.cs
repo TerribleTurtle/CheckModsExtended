@@ -40,8 +40,7 @@ public sealed class LoggingOptions
         get
         {
             return Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "SptCheckModsExtended",
+                CheckModsExtended.Utils.AppConstants.AppDataDirectory,
                 "logs"
             );
         }
@@ -55,4 +54,5 @@ public sealed class LoggingOptions
         get { return Path.Combine(LogDirectory, "checkmod.log"); }
     }
 }
+
 

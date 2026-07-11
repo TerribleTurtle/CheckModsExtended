@@ -1,5 +1,6 @@
 using CheckModsExtended.Services;
 using CheckModsExtended.Tests.Fakes;
+using CheckModsExtended.Tests.Fixtures;
 using Xunit;
 
 namespace CheckModsExtended.Tests.Services;
@@ -66,8 +67,7 @@ public sealed class InitializationServiceTests
     public void Get_validated_spt_path_returns_path_if_directory_exists()
     {
         // Arrange
-        var tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Directory.CreateDirectory(tempDirectory);
+        var tempDirectory = TempWorkspace.CreateDirectory("InitTests");
 
         try
         {
@@ -79,8 +79,9 @@ public sealed class InitializationServiceTests
         }
         finally
         {
-            Directory.Delete(tempDirectory);
+            TempWorkspace.SafeDelete(tempDirectory);
         }
     }
 }
+
 

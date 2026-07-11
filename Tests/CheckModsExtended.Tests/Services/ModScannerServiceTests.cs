@@ -57,19 +57,8 @@ public sealed class ModScannerServiceTests : IDisposable
         ";
         _fixture.CompileDummyDll(modPath, serverCode);
 
-        var fakeMod = new Mod
-        {
-            Local = new CheckModsExtended.Models.LocalModIdentity
-            {
-                Guid = "ServerAuthor-Test Server Mod",
-                FilePath = "test",
-                LocalName = "Test Server Mod",
-                LocalAuthor = "ServerAuthor",
-                LocalVersion = "1.0.0",
-                LocalSptVersion = "3.8.0",
-                IsServerMod = true,
-            },
-        };
+        var fakeMod = ModFixture.CreateServerMod("ServerAuthor-Test Server Mod", "Test Server Mod", "1.0.0", "ServerAuthor");
+        fakeMod = fakeMod with { Local = fakeMod.Local with { FilePath = "test", LocalSptVersion = "3.8.0" } };
         _serverExtractor.ExtractedMod = fakeMod;
 
         var mods = await _service.ScanServerModsAsync(_sptPath);
@@ -84,19 +73,8 @@ public sealed class ModScannerServiceTests : IDisposable
         Directory.CreateDirectory(modDir);
         File.WriteAllText(Path.Combine(modDir, "package.json"), "{}");
 
-        var fakeMod = new Mod
-        {
-            Local = new CheckModsExtended.Models.LocalModIdentity
-            {
-                Guid = "PackageOnlyMod",
-                FilePath = "test.json",
-                LocalName = "PackageOnlyMod",
-                LocalAuthor = "Unknown",
-                LocalVersion = "1.0.0",
-                LocalSptVersion = "3.8.0",
-                IsServerMod = true,
-            },
-        };
+        var fakeMod = ModFixture.CreateServerMod("PackageOnlyMod", "PackageOnlyMod", "1.0.0", "Unknown");
+        fakeMod = fakeMod with { Local = fakeMod.Local with { FilePath = "test.json", LocalSptVersion = "3.8.0" } };
         // FakeServerModExtractor returns this mod for BOTH metadata extraction methods.
         // Because there are no DLLs in the directory, it will skip the DLL loop and hit the package fallback.
         _serverExtractor.ExtractedMod = fakeMod;
@@ -118,18 +96,8 @@ public sealed class ModScannerServiceTests : IDisposable
 
         _pluginExtractor.ValidClientDllFilesToReturn = [dllPath];
 
-        var fakeMod = new Mod
-        {
-            Local = new CheckModsExtended.Models.LocalModIdentity
-            {
-                Guid = "com.client.test",
-                FilePath = "test",
-                LocalName = "Test Client Mod",
-                LocalAuthor = "client",
-                LocalVersion = "1.0.0",
-                IsServerMod = false,
-            },
-        };
+        var fakeMod = ModFixture.CreateClientMod("com.client.test", "Test Client Mod", "1.0.0", "client");
+        fakeMod = fakeMod with { Local = fakeMod.Local with { FilePath = "test" } };
         _pluginExtractor.ProcessedClientMods = [fakeMod];
 
         var mods = await _service.ScanClientModsAsync(_sptPath);

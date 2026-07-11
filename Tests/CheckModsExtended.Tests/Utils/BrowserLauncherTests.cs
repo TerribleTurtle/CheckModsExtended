@@ -1,7 +1,7 @@
 using CheckModsExtended.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace CheckModsExtended.Tests;
+namespace CheckModsExtended.Tests.Utils;
 
 /// <summary>
 /// Tests for <see cref="BrowserLauncher"/>'s URL guard. Only the reject path is exercised.
@@ -43,4 +43,5 @@ public sealed class BrowserLauncherTests
         Assert.False(launcher.TryOpenUrl(""));
     }
 }
+
 

@@ -1,6 +1,6 @@
 using CheckModsExtended.Models;
 
-namespace CheckModsExtended.Tests;
+namespace CheckModsExtended.Tests.Models;
 
 /// <summary>
 /// Tests for <see cref="MisplacedModReport"/>'s exclusion members, which decide what gets dropped from the remaining
@@ -78,4 +78,5 @@ public sealed class MisplacedModReportTests
         Assert.DoesNotContain(modB.FilePath, report.ExcludedFilePaths);
     }
 }
+
 

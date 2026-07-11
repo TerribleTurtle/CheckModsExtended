@@ -1,6 +1,6 @@
 using CheckModsExtended.Utils;
 
-namespace CheckModsExtended.Tests;
+namespace CheckModsExtended.Tests.Utils;
 
 /// <summary>
 /// Tests for <see cref="SemVer"/>, the central version-parsing helper used in place of exception-driven parsing.
@@ -91,4 +91,5 @@ public sealed class SemVerTests
         Assert.False(SemVer.SatisfiesRange("", new SemanticVersioning.Version("1.0.0")));
     }
 }
+
 

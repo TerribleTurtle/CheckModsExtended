@@ -1,5 +1,6 @@
 using CheckModsExtended.Models;
 using CheckModsExtended.Tests.Fakes;
+using CheckModsExtended.Tests.Fixtures;
 
 
 
@@ -24,18 +25,8 @@ public sealed class ModMatchingServiceTests
 
     private static Mod ClientMod(string guid, string name = "Mod", string version = "1.0.0")
     {
-        return new Mod
-        {
-            Local = new CheckModsExtended.Models.LocalModIdentity
-            {
-                Guid = guid,
-                FilePath = $"plugins/{name}.dll",
-                IsServerMod = false,
-                LocalName = name,
-                LocalAuthor = "Author",
-                LocalVersion = version,
-            },
-        };
+        var mod = ModFixture.CreateClientMod(guid, name, version, "Author");
+        return mod with { Local = mod.Local with { FilePath = $"plugins/{name}.dll" } };
     }
 
     private static ModSearchResult Match(int id, string name, string slug, string? ownerName = null)
@@ -57,18 +48,8 @@ public sealed class ModMatchingServiceTests
 
     private static Mod ClientModFull(string guid, string name, string author)
     {
-        return new Mod
-        {
-            Local = new CheckModsExtended.Models.LocalModIdentity
-            {
-                Guid = guid,
-                FilePath = $"plugins/{name}.dll",
-                IsServerMod = false,
-                LocalName = name,
-                LocalAuthor = author,
-                LocalVersion = "1.0.0",
-            },
-        };
+        var mod = ModFixture.CreateClientMod(guid, name, "1.0.0", author);
+        return mod with { Local = mod.Local with { FilePath = $"plugins/{name}.dll" } };
     }
 
     [Fact]

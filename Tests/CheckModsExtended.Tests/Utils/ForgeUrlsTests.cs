@@ -1,6 +1,6 @@
 using CheckModsExtended.Utils;
 
-namespace CheckModsExtended.Tests;
+namespace CheckModsExtended.Tests.Utils;
 
 /// <summary>
 /// Tests for <see cref="ForgeUrls"/>, which builds links to the Forge website.
@@ -34,4 +34,5 @@ public sealed class ForgeUrlsTests
         Assert.Equal("https://forge.sp-tarkov.com/mod/123/", ForgeUrls.ModPage(123, ""));
     }
 }
+
 

@@ -21,8 +21,7 @@ public sealed class SptSandboxFixture : IDisposable
     /// </summary>
     public SptSandboxFixture()
     {
-        SandboxPath = Path.Combine(Path.GetTempPath(), "SptSandbox_" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(SandboxPath);
+        SandboxPath = TempWorkspace.CreateDirectory("SptSandbox");
     }
 
     /// <summary>
@@ -73,8 +72,9 @@ public sealed class SptSandboxFixture : IDisposable
     {
         if (Directory.Exists(SandboxPath))
         {
-            Directory.Delete(SandboxPath, recursive: true);
+            TempWorkspace.SafeDelete(SandboxPath);
         }
     }
 }
+
 
