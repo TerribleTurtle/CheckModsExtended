@@ -13,7 +13,7 @@ namespace CheckMods.Services.Pipeline;
 /// Orchestrates the execution of the update workflow pipeline.
 /// </summary>
 [Injectable(InjectionType.Transient)]
-public sealed class UpdateWorkflowOrchestrator : IUpdateWorkflowOrchestrator, IApplicationService
+public sealed class UpdateWorkflowOrchestrator : IUpdateWorkflowOrchestrator
 {
     private readonly IEnumerable<IWorkflowStep> _steps;
     private readonly ILogger<UpdateWorkflowOrchestrator> _logger;
