@@ -87,6 +87,9 @@ public static class ServiceCollectionExtensions
             "ForgeApi",
             (serviceProvider, client) =>
             {
+                // Disable HttpClient timeout to allow Polly's TotalRequestTimeout (5 minutes) to control the lifecycle
+                client.Timeout = System.Threading.Timeout.InfiniteTimeSpan;
+
                 var version = CheckMods.Utils.VersionInfo.SemVer;
                 client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("SPT-Check-Mods", version));
                 client.DefaultRequestHeaders.UserAgent.Add(
