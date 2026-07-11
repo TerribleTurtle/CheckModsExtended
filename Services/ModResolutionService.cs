@@ -41,7 +41,6 @@ public sealed class ModResolutionService(IModLookupStrategy modLookupStrategy) :
             modsWithNames,
             new ParallelOptions
             {
-                MaxDegreeOfParallelism = 2,
                 CancellationToken = cancellationToken
             },
             async (mod, ct) =>
@@ -82,7 +81,6 @@ public sealed class ModResolutionService(IModLookupStrategy modLookupStrategy) :
             validPairs,
             new ParallelOptions
             {
-                MaxDegreeOfParallelism = 2,
                 CancellationToken = cancellationToken
             },
             async (pair, ct) =>

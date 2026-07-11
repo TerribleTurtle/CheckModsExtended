@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Polly;
 using Serilog;
 using Serilog.Events;
 using SPTarkov.DI;
@@ -83,7 +84,7 @@ public static class ServiceCollectionExtensions
         diHandler.InjectAll();
 
         // Register the named HttpClient for ForgeApi
-        services.AddHttpClient(
+        var httpClientBuilder = services.AddHttpClient(
             "ForgeApi",
             (serviceProvider, client) =>
             {
@@ -96,7 +97,28 @@ public static class ServiceCollectionExtensions
                     new ProductInfoHeaderValue("(+https://github.com/TerribleTurtle/SPT-Check-Mods)")
                 );
             }
-        ).AddStandardResilienceHandler(options =>
+        );
+        
+        httpClientBuilder.AddResilienceHandler("pacer", builder =>
+        {
+            var rateLimiter = new System.Threading.RateLimiting.TokenBucketRateLimiter(
+                new System.Threading.RateLimiting.TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = 5,
+                    TokensPerPeriod = 1,
+                    ReplenishmentPeriod = TimeSpan.FromMilliseconds(333),
+                    QueueLimit = 10_000,
+                    QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst,
+                    AutoReplenishment = true
+                });
+
+            builder.AddRateLimiter(new Polly.RateLimiting.RateLimiterStrategyOptions 
+            { 
+                RateLimiter = args => rateLimiter.AcquireAsync(1, args.Context.CancellationToken)
+            });
+        });
+        
+        httpClientBuilder.AddStandardResilienceHandler(options =>
         {
             // Allow up to 5 minutes total to survive 429 Retry-After delays
             options.TotalRequestTimeout.Timeout = TimeSpan.FromMinutes(5);

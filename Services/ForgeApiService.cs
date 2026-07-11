@@ -389,7 +389,6 @@ public sealed partial class ForgeApiService(
             chunks.Select((chunk, index) => (chunk, index)),
             new ParallelOptions
             {
-                MaxDegreeOfParallelism = 2,
                 CancellationToken = cancellationToken
             },
             async (item, ct) =>
