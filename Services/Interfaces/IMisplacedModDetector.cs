@@ -13,4 +13,3 @@ public interface IMisplacedModDetector
     /// </summary>
     Task<MisplacedModReport> DetectMisplacedModsAsync(string sptPath, CancellationToken cancellationToken = default);
 }
-

@@ -196,4 +196,3 @@ public sealed class TableRendererTests
         Assert.True(fakeVersion.VersionTableCalled);
     }
 }
-

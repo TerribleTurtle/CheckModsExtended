@@ -40,4 +40,3 @@ public sealed record ForgeApiMetadata
     /// </summary>
     public IReadOnlyList<ModVersion>? ApiVersions { get; init; }
 }
-

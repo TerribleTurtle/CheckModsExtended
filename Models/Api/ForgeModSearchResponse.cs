@@ -70,4 +70,3 @@ public sealed record SourceCodeLink(
     [property: JsonPropertyName("url")] string Url,
     [property: JsonPropertyName("label")] string? Label
 );
-

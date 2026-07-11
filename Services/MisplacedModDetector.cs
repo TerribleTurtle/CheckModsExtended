@@ -19,7 +19,10 @@ public sealed class MisplacedModDetector(
 ) : IMisplacedModDetector
 {
     /// <inheritdoc />
-    public async Task<MisplacedModReport> DetectMisplacedModsAsync(string sptPath, CancellationToken cancellationToken = default)
+    public async Task<MisplacedModReport> DetectMisplacedModsAsync(
+        string sptPath,
+        CancellationToken cancellationToken = default
+    )
     {
         List<MisplacedMod> wrongFolder = [];
 
@@ -53,7 +56,11 @@ public sealed class MisplacedModDetector(
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var serverMod = await serverExtractor.ExtractServerModMetadataAsync(dllPath, sptPath, cancellationToken);
+                var serverMod = await serverExtractor.ExtractServerModMetadataAsync(
+                    dllPath,
+                    sptPath,
+                    cancellationToken
+                );
                 if (serverMod is not null)
                 {
                     wrongFolder.Add(
@@ -209,4 +216,3 @@ public sealed class MisplacedModDetector(
         }
     }
 }
-

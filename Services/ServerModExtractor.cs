@@ -1,25 +1,37 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Text.Json;
 using CheckModsExtended.Models;
 using CheckModsExtended.Services.Interfaces;
 using CheckModsExtended.Utils;
 using Microsoft.Extensions.Logging;
 using SPTarkov.DI.Annotations;
-using System.Diagnostics.CodeAnalysis;
 
 namespace CheckModsExtended.Services;
 
 [Injectable(InjectionType.Transient)]
-[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We are inspecting dynamically loaded mod assemblies, not application code.")]
-[UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "We are inspecting dynamically loaded mod assemblies, not application code.")]
-[UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "We are inspecting dynamically loaded mod assemblies, not application code.")]
+[UnconditionalSuppressMessage(
+    "Trimming",
+    "IL2026",
+    Justification = "We are inspecting dynamically loaded mod assemblies, not application code."
+)]
+[UnconditionalSuppressMessage(
+    "Trimming",
+    "IL2072",
+    Justification = "We are inspecting dynamically loaded mod assemblies, not application code."
+)]
+[UnconditionalSuppressMessage(
+    "Trimming",
+    "IL2075",
+    Justification = "We are inspecting dynamically loaded mod assemblies, not application code."
+)]
 public sealed class ServerModExtractor(ILogger<ServerModExtractor> logger) : IServerModExtractor
 {
     /// <inheritdoc />
@@ -40,7 +52,9 @@ public sealed class ServerModExtractor(ILogger<ServerModExtractor> logger) : ISe
             using var stream = new FileStream(dllPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             using var module = Mono.Cecil.ModuleDefinition.ReadModule(stream);
 
-            var metadataType = module.Types.FirstOrDefault(t => t.BaseType?.Name == "AbstractModMetadata" && !t.IsAbstract);
+            var metadataType = module.Types.FirstOrDefault(t =>
+                t.BaseType?.Name == "AbstractModMetadata" && !t.IsAbstract
+            );
 
             if (metadataType is null)
             {
@@ -108,14 +122,18 @@ public sealed class ServerModExtractor(ILogger<ServerModExtractor> logger) : ISe
         try
         {
             using var packageStream = File.OpenRead(packagePath);
-            using var packageDocument = await JsonDocument.ParseAsync(packageStream, cancellationToken: cancellationToken);
+            using var packageDocument = await JsonDocument.ParseAsync(
+                packageStream,
+                cancellationToken: cancellationToken
+            );
             var root = packageDocument.RootElement;
             var directoryName = Path.GetFileName(modDirectory);
             var name = GetStringPropertyFromJson(root, "name") ?? directoryName;
             var author = GetStringPropertyFromJson(root, "author") ?? "Unknown";
             var version = GetStringPropertyFromJson(root, "version") ?? string.Empty;
-            var sptVersion = GetStringPropertyFromJson(root, "sptVersion") ?? GetStringPropertyFromJson(root, "akiVersion");
-            
+            var sptVersion =
+                GetStringPropertyFromJson(root, "sptVersion") ?? GetStringPropertyFromJson(root, "akiVersion");
+
             var warnings = ValidateModMetadata(name, author, version, name);
 
             return new Mod
@@ -180,8 +198,10 @@ public sealed class ServerModExtractor(ILogger<ServerModExtractor> logger) : ISe
                 }
                 else if (instruction.OpCode.Code == Mono.Cecil.Cil.Code.Stfld)
                 {
-                    if (instruction.Operand is Mono.Cecil.FieldReference fieldRef &&
-                        fieldRef.Name.Contains($"<{propertyName}>"))
+                    if (
+                        instruction.Operand is Mono.Cecil.FieldReference fieldRef
+                        && fieldRef.Name.Contains($"<{propertyName}>")
+                    )
                     {
                         if (lastString != null)
                         {
@@ -201,7 +221,9 @@ public sealed class ServerModExtractor(ILogger<ServerModExtractor> logger) : ISe
 
     private static string GetAssemblyVersion(Mono.Cecil.ModuleDefinition module)
     {
-        var infoVersionAttr = module.Assembly.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "AssemblyInformationalVersionAttribute");
+        var infoVersionAttr = module.Assembly.CustomAttributes.FirstOrDefault(a =>
+            a.AttributeType.Name == "AssemblyInformationalVersionAttribute"
+        );
         if (infoVersionAttr is not null && infoVersionAttr.HasConstructorArguments)
         {
             var fullVersion = infoVersionAttr.ConstructorArguments[0].Value?.ToString();
@@ -261,4 +283,3 @@ public sealed class ServerModExtractor(ILogger<ServerModExtractor> logger) : ISe
         return SemVer.TryParse(version, "ServerModExtractor").IsT0;
     }
 }
-

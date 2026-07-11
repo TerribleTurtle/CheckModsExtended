@@ -62,10 +62,12 @@ public sealed class FakeModScannerService : IModScannerService
     }
 
     /// <inheritdoc />
-    public Task<MisplacedModReport> DetectMisplacedModsAsync(string sptPath, CancellationToken cancellationToken = default)
+    public Task<MisplacedModReport> DetectMisplacedModsAsync(
+        string sptPath,
+        CancellationToken cancellationToken = default
+    )
     {
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult(MisplacedModReportToReturn);
     }
 }
-

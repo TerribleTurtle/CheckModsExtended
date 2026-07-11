@@ -15,4 +15,3 @@ public interface IRemoteIgnoreFileClient
     /// </summary>
     Task<IReadOnlyList<IgnoredUpdate>?> FetchAsync(CancellationToken cancellationToken = default);
 }
-

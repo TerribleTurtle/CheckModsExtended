@@ -193,4 +193,3 @@ public sealed class IgnoredUpdateWorkflowTests
         Assert.Empty(reportable);
     }
 }
-

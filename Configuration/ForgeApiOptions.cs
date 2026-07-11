@@ -10,4 +10,3 @@ public sealed class ForgeApiOptions
     /// </summary>
     public string BaseUrl { get; set; } = "https://forge.sp-tarkov.com/api/v0/";
 }
-

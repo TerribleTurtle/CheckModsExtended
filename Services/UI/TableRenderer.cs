@@ -59,4 +59,3 @@ public sealed class TableRenderer(
         versionTableRenderer.VersionTable(mods);
     }
 }
-

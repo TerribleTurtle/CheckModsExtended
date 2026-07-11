@@ -48,4 +48,3 @@ public static class WindowsConsoleHelper
         }
     }
 }
-

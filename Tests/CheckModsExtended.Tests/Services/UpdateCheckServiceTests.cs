@@ -1,7 +1,7 @@
-using CheckModsExtended.Tests.Fakes;
 using CheckModsExtended.Configuration;
 using CheckModsExtended.Models;
 using CheckModsExtended.Services;
+using CheckModsExtended.Tests.Fakes;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -315,4 +315,3 @@ public sealed class UpdateCheckServiceTests
         Assert.Equal(CheckModsExtendedUpdateStatus.Unavailable, result.Status);
     }
 }
-

@@ -9,9 +9,11 @@ public sealed class FakeMisplacedModDetector : IMisplacedModDetector
 {
     public MisplacedModReport ReportToReturn { get; set; } = new MisplacedModReport([], []);
 
-    public Task<MisplacedModReport> DetectMisplacedModsAsync(string sptPath, CancellationToken cancellationToken = default)
+    public Task<MisplacedModReport> DetectMisplacedModsAsync(
+        string sptPath,
+        CancellationToken cancellationToken = default
+    )
     {
         return Task.FromResult(ReportToReturn);
     }
 }
-

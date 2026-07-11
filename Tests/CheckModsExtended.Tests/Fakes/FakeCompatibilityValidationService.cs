@@ -16,4 +16,3 @@ public sealed class FakeCompatibilityValidationService : ICompatibilityValidatio
         return mods.ToList();
     }
 }
-

@@ -19,9 +19,9 @@ public static class ModExtensions
                 ApiSlug = apiResult.Slug,
                 ApiUrl = apiResult.DetailUrl,
                 ApiSourceCodeUrl = apiResult.SourceCodeUrl,
-                ApiVersions = apiResult.Versions?.ToList().AsReadOnly()
+                ApiVersions = apiResult.Versions?.ToList().AsReadOnly(),
             },
-            Status = ModStatus.Verified
+            Status = ModStatus.Verified,
         };
     }
 
@@ -38,8 +38,8 @@ public static class ModExtensions
             {
                 LatestVersion = update.RecommendedVersion?.Version,
                 DownloadLink = update.RecommendedVersion?.Link,
-                UpdateStatus = UpdateStatus.UpdateAvailable
-            }
+                UpdateStatus = UpdateStatus.UpdateAvailable,
+            },
         };
     }
 
@@ -52,8 +52,8 @@ public static class ModExtensions
                 LatestVersion = blocked.LatestVersion?.Version,
                 BlockingMods = blocked.BlockingMods,
                 BlockReason = blocked.BlockReason,
-                UpdateStatus = UpdateStatus.UpdateBlocked
-            }
+                UpdateStatus = UpdateStatus.UpdateBlocked,
+            },
         };
     }
 
@@ -61,11 +61,7 @@ public static class ModExtensions
     {
         return mod with
         {
-            Update = mod.Update with
-            {
-                LatestVersion = upToDate.Version,
-                UpdateStatus = UpdateStatus.UpToDate
-            }
+            Update = mod.Update with { LatestVersion = upToDate.Version, UpdateStatus = UpdateStatus.UpToDate },
         };
     }
 
@@ -76,8 +72,8 @@ public static class ModExtensions
             Update = mod.Update with
             {
                 IncompatibilityReason = incompatible.Reason,
-                UpdateStatus = UpdateStatus.Incompatible
-            }
+                UpdateStatus = UpdateStatus.Incompatible,
+            },
         };
     }
 
@@ -89,31 +85,18 @@ public static class ModExtensions
             {
                 IsLocalSptIncompatible = true,
                 IncompatibilityReason = reason,
-                CompatibleVersionString = compatibleVersion
-            }
+                CompatibleVersionString = compatibleVersion,
+            },
         };
     }
 
     public static Mod WithUpdateSuppressed(this Mod mod, bool suppressed)
     {
-        return mod with
-        {
-            Update = mod.Update with
-            {
-                UpdateSuppressed = suppressed
-            }
-        };
+        return mod with { Update = mod.Update with { UpdateSuppressed = suppressed } };
     }
 
     public static Mod WithUpdateDependencyChanges(this Mod mod, UpdateDependencyDelta delta)
     {
-        return mod with
-        {
-            Update = mod.Update with
-            {
-                UpdateDependencyChanges = delta
-            }
-        };
+        return mod with { Update = mod.Update with { UpdateDependencyChanges = delta } };
     }
 }
-

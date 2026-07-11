@@ -1,7 +1,7 @@
-using CheckModsExtended.Tests.Fakes;
-using CheckModsExtended.Tests.Fixtures;
 using CheckModsExtended.Models;
 using CheckModsExtended.Services;
+using CheckModsExtended.Tests.Fakes;
+using CheckModsExtended.Tests.Fixtures;
 using CheckModsExtended.Utils;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -134,7 +134,10 @@ public sealed class ModDependencyServiceTests
         };
 
         var result = await CreateService(api)
-            .AnalyzeDependenciesAsync([MatchedMod("com.author.main", "Main", 100)], new HashSet<string> { "com.author.dep" });
+            .AnalyzeDependenciesAsync(
+                [MatchedMod("com.author.main", "Main", 100)],
+                new HashSet<string> { "com.author.dep" }
+            );
 
         Assert.Empty(result.Result.MissingDependencies);
     }
@@ -167,7 +170,8 @@ public sealed class ModDependencyServiceTests
         var a = Dep("com.a", "A", nested: [b]);
         var api = new FakeForgeApiService { OnGetModDependencies = _ => new List<ModDependency> { a } };
 
-        var result = await CreateService(api).AnalyzeDependenciesAsync([MatchedMod("com.main", "Main", 100)], new HashSet<string>());
+        var result = await CreateService(api)
+            .AnalyzeDependenciesAsync([MatchedMod("com.main", "Main", 100)], new HashSet<string>());
 
         var root = Assert.Single(result.Result.RootMods);
         var nodeA = Assert.Single(root.Children);
@@ -187,7 +191,11 @@ public sealed class ModDependencyServiceTests
         var api = new FakeForgeApiService { OnGetModDependencies = _ => new List<ModDependency>() };
 
         await CreateService(api)
-            .AnalyzeDependenciesAsync([m1, m2], new HashSet<string>(), new Progress<int>(fetched => calls.Add(fetched)));
+            .AnalyzeDependenciesAsync(
+                [m1, m2],
+                new HashSet<string>(),
+                new Progress<int>(fetched => calls.Add(fetched))
+            );
 
         Assert.Equal(1, Assert.Single(calls));
     }
@@ -197,7 +205,8 @@ public sealed class ModDependencyServiceTests
     {
         var api = new FakeForgeApiService { OnGetModDependencies = _ => new ApiError("boom") };
 
-        var result = await CreateService(api).AnalyzeDependenciesAsync([MatchedMod("com.main", "Main", 100)], new HashSet<string>());
+        var result = await CreateService(api)
+            .AnalyzeDependenciesAsync([MatchedMod("com.main", "Main", 100)], new HashSet<string>());
 
         var root = Assert.Single(result.Result.RootMods);
         Assert.Empty(root.Children);
@@ -221,7 +230,9 @@ public sealed class ModDependencyServiceTests
                 },
         };
 
-        main = (await CreateService(api).AnalyzeDependenciesAsync([main], new HashSet<string>())).UpdatedMods.First(m => m.Local.Guid == "com.author.main");
+        main = (await CreateService(api).AnalyzeDependenciesAsync([main], new HashSet<string>())).UpdatedMods.First(m =>
+            m.Local.Guid == "com.author.main"
+        );
 
         var delta = main.Update.UpdateDependencyChanges;
         Assert.NotNull(delta);
@@ -248,7 +259,9 @@ public sealed class ModDependencyServiceTests
                 },
         };
 
-        main = (await CreateService(api).AnalyzeDependenciesAsync([main, dep], new HashSet<string>())).UpdatedMods.First(m => m.Local.Guid == "com.author.main");
+        main = (
+            await CreateService(api).AnalyzeDependenciesAsync([main, dep], new HashSet<string>())
+        ).UpdatedMods.First(m => m.Local.Guid == "com.author.main");
 
         var added = Assert.Single(main.Update.UpdateDependencyChanges!.Added);
         Assert.Equal(DependencyInstallState.InstalledOk, added.InstallState);
@@ -270,7 +283,9 @@ public sealed class ModDependencyServiceTests
                 },
         };
 
-        main = (await CreateService(api).AnalyzeDependenciesAsync([main, dep], new HashSet<string>())).UpdatedMods.First(m => m.Local.Guid == "com.author.main");
+        main = (
+            await CreateService(api).AnalyzeDependenciesAsync([main, dep], new HashSet<string>())
+        ).UpdatedMods.First(m => m.Local.Guid == "com.author.main");
 
         var added = Assert.Single(main.Update.UpdateDependencyChanges!.Added);
         Assert.Equal(DependencyInstallState.InstalledOutdated, added.InstallState);
@@ -296,7 +311,9 @@ public sealed class ModDependencyServiceTests
                 },
         };
 
-        main = (await CreateService(api).AnalyzeDependenciesAsync([main], new HashSet<string>())).UpdatedMods.First(m => m.Local.Guid == "com.author.main");
+        main = (await CreateService(api).AnalyzeDependenciesAsync([main], new HashSet<string>())).UpdatedMods.First(m =>
+            m.Local.Guid == "com.author.main"
+        );
 
         var added = main.Update.UpdateDependencyChanges!.Added;
         Assert.Equal(2, added.Count);
@@ -318,7 +335,9 @@ public sealed class ModDependencyServiceTests
                 },
         };
 
-        main = (await CreateService(api).AnalyzeDependenciesAsync([main], new HashSet<string>())).UpdatedMods.First(m => m.Local.Guid == "com.author.main");
+        main = (await CreateService(api).AnalyzeDependenciesAsync([main], new HashSet<string>())).UpdatedMods.First(m =>
+            m.Local.Guid == "com.author.main"
+        );
 
         var removed = Assert.Single(main.Update.UpdateDependencyChanges!.Removed);
         Assert.Equal("com.old", removed.Guid);
@@ -381,10 +400,11 @@ public sealed class ModDependencyServiceTests
                 },
         };
 
-        main = (await CreateService(api).AnalyzeDependenciesAsync([main], new HashSet<string>())).UpdatedMods.First(m => m.Local.Guid == "com.author.main");
+        main = (await CreateService(api).AnalyzeDependenciesAsync([main], new HashSet<string>())).UpdatedMods.First(m =>
+            m.Local.Guid == "com.author.main"
+        );
 
         var added = Assert.Single(main.Update.UpdateDependencyChanges!.Added);
         Assert.True(added.Conflict);
     }
 }
-

@@ -24,4 +24,3 @@ public sealed class FakeServerModExtractor : IServerModExtractor
         return Task.FromResult(ExtractedMod);
     }
 }
-

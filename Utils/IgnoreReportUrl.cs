@@ -1,7 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using CheckModsExtended.Models;
-using System.Diagnostics.CodeAnalysis;
 
 namespace CheckModsExtended.Utils;
 
@@ -34,7 +34,11 @@ internal static class IgnoreReportUrl
     /// </summary>
     /// <param name="entries">The ignored-update entries to report.</param>
     /// <param name="prefilled">True when the returned URL carries the pre-filled entries.</param>
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "JsonSerializerOptions contains the correct TypeInfoResolver from source generation.")]
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026",
+        Justification = "JsonSerializerOptions contains the correct TypeInfoResolver from source generation."
+    )]
     public static string Build(IReadOnlyList<IgnoredUpdate> entries, out bool prefilled)
     {
         var json = JsonSerializer.Serialize(entries.Select(ToReportEntry).ToList(), _jsonOptions);
@@ -67,5 +71,3 @@ internal static class IgnoreReportUrl
         [property: JsonPropertyName("ignoredLatestVersion")] string IgnoredLatestVersion
     );
 }
-
-

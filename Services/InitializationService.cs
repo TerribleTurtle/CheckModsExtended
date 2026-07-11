@@ -68,4 +68,3 @@ public sealed class InitializationService(IModCheckReporter reporter, ILogger<In
         return safePath;
     }
 }
-

@@ -11,11 +11,15 @@ namespace CheckModsExtended.Tests.Fakes;
 public sealed class FakeUpdateCheckService : IUpdateCheckService
 {
     /// <summary> Gets or sets result to return. </summary>
-    public CheckModsExtendedUpdateResult ResultToReturn { get; set; } = new(CheckModsExtendedUpdateStatus.Unavailable, "1.0.0");
+    public CheckModsExtendedUpdateResult ResultToReturn { get; set; } =
+        new(CheckModsExtendedUpdateStatus.Unavailable, "1.0.0");
     public Exception? CheckAsyncThrows { get; set; }
 
     /// <inheritdoc />
-    public Task<CheckModsExtendedUpdateResult> CheckAsync(Version sptVersion, CancellationToken cancellationToken = default)
+    public Task<CheckModsExtendedUpdateResult> CheckAsync(
+        Version sptVersion,
+        CancellationToken cancellationToken = default
+    )
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (CheckAsyncThrows is null)
@@ -25,4 +29,3 @@ public sealed class FakeUpdateCheckService : IUpdateCheckService
         throw CheckAsyncThrows;
     }
 }
-

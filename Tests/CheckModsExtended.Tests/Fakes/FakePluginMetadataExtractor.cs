@@ -30,7 +30,11 @@ public sealed class FakePluginMetadataExtractor : IPluginMetadataExtractor
         return Task.FromResult(ProcessedClientMods.ToList());
     }
 
-    public Task<List<Mod>> ConsolidateDirectoryModsAsync(string directory, List<string> dllPaths, CancellationToken cancellationToken = default)
+    public Task<List<Mod>> ConsolidateDirectoryModsAsync(
+        string directory,
+        List<string> dllPaths,
+        CancellationToken cancellationToken = default
+    )
     {
         return Task.FromResult(ConsolidatedMods.ToList());
     }
@@ -40,7 +44,10 @@ public sealed class FakePluginMetadataExtractor : IPluginMetadataExtractor
         return Task.FromResult(DetectedClientMod);
     }
 
-    public Task<List<PluginDll>> ReadPluginDllsAsync(List<string> dllPaths, CancellationToken cancellationToken = default)
+    public Task<List<PluginDll>> ReadPluginDllsAsync(
+        List<string> dllPaths,
+        CancellationToken cancellationToken = default
+    )
     {
         return Task.FromResult(PluginDlls.ToList());
     }
@@ -55,4 +62,3 @@ public sealed class FakePluginMetadataExtractor : IPluginMetadataExtractor
         return MisplacedModToReturn!;
     }
 }
-

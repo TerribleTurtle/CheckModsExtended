@@ -47,4 +47,3 @@ public sealed record DependencyVersionInfo(
     [property: JsonPropertyName("content_length")] long? ContentLength,
     [property: JsonPropertyName("fika_compatibility")] string? FikaCompatibility
 );
-

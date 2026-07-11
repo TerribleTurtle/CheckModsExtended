@@ -28,4 +28,3 @@ public static class ForgeUrls
         return $"{BaseUrl}/mod/download/{modId}/{slug}/{version}";
     }
 }
-

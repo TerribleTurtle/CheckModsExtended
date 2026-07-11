@@ -41,10 +41,18 @@ public interface IModCheckReporter
     void PluginsDirectoryNotFound(string path);
 
     /// <summary>Runs work under a Forge-query progress bar, passing a callback to report completed-item counts.</summary>
-    Task RunForgeQueryProgressAsync(int total, Func<Action<int>, Task> work, CancellationToken cancellationToken = default);
+    Task RunForgeQueryProgressAsync(
+        int total,
+        Func<Action<int>, Task> work,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>Runs work under a Forge-query progress bar and returns its result.</summary>
-    Task<T> RunForgeQueryProgressAsync<T>(int total, Func<Action<int>, Task<T>> work, CancellationToken cancellationToken = default);
+    Task<T> RunForgeQueryProgressAsync<T>(
+        int total,
+        Func<Action<int>, Task<T>> work,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>Reports the resolved SPT installation path.</summary>
     void UsingPath(string path);
@@ -138,4 +146,3 @@ public interface IModCheckReporter
     /// </summary>
     Task<bool> PromptForConfirmationAsync(PendingConfirmation confirmation);
 }
-

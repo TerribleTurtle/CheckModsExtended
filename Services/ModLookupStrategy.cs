@@ -252,4 +252,3 @@ public sealed class ModLookupStrategy(IForgeApiService forgeApiService) : IModLo
         return null;
     }
 }
-

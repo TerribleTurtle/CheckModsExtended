@@ -32,7 +32,10 @@ public sealed class CachedModDependencyService(
         var installedKey = string.Join(",", installedModGuids.OrderBy(x => x));
         var key = $"ModDeps_{modKey}_{installedKey}";
 
-        if (cache.TryGetValue(key, out (IReadOnlyList<Mod> UpdatedMods, DependencyAnalysisResult Result)? cachedValue) && cachedValue is not null)
+        if (
+            cache.TryGetValue(key, out (IReadOnlyList<Mod> UpdatedMods, DependencyAnalysisResult Result)? cachedValue)
+            && cachedValue is not null
+        )
         {
             logger.LogDebug("Cache hit for dependency analysis");
             progress?.Report(1);
@@ -47,4 +50,3 @@ public sealed class CachedModDependencyService(
         return result;
     }
 }
-

@@ -93,4 +93,3 @@ public interface ITextRenderer
     /// <summary>Writes the application footer with version and log file info.</summary>
     void ApplicationFooter(string version, string hash, string logFilePath);
 }
-

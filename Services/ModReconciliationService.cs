@@ -27,8 +27,9 @@ public sealed class ModReconciliationService(ILogger<ModReconciliationService> l
             .Where(c => !string.IsNullOrWhiteSpace(c.Local.Guid))
             .GroupBy(c => c.Local.Guid, StringComparer.OrdinalIgnoreCase)
             .Join(
-                serverMods.Where(s => !string.IsNullOrWhiteSpace(s.Local.Guid))
-                          .GroupBy(s => s.Local.Guid, StringComparer.OrdinalIgnoreCase),
+                serverMods
+                    .Where(s => !string.IsNullOrWhiteSpace(s.Local.Guid))
+                    .GroupBy(s => s.Local.Guid, StringComparer.OrdinalIgnoreCase),
                 cg => cg.Key,
                 sg => sg.Key,
                 (cg, sg) => cg.Zip(sg, (c, s) => new { Client = c, Server = s }),
@@ -69,21 +70,29 @@ public sealed class ModReconciliationService(ILogger<ModReconciliationService> l
 
         var allPairs = guidPairs.Select(p => (p.Client, p.Server)).Concat(namePairs).ToList();
 
-        var reconciledPairs = allPairs.Select(p =>
-        {
-            var updatedServer = p.Server with { Local = p.Server.Local with { PairedComponentPath = p.Client.Local.FilePath } };
-            var updatedClient = p.Client with { Local = p.Client.Local with { PairedComponentPath = p.Server.Local.FilePath } };
-
-            var (selectedMod, notes) = SelectBestMod(updatedServer, updatedClient);
-
-            return new ModPair
+        var reconciledPairs = allPairs
+            .Select(p =>
             {
-                ServerMod = updatedServer,
-                ClientMod = updatedClient,
-                SelectedMod = selectedMod,
-                Notes = notes,
-            };
-        }).ToList();
+                var updatedServer = p.Server with
+                {
+                    Local = p.Server.Local with { PairedComponentPath = p.Client.Local.FilePath },
+                };
+                var updatedClient = p.Client with
+                {
+                    Local = p.Client.Local with { PairedComponentPath = p.Server.Local.FilePath },
+                };
+
+                var (selectedMod, notes) = SelectBestMod(updatedServer, updatedClient);
+
+                return new ModPair
+                {
+                    ServerMod = updatedServer,
+                    ClientMod = updatedClient,
+                    SelectedMod = selectedMod,
+                    Notes = notes,
+                };
+            })
+            .ToList();
 
         var unmatchedClientMods = clientMods.Where(c => !matchedClients.Contains(c)).ToList();
         var unmatchedServerMods = serverMods.Where(s => !matchedServers.Contains(s)).ToList();
@@ -182,4 +191,3 @@ public sealed class ModReconciliationService(ILogger<ModReconciliationService> l
         return (serverMod, notes);
     }
 }
-

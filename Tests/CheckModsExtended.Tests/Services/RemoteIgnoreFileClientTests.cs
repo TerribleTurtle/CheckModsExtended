@@ -44,7 +44,10 @@ public sealed class RemoteIgnoreFileClientTests
             schemaVersion,
             entries.Select(e => new IgnoredUpdate(e.id, e.local, e.latest)).ToList()
         );
-        return JsonSerializer.Serialize(file, CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.IgnoredUpdatesFile);
+        return JsonSerializer.Serialize(
+            file,
+            CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.IgnoredUpdatesFile
+        );
     }
 
     [Fact]
@@ -106,10 +109,3 @@ public sealed class RemoteIgnoreFileClientTests
         Assert.Null(await client.FetchAsync());
     }
 }
-
-
-
-
-
-
-

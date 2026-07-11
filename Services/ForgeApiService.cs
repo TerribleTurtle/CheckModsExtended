@@ -80,10 +80,13 @@ public sealed partial class ForgeApiService(
             if (!response.IsSuccessStatusCode)
             {
                 logger.LogError("SPT version validation failed: {StatusCode}", response.StatusCode);
-                return new ApiError($"API returned status {response.StatusCode}", (int) response.StatusCode);
+                return new ApiError($"API returned status {response.StatusCode}", (int)response.StatusCode);
             }
 
-            var apiResponse = JsonSerializer.Deserialize(response.Body, CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.SptVersionApiResponse);
+            var apiResponse = JsonSerializer.Deserialize(
+                response.Body,
+                CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.SptVersionApiResponse
+            );
 
             var isValid =
                 apiResponse is { Success: true, Data: not null } && apiResponse.Data.Any(v => v.Version == sptVersion);
@@ -125,10 +128,13 @@ public sealed partial class ForgeApiService(
             if (!response.IsSuccessStatusCode)
             {
                 logger.LogError("Failed to fetch SPT versions: {StatusCode}", response.StatusCode);
-                return new ApiError($"API returned status {response.StatusCode}", (int) response.StatusCode);
+                return new ApiError($"API returned status {response.StatusCode}", (int)response.StatusCode);
             }
 
-            var apiResponse = JsonSerializer.Deserialize(response.Body, CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.SptVersionApiResponse);
+            var apiResponse = JsonSerializer.Deserialize(
+                response.Body,
+                CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.SptVersionApiResponse
+            );
 
             return apiResponse is { Success: true, Data: not null } ? apiResponse.Data : [];
         }
@@ -197,7 +203,7 @@ public sealed partial class ForgeApiService(
 
             if (!response.IsSuccessStatusCode)
             {
-                return new ApiError($"API returned status {response.StatusCode}", (int) response.StatusCode);
+                return new ApiError($"API returned status {response.StatusCode}", (int)response.StatusCode);
             }
 
             using var jsonDoc = JsonDocument.Parse(response.Body);
@@ -211,7 +217,10 @@ public sealed partial class ForgeApiService(
                 return new NotFound();
             }
 
-            var result = JsonSerializer.Deserialize(dataElement.GetRawText(), CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.ModSearchResult);
+            var result = JsonSerializer.Deserialize(
+                dataElement.GetRawText(),
+                CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.ModSearchResult
+            );
             if (result is null)
             {
                 return new NotFound();
@@ -254,10 +263,13 @@ public sealed partial class ForgeApiService(
 
             if (!response.IsSuccessStatusCode)
             {
-                return new ApiError($"API returned status {response.StatusCode}", (int) response.StatusCode);
+                return new ApiError($"API returned status {response.StatusCode}", (int)response.StatusCode);
             }
 
-            var apiResponse = JsonSerializer.Deserialize(response.Body, CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.ModSearchApiResponse);
+            var apiResponse = JsonSerializer.Deserialize(
+                response.Body,
+                CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.ModSearchApiResponse
+            );
 
             if (apiResponse is not { Success: true, Data.Count: > 0 })
             {
@@ -316,10 +328,13 @@ public sealed partial class ForgeApiService(
 
             if (!response.IsSuccessStatusCode)
             {
-                return new ApiError($"API returned status {response.StatusCode}", (int) response.StatusCode);
+                return new ApiError($"API returned status {response.StatusCode}", (int)response.StatusCode);
             }
 
-            var apiResponse = JsonSerializer.Deserialize(response.Body, CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.ModSearchApiResponse);
+            var apiResponse = JsonSerializer.Deserialize(
+                response.Body,
+                CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.ModSearchApiResponse
+            );
 
             return apiResponse is { Success: true, Data: not null } ? apiResponse.Data : [];
         }
@@ -358,14 +373,12 @@ public sealed partial class ForgeApiService(
 
         await Parallel.ForEachAsync(
             chunks.Select((chunk, index) => (chunk, index)),
-            new ParallelOptions
-            {
-                CancellationToken = cancellationToken
-            },
+            new ParallelOptions { CancellationToken = cancellationToken },
             async (item, ct) =>
             {
                 chunkResults[item.index] = await GetModUpdatesChunkAsync(item.chunk, sptVersion, ct);
-            });
+            }
+        );
 
         // Combine results across chunks.
         var safeToUpdate = new List<SafeToUpdateMod>();
@@ -447,10 +460,13 @@ public sealed partial class ForgeApiService(
 
             if (!response.IsSuccessStatusCode)
             {
-                return new ApiError($"API returned status {response.StatusCode}", (int) response.StatusCode);
+                return new ApiError($"API returned status {response.StatusCode}", (int)response.StatusCode);
             }
 
-            var apiResponse = JsonSerializer.Deserialize(response.Body, CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.ModUpdatesApiResponse);
+            var apiResponse = JsonSerializer.Deserialize(
+                response.Body,
+                CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.ModUpdatesApiResponse
+            );
 
             if (apiResponse?.Success != true || apiResponse.Data is null)
             {
@@ -489,9 +505,7 @@ public sealed partial class ForgeApiService(
                 modList.Select(m => $"{Uri.EscapeDataString(m.Identifier)}:{Uri.EscapeDataString(m.Version)}")
             );
 
-            var query = new QueryBuilder()
-                .AddRaw("mods", modsParam)
-                .ToString();
+            var query = new QueryBuilder().AddRaw("mods", modsParam).ToString();
 
             var url = $"{_options.BaseUrl}mods/dependencies{query}";
 
@@ -499,10 +513,17 @@ public sealed partial class ForgeApiService(
 
             if (!response.IsSuccessStatusCode)
             {
-                return new ApiError($"API returned status {response.StatusCode}", (int) response.StatusCode);
+                return new ApiError($"API returned status {response.StatusCode}", (int)response.StatusCode);
             }
 
-            var apiResponse = JsonSerializer.Deserialize(response.Body, CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.ModDependenciesApiResponse);
+            var apiResponse = JsonSerializer.Deserialize(
+                response.Body,
+                CheckModsExtended
+                    .Configuration
+                    .CheckModsExtendedJsonSerializerContext
+                    .Default
+                    .ModDependenciesApiResponse
+            );
 
             if (apiResponse?.Success != true || apiResponse.Data is null)
             {
@@ -521,4 +542,3 @@ public sealed partial class ForgeApiService(
         }
     }
 }
-

@@ -124,7 +124,7 @@ public sealed class ModDependencyService(IForgeApiService forgeApiService, ILogg
 
                 // Skip the diff on a not-found/error response; an empty success list is a valid "no dependencies".
                 var targetDeps = targetResult.Match(
-                    dependencies => (List<ModDependency>?) dependencies,
+                    dependencies => (List<ModDependency>?)dependencies,
                     _ => null,
                     _ => null
                 );
@@ -134,7 +134,13 @@ public sealed class ModDependencyService(IForgeApiService forgeApiService, ILogg
                 }
 
                 var installedDeps = modDependencyCache.GetValueOrDefault(modId, []);
-                var delta = BuildUpdateDependencyDelta(installedDeps, targetDeps, modByGuid, modById, installedModGuids);
+                var delta = BuildUpdateDependencyDelta(
+                    installedDeps,
+                    targetDeps,
+                    modByGuid,
+                    modById,
+                    installedModGuids
+                );
                 if (delta.HasChanges)
                 {
                     updateDeltas.Add((group.ToList(), delta));
@@ -143,14 +149,27 @@ public sealed class ModDependencyService(IForgeApiService forgeApiService, ILogg
         );
 
         // Apply deltas
+        var modIndexMap = new Dictionary<Mod, int>();
+        for (var i = 0; i < modList.Count; i++)
+        {
+            modIndexMap.TryAdd(modList[i], i);
+        }
+
         foreach (var (groupMods, delta) in updateDeltas)
         {
             foreach (var mod in groupMods)
             {
-                var idx = modList.IndexOf(mod);
-                if (idx >= 0)
+                if (modIndexMap.TryGetValue(mod, out var idx))
                 {
                     modList[idx] = mod.WithUpdateDependencyChanges(delta);
+                }
+                else
+                {
+                    idx = modList.IndexOf(mod);
+                    if (idx >= 0)
+                    {
+                        modList[idx] = mod.WithUpdateDependencyChanges(delta);
+                    }
                 }
             }
         }
@@ -464,5 +483,3 @@ public sealed class ModDependencyService(IForgeApiService forgeApiService, ILogg
         };
     }
 }
-
-

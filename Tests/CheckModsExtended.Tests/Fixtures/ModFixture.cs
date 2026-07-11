@@ -1,5 +1,4 @@
 using CheckModsExtended.Models;
-
 using CheckModsExtended.Tests.Fixtures;
 
 namespace CheckModsExtended.Tests.Fixtures;
@@ -9,7 +8,12 @@ namespace CheckModsExtended.Tests.Fixtures;
 /// </summary>
 public static class ModFixture
 {
-    public static Mod CreateClientMod(string guid, string name = "Mod", string version = "1.0.0", string author = "Author")
+    public static Mod CreateClientMod(
+        string guid,
+        string name = "Mod",
+        string version = "1.0.0",
+        string author = "Author"
+    )
     {
         return new Mod
         {
@@ -20,12 +24,17 @@ public static class ModFixture
                 LocalVersion = version,
                 LocalAuthor = author,
                 FilePath = "",
-                IsServerMod = false
-            }
+                IsServerMod = false,
+            },
         };
     }
 
-    public static Mod CreateServerMod(string guid, string name = "Mod", string version = "1.0.0", string author = "Author")
+    public static Mod CreateServerMod(
+        string guid,
+        string name = "Mod",
+        string version = "1.0.0",
+        string author = "Author"
+    )
     {
         return new Mod
         {
@@ -36,9 +45,8 @@ public static class ModFixture
                 LocalVersion = version,
                 LocalAuthor = author,
                 FilePath = "",
-                IsServerMod = true
-            }
+                IsServerMod = true,
+            },
         };
     }
 }
-

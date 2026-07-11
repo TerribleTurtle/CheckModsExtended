@@ -5,18 +5,17 @@ using CheckModsExtended.Models.Pipeline;
 using CheckModsExtended.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 
-
 namespace CheckModsExtended.Services.Pipeline.Steps;
 
 /// <summary>
 /// Workflow step that offers to fetch remote ignores.
 /// </summary>
-
 public sealed class MaybeFetchRemoteIgnoresStep(
     IRemoteIgnoreFileClient remoteIgnoreFileClient,
     IIgnoredUpdateStore ignoredUpdateStore,
     IModCheckReporter reporter,
-    ILogger<MaybeFetchRemoteIgnoresStep> logger) : IWorkflowStep
+    ILogger<MaybeFetchRemoteIgnoresStep> logger
+) : IWorkflowStep
 {
     /// <inheritdoc />
     public async Task ExecuteAsync(UpdateWorkflowContext context, CancellationToken cancellationToken)
@@ -40,7 +39,9 @@ public sealed class MaybeFetchRemoteIgnoresStep(
             }
             else
             {
-                reporter.RemoteIgnoresMerged(await ignoredUpdateStore.MergeWithoutOverwriteAsync(remote, cancellationToken));
+                reporter.RemoteIgnoresMerged(
+                    await ignoredUpdateStore.MergeWithoutOverwriteAsync(remote, cancellationToken)
+                );
             }
         }
 
@@ -48,4 +49,3 @@ public sealed class MaybeFetchRemoteIgnoresStep(
         reporter.Rule();
     }
 }
-

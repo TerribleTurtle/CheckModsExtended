@@ -32,8 +32,7 @@ internal sealed class FakeForgeApiService : IForgeApiService
     public Func<
         (string Identifier, string Version),
         OneOf<List<ModDependency>, NotFound, ApiError>
-    >? OnGetModDependenciesVersioned
-    { get; set; }
+    >? OnGetModDependenciesVersioned { get; set; }
 
     public Func<string, OneOf<bool, InvalidSptVersion, ApiError>>? OnValidateSptVersion { get; set; }
     public Func<OneOf<List<SptVersionResult>, ApiError>>? OnGetAllSptVersions { get; set; }
@@ -145,4 +144,3 @@ internal sealed class FakeForgeApiService : IForgeApiService
         return Task.FromResult(OnGetModDependencies(identifier));
     }
 }
-

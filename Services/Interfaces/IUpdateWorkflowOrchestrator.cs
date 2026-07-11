@@ -18,4 +18,3 @@ public interface IUpdateWorkflowOrchestrator
     /// <returns>A list of processed mods.</returns>
     Task<IReadOnlyList<Mod>> RunPipelineAsync(string[] args, CancellationToken cancellationToken = default);
 }
-

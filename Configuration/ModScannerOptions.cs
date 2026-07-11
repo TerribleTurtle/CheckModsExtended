@@ -12,4 +12,3 @@ public sealed class ModScannerOptions
     /// </summary>
     public long MaxDllSizeBytes { get; set; } = 100 * 1024 * 1024;
 }
-

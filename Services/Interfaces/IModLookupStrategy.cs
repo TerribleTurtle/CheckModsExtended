@@ -22,4 +22,3 @@ public interface IModLookupStrategy
         CancellationToken cancellationToken = default
     );
 }
-

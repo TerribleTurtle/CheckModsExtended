@@ -31,4 +31,3 @@ public interface IModResolutionService
         CancellationToken cancellationToken = default
     );
 }
-

@@ -14,4 +14,3 @@ public interface IDependencyUiRenderer
     /// <param name="result">The analysis results.</param>
     void DependencyResults(DependencyAnalysisResult result);
 }
-

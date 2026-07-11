@@ -29,7 +29,7 @@ public static class SecurityHelper
             }
 
             var baseFullPath = Path.GetFullPath(basePath);
-            
+
             // Resolve the input path relative to the base path, not the current working directory.
             var fullPath = Path.GetFullPath(inputPath, baseFullPath);
 
@@ -38,10 +38,12 @@ public static class SecurityHelper
             // Path.GetRelativePath returns "." if the paths are the same.
             // If the resolved path escapes the base directory, it will start with ".."
             // E.g., "..", "..\something", "../something"
-            if (relativePath == ".." || 
-                relativePath.StartsWith(".." + Path.DirectorySeparatorChar) || 
-                relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar) ||
-                Path.IsPathRooted(relativePath))
+            if (
+                relativePath == ".."
+                || relativePath.StartsWith(".." + Path.DirectorySeparatorChar)
+                || relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar)
+                || Path.IsPathRooted(relativePath)
+            )
             {
                 return null;
             }
@@ -62,4 +64,3 @@ public static class SecurityHelper
         }
     }
 }
-

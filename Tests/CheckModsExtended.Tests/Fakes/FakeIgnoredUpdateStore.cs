@@ -37,11 +37,13 @@ public sealed class FakeIgnoredUpdateStore : IIgnoredUpdateStore
             return Task.FromResult(false);
         }
 
-        return Task.FromResult(_store.Any(x =>
-            x.ApiModId == mod.Api.ApiModId
-            && x.LocalVersion == mod.Local.LocalVersion
-            && x.IgnoredLatestVersion == mod.Update.LatestVersion
-        ));
+        return Task.FromResult(
+            _store.Any(x =>
+                x.ApiModId == mod.Api.ApiModId
+                && x.LocalVersion == mod.Local.LocalVersion
+                && x.IgnoredLatestVersion == mod.Update.LatestVersion
+            )
+        );
     }
 
     /// <inheritdoc />
@@ -53,7 +55,10 @@ public sealed class FakeIgnoredUpdateStore : IIgnoredUpdateStore
     }
 
     /// <inheritdoc />
-    public Task<int> MergeWithoutOverwriteAsync(IReadOnlyList<IgnoredUpdate> incoming, CancellationToken cancellationToken = default)
+    public Task<int> MergeWithoutOverwriteAsync(
+        IReadOnlyList<IgnoredUpdate> incoming,
+        CancellationToken cancellationToken = default
+    )
     {
         int added = 0;
         foreach (var entry in incoming)
@@ -73,4 +78,3 @@ public sealed class FakeIgnoredUpdateStore : IIgnoredUpdateStore
         return Task.FromResult(added);
     }
 }
-

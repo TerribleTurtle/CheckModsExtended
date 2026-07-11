@@ -51,4 +51,3 @@ public interface IModScannerService
     /// </returns>
     Task<MisplacedModReport> DetectMisplacedModsAsync(string sptPath, CancellationToken cancellationToken = default);
 }
-

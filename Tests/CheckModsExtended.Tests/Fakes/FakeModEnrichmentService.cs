@@ -28,4 +28,3 @@ public sealed class FakeModEnrichmentService : IModEnrichmentService
         return Task.FromResult<IReadOnlyList<Mod>>(mods.ToList());
     }
 }
-

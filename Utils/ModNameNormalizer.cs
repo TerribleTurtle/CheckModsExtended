@@ -9,6 +9,7 @@ public static class ModNameNormalizer
 {
     private static readonly char[] _charsToRemove = ['-', '_', ' ', '.'];
     public static readonly ImmutableArray<string> SuffixesToRemove = ["server", "client", "plugin", "api"];
+
     /// <summary>
     /// Normalizes a mod name for comparison by removing special characters,
     /// converting to lowercase, and optionally removing server/client/plugin suffixes.
@@ -94,4 +95,3 @@ public static class ModNameNormalizer
         return !string.IsNullOrEmpty(normalized1) && string.Equals(normalized1, normalized2, StringComparison.Ordinal);
     }
 }
-

@@ -106,4 +106,3 @@ public sealed class MisplacedModUiRenderer(ITextRenderer textRenderer) : IMispla
         modNode.AddNode($"[grey]{mod.FilePath.EscapeMarkup()}[/]");
     }
 }
-

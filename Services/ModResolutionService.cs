@@ -33,27 +33,26 @@ public sealed class ModResolutionService(IModLookupStrategy modLookupStrategy) :
             return modsList;
         }
 
-        var updatedModsDict = new ConcurrentDictionary<string, Mod>(
-            modsList.ToDictionary(m => m.Local.Guid)
-        );
+        var updatedModsDict = new ConcurrentDictionary<string, Mod>(modsList.ToDictionary(m => m.Local.Guid));
 
         await Parallel.ForEachAsync(
             modsWithNames,
-            new ParallelOptions
-            {
-                CancellationToken = cancellationToken
-            },
+            new ParallelOptions { CancellationToken = cancellationToken },
             async (mod, ct) =>
             {
                 var updatedMod = await ResolveAndFetchUrlAsync(mod, sptVersion, ct);
                 updatedModsDict[mod.Local.Guid] = updatedMod;
-            });
+            }
+        );
 
         return updatedModsDict.Values.ToList();
     }
 
     /// <inheritdoc />
-    public async Task<(IReadOnlyList<ModPair> UpdatedPairs, IReadOnlyList<Mod> UpdatedMods)> FetchSourceCodeUrlsForPairedModsAsync(
+    public async Task<(
+        IReadOnlyList<ModPair> UpdatedPairs,
+        IReadOnlyList<Mod> UpdatedMods
+    )> FetchSourceCodeUrlsForPairedModsAsync(
         IEnumerable<ModPair> pairs,
         Version sptVersion,
         CancellationToken cancellationToken = default
@@ -79,10 +78,7 @@ public sealed class ModResolutionService(IModLookupStrategy modLookupStrategy) :
 
         await Parallel.ForEachAsync(
             validPairs,
-            new ParallelOptions
-            {
-                CancellationToken = cancellationToken
-            },
+            new ParallelOptions { CancellationToken = cancellationToken },
             async (pair, ct) =>
             {
                 var (updatedPair, updatedMods) = await ResolveAndFetchUrlForPairAsync(pair, sptVersion, ct);
@@ -91,7 +87,8 @@ public sealed class ModResolutionService(IModLookupStrategy modLookupStrategy) :
                 {
                     allUpdatedMods.Add(mod);
                 }
-            });
+            }
+        );
 
         return (updatedPairsDict.Values.ToList(), allUpdatedMods.ToList());
     }
@@ -144,7 +141,12 @@ public sealed class ModResolutionService(IModLookupStrategy modLookupStrategy) :
             guidsToTry.Add(pair.ClientMod.Local.Guid);
         }
 
-        var lookupResult = await modLookupStrategy.LookupModAsync(selectedMod, sptVersion, guidsToTry, cancellationToken);
+        var lookupResult = await modLookupStrategy.LookupModAsync(
+            selectedMod,
+            sptVersion,
+            guidsToTry,
+            cancellationToken
+        );
 
         if (lookupResult is null)
         {
@@ -174,10 +176,9 @@ public sealed class ModResolutionService(IModLookupStrategy modLookupStrategy) :
             ServerMod = finalUpdatedServerMod,
             ClientMod = finalUpdatedClientMod,
             SelectedMod = pair.SelectedMod == pair.ServerMod ? finalUpdatedServerMod! : finalUpdatedClientMod!,
-            Notes = pair.Notes
+            Notes = pair.Notes,
         };
 
         return (finalUpdatedPair, finalUpdatedMods);
     }
 }
-

@@ -23,9 +23,7 @@ public sealed class UpdateWorkflowOrchestrator : IUpdateWorkflowOrchestrator
     /// </summary>
     /// <param name="steps">The workflow steps.</param>
     /// <param name="logger">The logger.</param>
-    public UpdateWorkflowOrchestrator(
-        IEnumerable<IWorkflowStep> steps,
-        ILogger<UpdateWorkflowOrchestrator> logger)
+    public UpdateWorkflowOrchestrator(IEnumerable<IWorkflowStep> steps, ILogger<UpdateWorkflowOrchestrator> logger)
     {
         _steps = steps;
         _logger = logger;
@@ -34,10 +32,7 @@ public sealed class UpdateWorkflowOrchestrator : IUpdateWorkflowOrchestrator
     /// <inheritdoc />
     public async Task<IReadOnlyList<Mod>> RunPipelineAsync(string[] args, CancellationToken cancellationToken = default)
     {
-        var context = new UpdateWorkflowContext
-        {
-            Args = args
-        };
+        var context = new UpdateWorkflowContext { Args = args };
 
         foreach (var step in _steps)
         {
@@ -57,4 +52,3 @@ public sealed class UpdateWorkflowOrchestrator : IUpdateWorkflowOrchestrator
         return await RunPipelineAsync(args, cancellationToken);
     }
 }
-

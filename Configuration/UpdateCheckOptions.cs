@@ -10,4 +10,3 @@ public sealed class UpdateCheckOptions
     /// </summary>
     public int ForgeModId { get; set; } = 2471;
 }
-

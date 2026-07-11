@@ -20,4 +20,3 @@ public enum EndOfRunChoice
     /// </summary>
     Exit = 2,
 }
-

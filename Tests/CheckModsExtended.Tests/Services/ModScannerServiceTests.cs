@@ -43,7 +43,8 @@ public sealed class ModScannerServiceTests : IDisposable
     public async Task Scanservermodsasync_returnsvalidmods()
     {
         var modPath = Path.Combine("SPT", "user", "mods", "test-server-mod", "TestServerMod.dll");
-        var serverCode = @"
+        var serverCode =
+            @"
             using System;
             public abstract class AbstractModMetadata { }
             public class ValidModMetadata : AbstractModMetadata 
@@ -57,7 +58,12 @@ public sealed class ModScannerServiceTests : IDisposable
         ";
         _fixture.CompileDummyDll(modPath, serverCode);
 
-        var fakeMod = ModFixture.CreateServerMod("ServerAuthor-Test Server Mod", "Test Server Mod", "1.0.0", "ServerAuthor");
+        var fakeMod = ModFixture.CreateServerMod(
+            "ServerAuthor-Test Server Mod",
+            "Test Server Mod",
+            "1.0.0",
+            "ServerAuthor"
+        );
         fakeMod = fakeMod with { Local = fakeMod.Local with { FilePath = "test", LocalSptVersion = "3.8.0" } };
         _serverExtractor.ExtractedMod = fakeMod;
 
@@ -66,6 +72,7 @@ public sealed class ModScannerServiceTests : IDisposable
         Assert.Single(mods);
         Assert.Same(fakeMod, mods[0]);
     }
+
     [Fact]
     public async Task Scanservermodsasync_includes_package_only_server_mods()
     {
@@ -135,8 +142,14 @@ public sealed class ModScannerServiceTests : IDisposable
     public async Task E2e_scan_all_mods_async_returns_valid_mods()
     {
         // Setup real extractors
-        var options = Microsoft.Extensions.Options.Options.Create(new CheckModsExtended.Configuration.ModScannerOptions());
-        var realPluginExtractor = new PluginMetadataExtractor(new ModPartitioner(), options, NullLogger<PluginMetadataExtractor>.Instance);
+        var options = Microsoft.Extensions.Options.Options.Create(
+            new CheckModsExtended.Configuration.ModScannerOptions()
+        );
+        var realPluginExtractor = new PluginMetadataExtractor(
+            new ModPartitioner(),
+            options,
+            NullLogger<PluginMetadataExtractor>.Instance
+        );
         var realServerExtractor = new ServerModExtractor(NullLogger<ServerModExtractor>.Instance);
         var realMisplacedDetector = new MisplacedModDetector(
             new ModPartitioner(),
@@ -168,7 +181,8 @@ namespace BepInEx {
 
         // Generate dummy server mod
         var modPath = Path.Combine("SPT", "user", "mods", "test-server-mod", "TestServerMod.dll");
-        var serverCode = @"
+        var serverCode =
+            @"
             using System;
             public abstract class AbstractModMetadata { }
             public class ValidModMetadata : AbstractModMetadata 
@@ -195,4 +209,3 @@ namespace BepInEx {
         Assert.Equal("Test Server Mod", serverMods[0].Local.LocalName);
     }
 }
-

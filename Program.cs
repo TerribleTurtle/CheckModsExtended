@@ -70,10 +70,10 @@ public sealed class Program
 
             var services = new ServiceCollection();
             services.AddCheckModsExtendedServices(configuration);
-            
+
             runtimeConfig = new RuntimeConfig();
             services.AddSingleton(runtimeConfig);
-            
+
             var registrar = new TypeRegistrar(services);
             var app = new CommandApp<CheckModsCommand>(registrar);
 
@@ -82,17 +82,21 @@ public sealed class Program
                 config.SetApplicationName("check-mods");
                 config.SetApplicationVersion(VersionInfo.SemVer);
                 config.SetInterceptor(new CheckModsInterceptor(runtimeConfig));
-                
-                config.AddCommand<ListModsCommand>("list")
+
+                config
+                    .AddCommand<ListModsCommand>("list")
                     .WithDescription("List locally installed mods without checking for updates.");
 
-                config.AddBranch("ignore", ignore =>
-                {
-                    ignore.SetDescription("Manage the ignored updates list.");
-                    ignore.AddCommand<IgnoreListCommand>("list").WithDescription("List all ignored updates.");
-                    ignore.AddCommand<IgnoreAddCommand>("add").WithDescription("Manually ignore an update.");
-                    ignore.AddCommand<IgnoreRemoveCommand>("remove").WithDescription("Remove an ignored update.");
-                });
+                config.AddBranch(
+                    "ignore",
+                    ignore =>
+                    {
+                        ignore.SetDescription("Manage the ignored updates list.");
+                        ignore.AddCommand<IgnoreListCommand>("list").WithDescription("List all ignored updates.");
+                        ignore.AddCommand<IgnoreAddCommand>("add").WithDescription("Manually ignore an update.");
+                        ignore.AddCommand<IgnoreRemoveCommand>("remove").WithDescription("Remove an ignored update.");
+                    }
+                );
 
                 config.PropagateExceptions(); // Let the try-catch block handle exceptions
             });
@@ -102,7 +106,7 @@ public sealed class Program
         catch (OperationCanceledException)
         {
             // Usually cancelled is a zero exit code
-            exitCode = ExitCodes.Success; 
+            exitCode = ExitCodes.Success;
         }
         catch (Exception ex)
         {
@@ -123,7 +127,9 @@ public sealed class Program
                 AnsiConsole.MarkupLine($"[grey]Log file: {LoggingOptions.CurrentLogFilePath}[/]");
             }
 
-            var isHeadless = runtimeConfig?.IsHeadless ?? (Console.IsInputRedirected || args.Contains("--no-prompt") || args.Contains("-y"));
+            var isHeadless =
+                runtimeConfig?.IsHeadless
+                ?? (Console.IsInputRedirected || args.Contains("--no-prompt") || args.Contains("-y"));
 
             if (!_wasCancelled && !isHeadless)
             {
@@ -148,4 +154,3 @@ public sealed class Program
         AnsiConsole.MarkupLine("[yellow]Cancellation requested. Shutting down gracefully...[/]");
     }
 }
-

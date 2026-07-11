@@ -31,14 +31,16 @@ public sealed class CheckModsCommand : AsyncCommand<CheckModsCommand.Settings>
         _ignoredUpdateWorkflow = ignoredUpdateWorkflow;
     }
 
-    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteAsync(
+        CommandContext context,
+        Settings settings,
+        CancellationToken cancellationToken
+    )
     {
-        var args = string.IsNullOrWhiteSpace(settings.SptPath) 
-            ? Array.Empty<string>() 
-            : new[] { settings.SptPath };
+        var args = string.IsNullOrWhiteSpace(settings.SptPath) ? Array.Empty<string>() : new[] { settings.SptPath };
 
         var mods = await _orchestrator.RunPipelineAsync(args, cancellationToken);
-        
+
         if (mods is not null)
         {
             await _ignoredUpdateWorkflow.RunAsync(mods, cancellationToken);

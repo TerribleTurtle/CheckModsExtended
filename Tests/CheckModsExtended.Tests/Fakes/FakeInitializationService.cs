@@ -42,4 +42,3 @@ public sealed class FakeInitializationService : IInitializationService
         return ValidatedSptPathToReturn;
     }
 }
-

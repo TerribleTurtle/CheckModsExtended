@@ -18,8 +18,6 @@ public sealed class IgnoredUpdateOptions
     public int RemoteTimeoutSeconds { get; set; } = 10;
 
     /// <summary>The directory holding Check Mods' app data (shared with logs and other local state).</summary>
-    
-
     /// <summary>The directory holding Check Mods' app data (shared with logs and other local state).</summary>
     public static string DefaultDirectory
     {
@@ -32,5 +30,3 @@ public sealed class IgnoredUpdateOptions
         get { return Path.Combine(DefaultDirectory, "ignored-updates.json"); }
     }
 }
-
-

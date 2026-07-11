@@ -40,4 +40,3 @@ public enum UpdateStatus
     /// </summary>
     Incompatible = 6,
 }
-

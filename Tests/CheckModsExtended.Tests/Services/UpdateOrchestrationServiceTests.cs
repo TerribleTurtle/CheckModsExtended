@@ -5,11 +5,10 @@ using System.Threading.Tasks;
 using CheckModsExtended.Models;
 using CheckModsExtended.Services;
 using CheckModsExtended.Tests.Fakes;
+using CheckModsExtended.Tests.Fixtures;
 using SemanticVersioning;
 using Xunit;
 using Version = SemanticVersioning.Version;
-
-using CheckModsExtended.Tests.Fixtures;
 
 namespace CheckModsExtended.Tests.Services;
 
@@ -65,4 +64,3 @@ public sealed class UpdateOrchestrationServiceTests
         Assert.True(result[0].Update.UpdateSuppressed);
     }
 }
-

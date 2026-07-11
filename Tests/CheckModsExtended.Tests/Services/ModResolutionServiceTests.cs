@@ -1,13 +1,12 @@
-using CheckModsExtended.Models;
-using CheckModsExtended.Tests.Fakes;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CheckModsExtended.Models;
 using CheckModsExtended.Services;
+using CheckModsExtended.Tests.Fakes;
+using CheckModsExtended.Tests.Fixtures;
 using SemanticVersioning;
 using Xunit;
 using Version = SemanticVersioning.Version;
-
-using CheckModsExtended.Tests.Fixtures;
 
 namespace CheckModsExtended.Tests.Services;
 
@@ -174,5 +173,3 @@ public sealed class ModResolutionServiceTests
         Assert.Equal("https://github.com/outdated/mod", mod.Api.ApiSourceCodeUrl);
     }
 }
-
-

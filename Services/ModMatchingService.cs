@@ -1,3 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using CheckModsExtended.Configuration;
 using CheckModsExtended.Models;
 using CheckModsExtended.Services.Interfaces;
@@ -5,12 +11,6 @@ using CheckModsExtended.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SPTarkov.DI.Annotations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CheckModsExtended.Services;
 
@@ -23,8 +23,8 @@ public sealed class ModMatchingService(
     IModLookupStrategy modLookupStrategy,
     IOptions<ModMatchingOptions> options,
     IModCheckReporter reporter,
-    ILogger<ModMatchingService> logger)
-    : IModMatchingService
+    ILogger<ModMatchingService> logger
+) : IModMatchingService
 {
     private readonly ModMatchingOptions _options = options.Value;
 
@@ -50,12 +50,21 @@ public sealed class ModMatchingService(
 
         if (score >= MatchingConstants.NameSearchFuzzyThreshold)
         {
-            logger.LogDebug("Mod matched with high confidence: {ModName} -> {ApiName}", mod.Local.LocalName, match.Name);
+            logger.LogDebug(
+                "Mod matched with high confidence: {ModName} -> {ApiName}",
+                mod.Local.LocalName,
+                match.Name
+            );
             return (mod.WithApiMatch(match), null);
         }
         else
         {
-            logger.LogDebug("Mod matched with low confidence ({Score}): {ModName} -> {ApiName}", score, mod.Local.LocalName, match.Name);
+            logger.LogDebug(
+                "Mod matched with low confidence ({Score}): {ModName} -> {ApiName}",
+                score,
+                mod.Local.LocalName,
+                match.Name
+            );
             var matchedMod = mod.WithApiMatch(match) with { Status = ModStatus.NeedsConfirmation };
             var confirmation = new PendingConfirmation(mod, match, score);
             return (matchedMod, confirmation);
@@ -80,10 +89,7 @@ public sealed class ModMatchingService(
 
         await Parallel.ForEachAsync(
             modList.Select((mod, index) => (mod, index)),
-            new ParallelOptions
-            {
-                CancellationToken = cancellationToken
-            },
+            new ParallelOptions { CancellationToken = cancellationToken },
             async (item, ct) =>
             {
                 var mod = item.mod;
@@ -118,7 +124,8 @@ public sealed class ModMatchingService(
 
                 var current = Interlocked.Increment(ref completedCount);
                 progress?.Report(current);
-            });
+            }
+        );
 
         // When every mod fails and enough mods are involved to be meaningful, throw a systemic failure.
         if (totalCount >= _options.MinimumModsForSystemicFailure && failureCount == totalCount)
@@ -171,8 +178,7 @@ public sealed class ModMatchingService(
                 }
             }
         }
-        
+
         reporter.Blank();
     }
 }
-

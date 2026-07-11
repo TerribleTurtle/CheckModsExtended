@@ -10,7 +10,6 @@ namespace CheckModsExtended.Tests.Services;
 /// <summary>
 /// Tests for <see cref="ForgeApiService.GetModUpdatesAsync"/>, which batches the mods/updates request into chunks and
 /// merges the results. The request is atomic: successful chunks are merged, but any chunk error fails the whole call.
-
 /// </summary>
 public sealed class ForgeApiServiceTests
 {
@@ -141,7 +140,4 @@ public sealed class ForgeApiServiceTests
             return Task.FromResult(responder(request));
         }
     }
-
-
 }
-

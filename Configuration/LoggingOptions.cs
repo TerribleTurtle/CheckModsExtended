@@ -37,13 +37,7 @@ public sealed class LoggingOptions
     /// </summary>
     public static string LogDirectory
     {
-        get
-        {
-            return Path.Combine(
-                CheckModsExtended.Utils.AppConstants.AppDataDirectory,
-                "logs"
-            );
-        }
+        get { return Path.Combine(CheckModsExtended.Utils.AppConstants.AppDataDirectory, "logs"); }
     }
 
     /// <summary>
@@ -54,5 +48,3 @@ public sealed class LoggingOptions
         get { return Path.Combine(LogDirectory, "checkmod.log"); }
     }
 }
-
-

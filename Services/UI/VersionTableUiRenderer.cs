@@ -288,5 +288,3 @@ public sealed class VersionTableUiRenderer(ITextRenderer textRenderer) : IVersio
             .ToList();
     }
 }
-
-

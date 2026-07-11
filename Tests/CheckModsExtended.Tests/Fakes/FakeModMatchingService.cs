@@ -16,15 +16,19 @@ public sealed class FakeModMatchingService : IModMatchingService
     public Func<Mod, Mod>? MatchModAction { get; set; }
 
     /// <inheritdoc />
-    public Task<(Mod Mod, PendingConfirmation? Confirmation)> MatchModAsync(Mod mod, Version sptVersion, CancellationToken cancellationToken = default)
+    public Task<(Mod Mod, PendingConfirmation? Confirmation)> MatchModAsync(
+        Mod mod,
+        Version sptVersion,
+        CancellationToken cancellationToken = default
+    )
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         if (MatchModAction != null)
         {
-            return Task.FromResult((MatchModAction(mod), (PendingConfirmation?) null));
+            return Task.FromResult((MatchModAction(mod), (PendingConfirmation?)null));
         }
-        return Task.FromResult((mod, (PendingConfirmation?) null));
+        return Task.FromResult((mod, (PendingConfirmation?)null));
     }
 
     /// <inheritdoc />
@@ -57,4 +61,3 @@ public sealed class FakeModMatchingService : IModMatchingService
         return Task.FromResult<IReadOnlyList<Mod>>(result);
     }
 }
-

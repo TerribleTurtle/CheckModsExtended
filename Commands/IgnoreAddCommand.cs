@@ -34,7 +34,11 @@ public sealed class IgnoreAddCommand : AsyncCommand<IgnoreAddCommand.Settings>
         _store = store;
     }
 
-    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteAsync(
+        CommandContext context,
+        Settings settings,
+        CancellationToken cancellationToken
+    )
     {
         var ignores = (await _store.LoadAsync(cancellationToken)).ToList();
 
@@ -48,14 +52,18 @@ public sealed class IgnoreAddCommand : AsyncCommand<IgnoreAddCommand.Settings>
 
         if (ignores.Any(i => string.Equals(i.Key, newIgnore.Key, StringComparison.OrdinalIgnoreCase)))
         {
-            AnsiConsole.MarkupLine($"[yellow]Update is already ignored (ID: {settings.ApiModId}, {settings.LocalVersion} -> {settings.LatestVersion}).[/]");
+            AnsiConsole.MarkupLine(
+                $"[yellow]Update is already ignored (ID: {settings.ApiModId}, {settings.LocalVersion} -> {settings.LatestVersion}).[/]"
+            );
             return 0;
         }
 
         ignores.Add(newIgnore);
         await _store.SaveAsync(ignores, cancellationToken);
-        
-        AnsiConsole.MarkupLine($"[green]Successfully ignored update for API Mod ID {settings.ApiModId} ({settings.LocalVersion} -> {settings.LatestVersion}).[/]");
+
+        AnsiConsole.MarkupLine(
+            $"[green]Successfully ignored update for API Mod ID {settings.ApiModId} ({settings.LocalVersion} -> {settings.LatestVersion}).[/]"
+        );
         return 0;
     }
 }

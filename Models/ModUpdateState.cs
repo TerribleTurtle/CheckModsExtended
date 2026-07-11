@@ -55,4 +55,3 @@ public sealed record ModUpdateState
     /// </summary>
     public UpdateDependencyDelta? UpdateDependencyChanges { get; init; }
 }
-

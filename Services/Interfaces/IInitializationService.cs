@@ -17,4 +17,3 @@ public interface IInitializationService
     /// <returns>Validated SPT path or null if validation failed.</returns>
     string? GetValidatedSptPath(string[] args);
 }
-

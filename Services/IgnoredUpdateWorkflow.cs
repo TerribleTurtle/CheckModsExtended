@@ -1,10 +1,9 @@
+using CheckModsExtended.Configuration;
 using CheckModsExtended.Models;
 using CheckModsExtended.Services.Interfaces;
 using CheckModsExtended.Utils;
-using SPTarkov.DI.Annotations;
-
-using CheckModsExtended.Configuration;
 using Microsoft.Extensions.Options;
+using SPTarkov.DI.Annotations;
 
 namespace CheckModsExtended.Services;
 
@@ -125,7 +124,11 @@ public sealed class IgnoredUpdateWorkflow(
         await OfferReportAsync(chosen, cancellationToken);
     }
 
-    private async Task PersistSelectionAsync(IReadOnlyList<Mod> mods, IReadOnlyList<IgnoredUpdate> chosen, CancellationToken cancellationToken)
+    private async Task PersistSelectionAsync(
+        IReadOnlyList<Mod> mods,
+        IReadOnlyList<IgnoredUpdate> chosen,
+        CancellationToken cancellationToken
+    )
     {
         var evaluatedIds = mods.Where(m => m.IsMatched).Select(m => m.Api.ApiModId!.Value).ToHashSet();
         var newSet = BuildNewSet(await store.LoadAsync(cancellationToken), evaluatedIds, chosen);
@@ -229,4 +232,3 @@ public sealed class IgnoredUpdateWorkflow(
         );
     }
 }
-

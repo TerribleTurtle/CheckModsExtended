@@ -91,5 +91,3 @@ public sealed class SemVerTests
         Assert.False(SemVer.SatisfiesRange("", new SemanticVersioning.Version("1.0.0")));
     }
 }
-
-

@@ -39,7 +39,10 @@ public sealed class UpdateOrchestrationService(
     }
 
     /// <inheritdoc />
-    public async Task CheckForCheckModsExtendedUpdateAsync(Version sptVersion, CancellationToken cancellationToken = default)
+    public async Task CheckForCheckModsExtendedUpdateAsync(
+        Version sptVersion,
+        CancellationToken cancellationToken = default
+    )
     {
         reporter.Heading("Checking for Check Mods updates...");
 
@@ -58,7 +61,10 @@ public sealed class UpdateOrchestrationService(
         foreach (var mod in modsList)
         {
             var updatedMod = mod;
-            if (mod.Update.UpdateStatus == UpdateStatus.UpdateAvailable && await ignoredUpdateStore.IsIgnoredAsync(mod, cancellationToken))
+            if (
+                mod.Update.UpdateStatus == UpdateStatus.UpdateAvailable
+                && await ignoredUpdateStore.IsIgnoredAsync(mod, cancellationToken)
+            )
             {
                 updatedMod = updatedMod.WithUpdateSuppressed(true);
             }
@@ -67,4 +73,3 @@ public sealed class UpdateOrchestrationService(
         return updatedMods;
     }
 }
-

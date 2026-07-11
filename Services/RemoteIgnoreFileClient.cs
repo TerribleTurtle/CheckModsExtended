@@ -51,7 +51,10 @@ public sealed class RemoteIgnoreFileClient(
             }
 
             var json = await response.Content.ReadAsStringAsync(cancellationToken);
-            var file = JsonSerializer.Deserialize(json, CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.IgnoredUpdatesFile);
+            var file = JsonSerializer.Deserialize(
+                json,
+                CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.IgnoredUpdatesFile
+            );
             if (file?.Ignored is null)
             {
                 return null;
@@ -80,4 +83,3 @@ public sealed class RemoteIgnoreFileClient(
         }
     }
 }
-

@@ -22,15 +22,17 @@ public sealed class ListModsCommand : AsyncCommand<ListModsCommand.Settings>
         public string? SptPath { get; set; }
     }
 
-    public ListModsCommand(
-        IInitializationService initializationService,
-        IModScannerService scannerService)
+    public ListModsCommand(IInitializationService initializationService, IModScannerService scannerService)
     {
         _initializationService = initializationService;
         _scannerService = scannerService;
     }
 
-    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteAsync(
+        CommandContext context,
+        Settings settings,
+        CancellationToken cancellationToken
+    )
     {
         var args = string.IsNullOrWhiteSpace(settings.SptPath)
             ? System.Array.Empty<string>()
@@ -82,7 +84,9 @@ public sealed class ListModsCommand : AsyncCommand<ListModsCommand.Settings>
 
         AnsiConsole.Write(table);
         AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine($"Total: [bold]{clientMods.Count + serverMods.Count}[/] mods ([green]{serverMods.Count} server[/], [blue]{clientMods.Count} client[/])");
+        AnsiConsole.MarkupLine(
+            $"Total: [bold]{clientMods.Count + serverMods.Count}[/] mods ([green]{serverMods.Count} server[/], [blue]{clientMods.Count} client[/])"
+        );
 
         return 0;
     }

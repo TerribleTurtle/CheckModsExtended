@@ -80,4 +80,3 @@ public sealed class FakeTextRenderer : ITextRenderer
 
     public void ApplicationFooter(string version, string hash, string logFilePath) { }
 }
-

@@ -75,4 +75,3 @@ public sealed record IgnoredUpdatesFile(
     /// <summary>The schema version this build reads and writes.</summary>
     public const int CurrentSchemaVersion = 1;
 }
-

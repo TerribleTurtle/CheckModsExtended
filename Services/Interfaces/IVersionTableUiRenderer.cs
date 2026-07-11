@@ -21,4 +21,3 @@ public interface IVersionTableUiRenderer
     /// <param name="sptVersion">The installed SPT version.</param>
     void VersionCompatibilityResults(List<Mod> mods, SemanticVersioning.Version sptVersion);
 }
-

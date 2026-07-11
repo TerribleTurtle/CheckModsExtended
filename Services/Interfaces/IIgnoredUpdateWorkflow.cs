@@ -13,4 +13,3 @@ public interface IIgnoredUpdateWorkflow
     /// </summary>
     Task RunAsync(IReadOnlyList<Mod>? mods, CancellationToken cancellationToken = default);
 }
-

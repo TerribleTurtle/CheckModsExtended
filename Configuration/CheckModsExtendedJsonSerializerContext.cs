@@ -8,7 +8,8 @@ namespace CheckModsExtended.Configuration;
 [JsonSourceGenerationOptions(
     WriteIndented = false,
     PropertyNameCaseInsensitive = true,
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+)]
 [JsonSerializable(typeof(IgnoredUpdatesFile))]
 [JsonSerializable(typeof(SptVersionApiResponse))]
 [JsonSerializable(typeof(ModSearchResult))]
@@ -16,7 +17,4 @@ namespace CheckModsExtended.Configuration;
 [JsonSerializable(typeof(ModUpdatesApiResponse))]
 [JsonSerializable(typeof(ModDependenciesApiResponse))]
 [JsonSerializable(typeof(List<IgnoreReportUrl.ReportEntry>))]
-internal sealed partial class CheckModsExtendedJsonSerializerContext : JsonSerializerContext
-{
-}
-
+internal sealed partial class CheckModsExtendedJsonSerializerContext : JsonSerializerContext { }

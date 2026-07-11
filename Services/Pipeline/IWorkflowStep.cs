@@ -17,4 +17,3 @@ public interface IWorkflowStep
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task ExecuteAsync(UpdateWorkflowContext context, CancellationToken cancellationToken);
 }
-

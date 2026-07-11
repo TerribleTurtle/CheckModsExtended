@@ -54,4 +54,3 @@ public static class UiFormattingUtility
         return !string.IsNullOrWhiteSpace(url) && !url.Contains('[') && !url.Contains(']');
     }
 }
-

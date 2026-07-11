@@ -8,25 +8,24 @@ using CheckModsExtended.Models.Pipeline;
 using CheckModsExtended.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 
-
 namespace CheckModsExtended.Services.Pipeline.Steps;
 
 /// <summary>
 /// Workflow step that scans and reconciles mods.
 /// </summary>
-
 public sealed class ScanAndReconcileModsStep(
     IModScannerService modScannerService,
     IModResolutionService modResolutionService,
     IModReconciliationService modReconciliationService,
     IModCheckReporter reporter,
-    ILogger<ScanAndReconcileModsStep> logger) : IWorkflowStep
+    ILogger<ScanAndReconcileModsStep> logger
+) : IWorkflowStep
 {
     /// <inheritdoc />
     public async Task ExecuteAsync(UpdateWorkflowContext context, CancellationToken cancellationToken)
     {
         logger.LogDebug("Scanning and reconciling mods");
-        
+
         var (serverMods, clientMods) = await modScannerService.ScanAllModsAsync(context.SptPath!, cancellationToken);
 
         if (context.MisplacedReport is not null && context.MisplacedReport.Any)
@@ -48,7 +47,13 @@ public sealed class ScanAndReconcileModsStep(
         var modsWithWarnings = serverMods.Concat(clientMods).Where(m => m.HasWarnings).ToList();
         if (modsWithWarnings.Count > 0)
         {
-            modsWithWarnings = (await modResolutionService.FetchSourceCodeUrlsForModsAsync(modsWithWarnings, context.SptVersion!, cancellationToken)).ToList();
+            modsWithWarnings = (
+                await modResolutionService.FetchSourceCodeUrlsForModsAsync(
+                    modsWithWarnings,
+                    context.SptVersion!,
+                    cancellationToken
+                )
+            ).ToList();
         }
 
         reporter.LoadingWarnings(modsWithWarnings);
@@ -68,7 +73,7 @@ public sealed class ScanAndReconcileModsStep(
                 context.SptVersion!,
                 cancellationToken
             );
-            
+
             var newPairs = result.ReconciledPairs.ToList();
             foreach (var updatedPair in updatedPairs)
             {
@@ -78,13 +83,19 @@ public sealed class ScanAndReconcileModsStep(
                     newPairs[idx] = updatedPair;
                 }
             }
-            result = new ModReconciliationResult { Mods = result.Mods, ReconciledPairs = newPairs, UnmatchedServerMods = result.UnmatchedServerMods, UnmatchedClientMods = result.UnmatchedClientMods };
+            result = new ModReconciliationResult
+            {
+                Mods = result.Mods,
+                ReconciledPairs = newPairs,
+                UnmatchedServerMods = result.UnmatchedServerMods,
+                UnmatchedClientMods = result.UnmatchedClientMods,
+            };
         }
 
         reporter.ReconciliationResults(result);
 
         context.Mods = result.Mods.ToList();
-        
+
         if (context.Mods.Count == 0)
         {
             logger.LogInformation("No mods remaining after reconciliation");
@@ -125,4 +136,3 @@ public sealed class ScanAndReconcileModsStep(
         return fullFile.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
     }
 }
-

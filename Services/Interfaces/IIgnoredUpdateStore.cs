@@ -19,6 +19,8 @@ public interface IIgnoredUpdateStore
     /// <summary>
     /// Merges entries from <paramref name="incoming"/> that are not already present, tagging added entries as <see cref="IgnoreSource.Remote"/>; returns the count added.
     /// </summary>
-    Task<int> MergeWithoutOverwriteAsync(IReadOnlyList<IgnoredUpdate> incoming, CancellationToken cancellationToken = default);
+    Task<int> MergeWithoutOverwriteAsync(
+        IReadOnlyList<IgnoredUpdate> incoming,
+        CancellationToken cancellationToken = default
+    );
 }
-

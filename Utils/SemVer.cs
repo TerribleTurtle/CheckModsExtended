@@ -38,4 +38,3 @@ public static class SemVer
             && range.IsSatisfied(version);
     }
 }
-

@@ -2,11 +2,10 @@ using System.Collections.Generic;
 using CheckModsExtended.Models;
 using CheckModsExtended.Services.UI;
 using CheckModsExtended.Tests.Fakes;
+using CheckModsExtended.Tests.Fixtures;
 using Spectre.Console;
 using Spectre.Console.Testing;
 using Xunit;
-
-using CheckModsExtended.Tests.Fixtures;
 
 namespace CheckModsExtended.Tests.Services.UI;
 
@@ -84,12 +83,16 @@ public sealed class VersionTableUiRendererTests
 
         var mod = ModFixture.CreateClientMod("test.mod", "Test Mod Update");
 
-        mod = mod.WithApiMatch(new ModSearchResult(123, null, "Test Mod Update", "test-mod", null, null, 0, null, null, null, null));
-        mod = mod.WithSafeToUpdate(new SafeToUpdateMod(
-            new ModUpdateVersion(null, 123, null, null, null, "1.0.0", null, null),
-            new ModUpdateVersion(null, 123, null, null, null, "2.0.0", null, null),
-            "Major update"
-        ));
+        mod = mod.WithApiMatch(
+            new ModSearchResult(123, null, "Test Mod Update", "test-mod", null, null, 0, null, null, null, null)
+        );
+        mod = mod.WithSafeToUpdate(
+            new SafeToUpdateMod(
+                new ModUpdateVersion(null, 123, null, null, null, "1.0.0", null, null),
+                new ModUpdateVersion(null, 123, null, null, null, "2.0.0", null, null),
+                "Major update"
+            )
+        );
 
         mod = mod with
         {
@@ -98,8 +101,8 @@ public sealed class VersionTableUiRendererTests
                 UpdateStatus = UpdateStatus.UpdateBlocked,
                 BlockReason = "Blocked by dependency",
                 BlockingMods = [new BlockingModInfo(123, "dep", "dependency", "1.0.0", "1.0.0", null)],
-                UpdateSuppressed = true
-            }
+                UpdateSuppressed = true,
+            },
         };
 
         var depDelta = new UpdateDependencyDelta(
@@ -140,6 +143,3 @@ public sealed class VersionTableUiRendererTests
         Assert.Contains("Old Dep no longer required", output);
     }
 }
-
-
-

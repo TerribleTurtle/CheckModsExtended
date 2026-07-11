@@ -25,10 +25,14 @@ public sealed class IgnoreRemoveCommand : AsyncCommand<IgnoreRemoveCommand.Setti
         _store = store;
     }
 
-    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteAsync(
+        CommandContext context,
+        Settings settings,
+        CancellationToken cancellationToken
+    )
     {
         var ignores = (await _store.LoadAsync(cancellationToken)).ToList();
-        
+
         var removedCount = ignores.RemoveAll(i => i.ApiModId == settings.ApiModId);
 
         if (removedCount == 0)
@@ -38,8 +42,10 @@ public sealed class IgnoreRemoveCommand : AsyncCommand<IgnoreRemoveCommand.Setti
         }
 
         await _store.SaveAsync(ignores, cancellationToken);
-        
-        AnsiConsole.MarkupLine($"[green]Successfully removed {removedCount} ignored update(s) for API Mod ID {settings.ApiModId}.[/]");
+
+        AnsiConsole.MarkupLine(
+            $"[green]Successfully removed {removedCount} ignored update(s) for API Mod ID {settings.ApiModId}.[/]"
+        );
         return 0;
     }
 }

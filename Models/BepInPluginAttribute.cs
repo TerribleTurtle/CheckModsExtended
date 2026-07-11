@@ -14,4 +14,3 @@ public sealed class BepInPluginAttribute(string guid, string name, string versio
 
     public string Version { get; init; } = version;
 }
-

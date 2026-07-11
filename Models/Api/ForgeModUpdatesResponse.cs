@@ -148,4 +148,3 @@ public sealed record IncompatibleMod(
     [property: JsonPropertyName("reason")] string Reason,
     [property: JsonPropertyName("latest_compatible_version")] ModUpdateVersion? LatestCompatibleVersion
 );
-

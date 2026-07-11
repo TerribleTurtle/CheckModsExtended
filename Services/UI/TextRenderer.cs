@@ -447,4 +447,3 @@ public sealed class TextRenderer : ITextRenderer
         }
     }
 }
-

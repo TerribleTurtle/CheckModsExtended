@@ -4,16 +4,15 @@ using CheckModsExtended.Models.Pipeline;
 using CheckModsExtended.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 
-
 namespace CheckModsExtended.Services.Pipeline.Steps;
 
 /// <summary>
 /// Workflow step that checks for Check Mods tool updates.
 /// </summary>
-
 public sealed class CheckModsExtendedUpdateCheckStep(
     IUpdateOrchestrationService updateOrchestrationService,
-    ILogger<CheckModsExtendedUpdateCheckStep> logger) : IWorkflowStep
+    ILogger<CheckModsExtendedUpdateCheckStep> logger
+) : IWorkflowStep
 {
     /// <inheritdoc />
     public async Task ExecuteAsync(UpdateWorkflowContext context, CancellationToken cancellationToken)
@@ -22,4 +21,3 @@ public sealed class CheckModsExtendedUpdateCheckStep(
         await updateOrchestrationService.CheckForCheckModsExtendedUpdateAsync(context.SptVersion!, cancellationToken);
     }
 }
-

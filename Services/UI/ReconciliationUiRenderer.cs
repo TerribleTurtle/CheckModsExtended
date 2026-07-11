@@ -49,15 +49,20 @@ public sealed class ReconciliationUiRenderer(ITextRenderer textRenderer) : IReco
 
                     var reportUrl = !string.IsNullOrWhiteSpace(pair.SelectedMod.Local.Url)
                         ? pair.SelectedMod.Local.Url
-                        : (!string.IsNullOrWhiteSpace(pair.SelectedMod.Api.ApiSourceCodeUrl)
-                            ? pair.SelectedMod.Api.ApiSourceCodeUrl
-                            : pair.SelectedMod.Api.ApiUrl);
+                        : (
+                            !string.IsNullOrWhiteSpace(pair.SelectedMod.Api.ApiSourceCodeUrl)
+                                ? pair.SelectedMod.Api.ApiSourceCodeUrl
+                                : pair.SelectedMod.Api.ApiUrl
+                        );
 
-                    var guidMismatch = pair.ServerMod != null && pair.ClientMod != null && !string.Equals(
-                        pair.ServerMod.Local.Guid,
-                        pair.ClientMod.Local.Guid,
-                        StringComparison.OrdinalIgnoreCase
-                    );
+                    var guidMismatch =
+                        pair.ServerMod != null
+                        && pair.ClientMod != null
+                        && !string.Equals(
+                            pair.ServerMod.Local.Guid,
+                            pair.ClientMod.Local.Guid,
+                            StringComparison.OrdinalIgnoreCase
+                        );
 
                     if (guidMismatch)
                     {
@@ -171,4 +176,3 @@ public sealed class ReconciliationUiRenderer(ITextRenderer textRenderer) : IReco
         AnsiConsole.WriteLine();
     }
 }
-

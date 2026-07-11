@@ -26,4 +26,3 @@ public interface IReconciliationUiRenderer
     /// <param name="mods">List of unmatched mods.</param>
     void UnverifiedMods(List<Mod> mods);
 }
-

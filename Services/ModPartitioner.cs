@@ -56,7 +56,19 @@ public sealed class ModPartitioner : IModPartitioner
 
     private static readonly HashSet<string> _genericGuidSegments = new(StringComparer.OrdinalIgnoreCase)
     {
-        "com", "org", "net", "io", "dev", "co", "app", "me", "gg", "xyz", "github", "gitlab", "gitee"
+        "com",
+        "org",
+        "net",
+        "io",
+        "dev",
+        "co",
+        "app",
+        "me",
+        "gg",
+        "xyz",
+        "github",
+        "gitlab",
+        "gitee",
     };
 
     private static bool SameAuthorNamespace(string guidA, string guidB)

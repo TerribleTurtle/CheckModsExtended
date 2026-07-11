@@ -17,7 +17,11 @@ public sealed class IgnoreListCommand : AsyncCommand<GlobalSettings>
         _store = store;
     }
 
-    protected override async Task<int> ExecuteAsync(CommandContext context, GlobalSettings settings, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteAsync(
+        CommandContext context,
+        GlobalSettings settings,
+        CancellationToken cancellationToken
+    )
     {
         var ignores = await _store.LoadAsync(cancellationToken);
 

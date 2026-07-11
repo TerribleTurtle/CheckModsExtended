@@ -18,4 +18,3 @@ public interface IUpdateCheckService
         CancellationToken cancellationToken = default
     );
 }
-

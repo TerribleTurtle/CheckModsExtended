@@ -43,5 +43,3 @@ public sealed class BrowserLauncherTests
         Assert.False(launcher.TryOpenUrl(""));
     }
 }
-
-

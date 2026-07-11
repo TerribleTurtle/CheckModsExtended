@@ -176,4 +176,3 @@ public sealed class DependencyUiRenderer(ITextRenderer textRenderer) : IDependen
         AnsiConsole.WriteLine();
     }
 }
-

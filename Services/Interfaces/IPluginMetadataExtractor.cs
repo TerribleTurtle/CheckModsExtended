@@ -26,7 +26,11 @@ public interface IPluginMetadataExtractor
     /// <summary>
     /// Turns a directory's DLLs into mods. DLLs that reference each other become one mod, while unrelated DLLs stay separate.
     /// </summary>
-    Task<List<Mod>> ConsolidateDirectoryModsAsync(string directory, List<string> dllPaths, CancellationToken cancellationToken = default);
+    Task<List<Mod>> ConsolidateDirectoryModsAsync(
+        string directory,
+        List<string> dllPaths,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Attempts to read the DLL as a client (BepInEx) mod. Returns the mod if a BepInPlugin attribute is found, otherwise null.
@@ -43,4 +47,3 @@ public interface IPluginMetadataExtractor
     /// </summary>
     MisplacedMod ToMisplacedMod(List<PluginDll> group, string directoryName);
 }
-

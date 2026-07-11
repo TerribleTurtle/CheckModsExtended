@@ -30,7 +30,12 @@
   </PropertyGroup>
   <Target Name="GetGitHash" BeforeTargets="GetAssemblyAttributes;Publish">
     <!-- Capture the current Git commit hash and set it as a property. -->
-    <Exec Command="git rev-parse --short=6 HEAD" ConsoleToMSBuild="true" IgnoreExitCode="true" EchoOff="true">
+    <Exec
+      Command="git rev-parse --short=6 HEAD"
+      ConsoleToMSBuild="true"
+      IgnoreExitCode="true"
+      EchoOff="true"
+    >
       <Output TaskParameter="ConsoleOutput" PropertyName="GitHash" />
     </Exec>
     <PropertyGroup>
@@ -66,12 +71,24 @@
   <!-- Rename the published executable to include the runtime identifier. -->
   <Target Name="RenamePublishedExe" AfterTargets="Publish">
     <!-- Windows target (RID starts with 'win') -->
-    <Move Condition="'$(RuntimeIdentifier)' != '' AND $(RuntimeIdentifier.StartsWith('win'))" SourceFiles="$(PublishDir)$(AssemblyName).exe" DestinationFiles="$(PublishDir)$(AssemblyName)-$(RuntimeIdentifier).exe" />
+    <Move
+      Condition="'$(RuntimeIdentifier)' != '' AND $(RuntimeIdentifier.StartsWith('win'))"
+      SourceFiles="$(PublishDir)$(AssemblyName).exe"
+      DestinationFiles="$(PublishDir)$(AssemblyName)-$(RuntimeIdentifier).exe"
+    />
     <!-- Non-Windows target (Linux, macOS, etc.) -->
-    <Move Condition="'$(RuntimeIdentifier)' != '' AND !$(RuntimeIdentifier.StartsWith('win'))" SourceFiles="$(PublishDir)$(AssemblyName)" DestinationFiles="$(PublishDir)$(AssemblyName)-$(RuntimeIdentifier)" />
+    <Move
+      Condition="'$(RuntimeIdentifier)' != '' AND !$(RuntimeIdentifier.StartsWith('win'))"
+      SourceFiles="$(PublishDir)$(AssemblyName)"
+      DestinationFiles="$(PublishDir)$(AssemblyName)-$(RuntimeIdentifier)"
+    />
   </Target>
   <!-- Compress the Windows executable into a zip file with optimal compression. -->
-  <UsingTask TaskName="ZipFileWithCompression" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+  <UsingTask
+    TaskName="ZipFileWithCompression"
+    TaskFactory="RoslynCodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll"
+  >
     <ParameterGroup>
       <SourceFile ParameterType="System.String" Required="true" />
       <DestinationArchive ParameterType="System.String" Required="true" />
@@ -88,12 +105,19 @@
       </Code>
     </Task>
   </UsingTask>
-  <Target Name="ZipPublishedExe" AfterTargets="RenamePublishedExe" Condition="'$(RuntimeIdentifier)' != ''">
+  <Target
+    Name="ZipPublishedExe"
+    AfterTargets="RenamePublishedExe"
+    Condition="'$(RuntimeIdentifier)' != ''"
+  >
     <PropertyGroup>
       <ExeExt Condition="$(RuntimeIdentifier.StartsWith('win'))">.exe</ExeExt>
       <ExeExt Condition="!$(RuntimeIdentifier.StartsWith('win'))"></ExeExt>
     </PropertyGroup>
-    <ZipFileWithCompression SourceFile="$(PublishDir)$(AssemblyName)-$(RuntimeIdentifier)$(ExeExt)" DestinationArchive="$(PublishDir)$(AssemblyName)-$(RuntimeIdentifier).zip" />
+    <ZipFileWithCompression
+      SourceFile="$(PublishDir)$(AssemblyName)-$(RuntimeIdentifier)$(ExeExt)"
+      DestinationArchive="$(PublishDir)$(AssemblyName)-$(RuntimeIdentifier).zip"
+    />
   </Target>
   <ItemGroup>
     <InternalsVisibleTo Include="CheckModsExtended.Tests" />
@@ -102,7 +126,10 @@
     <PackageReference Include="FuzzySharp" Version="2.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
+    <PackageReference
+      Include="Microsoft.Extensions.Configuration.EnvironmentVariables"
+      Version="9.0.0"
+    />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
@@ -121,7 +148,5 @@
     </PackageReference>
     <PackageReference Include="Spectre.Console.Cli" Version="0.55.0" />
     <PackageReference Include="SPTarkov.DI" Version="4.0.13" />
-
   </ItemGroup>
 </Project>
-

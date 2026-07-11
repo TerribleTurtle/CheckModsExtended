@@ -44,43 +44,43 @@ public sealed class ModScannerService(
         reporter.Blank();
         reporter.Status($"Scanning {modDirs.Length} mod directories for server mods...");
 
-        await Parallel.ForEachAsync(modDirs, cancellationToken, async (modDir, ct) =>
-        {
-            var dllFiles = Directory.GetFiles(modDir, "*.dll", SearchOption.TopDirectoryOnly);
-            bool foundMod = false;
-
-            foreach (var dllPath in dllFiles)
+        await Parallel.ForEachAsync(
+            modDirs,
+            cancellationToken,
+            async (modDir, ct) =>
             {
-                try
+                var dllFiles = Directory.GetFiles(modDir, "*.dll", SearchOption.TopDirectoryOnly);
+                bool foundMod = false;
+
+                foreach (var dllPath in dllFiles)
                 {
-                    var mod = await serverExtractor.ExtractServerModMetadataAsync(dllPath, sptPath, ct);
-                    if (mod is not null)
+                    try
                     {
-                        concurrentMods.Add(mod);
-                        foundMod = true;
-                        break; // Only one mod per directory
+                        var mod = await serverExtractor.ExtractServerModMetadataAsync(dllPath, sptPath, ct);
+                        if (mod is not null)
+                        {
+                            concurrentMods.Add(mod);
+                            foundMod = true;
+                            break; // Only one mod per directory
+                        }
+                    }
+                    catch (Exception ex)
+                        when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException)
+                    {
+                        reporter.CouldNotReadModDll(Path.GetFileName(dllPath), ex.Message);
                     }
                 }
-                catch (Exception ex)
-                    when (ex
-                            is IOException
-                                or UnauthorizedAccessException
-                                or System.Security.SecurityException
-                    )
-                {
-                    reporter.CouldNotReadModDll(Path.GetFileName(dllPath), ex.Message);
-                }
-            }
 
-            if (!foundMod)
-            {
-                var packageMod = await serverExtractor.ExtractServerModPackageMetadataAsync(modDir, ct);
-                if (packageMod is not null)
+                if (!foundMod)
                 {
-                    concurrentMods.Add(packageMod);
+                    var packageMod = await serverExtractor.ExtractServerModPackageMetadataAsync(modDir, ct);
+                    if (packageMod is not null)
+                    {
+                        concurrentMods.Add(packageMod);
+                    }
                 }
             }
-        });
+        );
 
         var mods = concurrentMods.ToList();
 
@@ -126,7 +126,9 @@ public sealed class ModScannerService(
         foreach (var (directory, directoryDlls) in dllsByDirectory)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            mods.AddRange(await pluginExtractor.ConsolidateDirectoryModsAsync(directory, directoryDlls, cancellationToken));
+            mods.AddRange(
+                await pluginExtractor.ConsolidateDirectoryModsAsync(directory, directoryDlls, cancellationToken)
+            );
         }
 
         logger.LogInformation("Found {ModCount} client mods", mods.Count);
@@ -214,9 +216,11 @@ public sealed class ModScannerService(
     }
 
     /// <inheritdoc />
-    public async Task<MisplacedModReport> DetectMisplacedModsAsync(string sptPath, CancellationToken cancellationToken = default)
+    public async Task<MisplacedModReport> DetectMisplacedModsAsync(
+        string sptPath,
+        CancellationToken cancellationToken = default
+    )
     {
         return await misplacedDetector.DetectMisplacedModsAsync(sptPath, cancellationToken);
     }
 }
-

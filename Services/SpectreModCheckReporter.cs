@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using CheckModsExtended.Models;
 using CheckModsExtended.Services.Interfaces;
-using Spectre.Console;
 using CheckModsExtended.Services.UI;
+using Spectre.Console;
 using SPTarkov.DI.Annotations;
 
 namespace CheckModsExtended.Services;
@@ -110,13 +110,21 @@ public sealed class SpectreModCheckReporter : IModCheckReporter
     }
 
     /// <inheritdoc />
-    public Task RunForgeQueryProgressAsync(int total, Func<Action<int>, Task> work, CancellationToken cancellationToken = default)
+    public Task RunForgeQueryProgressAsync(
+        int total,
+        Func<Action<int>, Task> work,
+        CancellationToken cancellationToken = default
+    )
     {
         return _progressRenderer.RunForgeQueryProgressAsync(total, work, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<T> RunForgeQueryProgressAsync<T>(int total, Func<Action<int>, Task<T>> work, CancellationToken cancellationToken = default)
+    public Task<T> RunForgeQueryProgressAsync<T>(
+        int total,
+        Func<Action<int>, Task<T>> work,
+        CancellationToken cancellationToken = default
+    )
     {
         return _progressRenderer.RunForgeQueryProgressAsync(total, work, cancellationToken);
     }
@@ -293,4 +301,3 @@ public sealed class SpectreModCheckReporter : IModCheckReporter
         );
     }
 }
-

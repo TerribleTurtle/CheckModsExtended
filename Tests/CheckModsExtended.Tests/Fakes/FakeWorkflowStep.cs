@@ -26,4 +26,3 @@ public sealed class FakeWorkflowStep : IWorkflowStep
         return Task.CompletedTask;
     }
 }
-

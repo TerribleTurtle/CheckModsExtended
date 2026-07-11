@@ -30,4 +30,3 @@ public interface ITableRenderer
     /// <summary>Displays the final version summary table and update/blocked lists.</summary>
     void VersionTable(List<Mod> mods);
 }
-

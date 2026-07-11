@@ -3,11 +3,10 @@ using CheckModsExtended.Models;
 using CheckModsExtended.Services.Interfaces;
 using CheckModsExtended.Services.UI;
 using CheckModsExtended.Tests.Fakes;
+using CheckModsExtended.Tests.Fixtures;
 using Spectre.Console;
 using Spectre.Console.Testing;
 using Xunit;
-
-using CheckModsExtended.Tests.Fixtures;
 
 namespace CheckModsExtended.Tests.Services.UI;
 
@@ -25,11 +24,7 @@ public sealed class DependencyUiRendererTests
         {
             RootMods = new List<DependencyNode>
             {
-                new DependencyNode
-                {
-                    Mod = ModFixture.CreateClientMod("test.mod", "Test Mod"),
-                    IsInstalled = true,
-                },
+                new DependencyNode { Mod = ModFixture.CreateClientMod("test.mod", "Test Mod"), IsInstalled = true },
             },
             Conflicts = new List<DependencyConflict>(),
             MissingDependencies = new List<MissingDependency>
@@ -63,11 +58,7 @@ public sealed class DependencyUiRendererTests
         {
             RootMods = new List<DependencyNode>
             {
-                new DependencyNode
-                {
-                    Mod = ModFixture.CreateClientMod("test.mod", "Test Mod"),
-                    IsInstalled = true,
-                },
+                new DependencyNode { Mod = ModFixture.CreateClientMod("test.mod", "Test Mod"), IsInstalled = true },
             },
             Conflicts = new List<DependencyConflict>
             {
@@ -124,11 +115,7 @@ public sealed class DependencyUiRendererTests
         {
             RootMods = new List<DependencyNode>
             {
-                new DependencyNode
-                {
-                    Mod = ModFixture.CreateClientMod("test.mod", "Test Mod"),
-                    IsInstalled = true,
-                },
+                new DependencyNode { Mod = ModFixture.CreateClientMod("test.mod", "Test Mod"), IsInstalled = true },
             },
         };
 
@@ -138,4 +125,3 @@ public sealed class DependencyUiRendererTests
         Assert.Contains("All dependencies are satisfied", output);
     }
 }
-

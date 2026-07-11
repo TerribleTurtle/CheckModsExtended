@@ -292,4 +292,3 @@ public sealed class ModUpdateMethodsTests
         Assert.True(mod.HasWarnings);
     }
 }
-

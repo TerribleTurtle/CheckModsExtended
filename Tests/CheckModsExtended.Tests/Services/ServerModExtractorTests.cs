@@ -27,7 +27,8 @@ public sealed class ServerModExtractorTests : IDisposable
     {
         var modPath = Path.Combine("SPT", "user", "mods", "test-server-mod", "TestServerMod.dll");
 
-        var code = @"
+        var code =
+            @"
             using System;
             
             public abstract class AbstractModMetadata { }
@@ -91,7 +92,8 @@ public sealed class ServerModExtractorTests : IDisposable
     {
         var modPath = Path.Combine("SPT", "user", "mods", "missing-props-mod", "MissingProps.dll");
 
-        var code = @"
+        var code =
+            @"
             using System;
             
             public abstract class AbstractModMetadata { }
@@ -114,7 +116,8 @@ public sealed class ServerModExtractorTests : IDisposable
     {
         var modPath = Path.Combine("SPT", "user", "mods", "missing-props-mod", "MissingProps.dll");
 
-        var code = @"
+        var code =
+            @"
             using System;
             
             public abstract class AbstractModMetadata { }
@@ -154,4 +157,3 @@ public sealed class ServerModExtractorTests : IDisposable
         _fixture.Dispose();
     }
 }
-

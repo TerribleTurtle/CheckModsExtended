@@ -38,4 +38,3 @@ public sealed class BrowserLauncher(ILogger<BrowserLauncher> logger) : IBrowserL
         }
     }
 }
-

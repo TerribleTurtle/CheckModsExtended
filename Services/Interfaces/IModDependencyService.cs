@@ -139,4 +139,3 @@ public sealed class MissingDependency
     /// </summary>
     public string? DownloadLink { get; init; }
 }
-

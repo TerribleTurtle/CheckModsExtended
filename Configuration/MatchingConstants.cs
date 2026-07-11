@@ -29,4 +29,3 @@ public static class MatchingConstants
     /// </summary>
     public const int MaxDisplayAuthorLength = 20;
 }
-

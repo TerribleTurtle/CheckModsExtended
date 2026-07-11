@@ -12,16 +12,17 @@ public sealed class ServiceCollectionExtensionsTests
     {
         // Arrange
         var services = new ServiceCollection();
-        
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                { "ForgeApiOptions:BaseUrl", "https://api.example.com/" },
 
-                { "LoggingOptions:EnableFileLogging", "false" },
-                { "LoggingOptions:MinimumLogLevel", "Information" },
-                { "IgnoredUpdateOptions:RemoteTimeoutSeconds", "10" }
-            })
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    { "ForgeApiOptions:BaseUrl", "https://api.example.com/" },
+                    { "LoggingOptions:EnableFileLogging", "false" },
+                    { "LoggingOptions:MinimumLogLevel", "Information" },
+                    { "IgnoredUpdateOptions:RemoteTimeoutSeconds", "10" },
+                }
+            )
             .Build();
 
         // Act
@@ -33,4 +34,3 @@ public sealed class ServiceCollectionExtensionsTests
         Assert.NotNull(forgeApiService);
     }
 }
-

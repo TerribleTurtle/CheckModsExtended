@@ -39,4 +39,3 @@ public sealed record ModVersionsApiResponse(
     [property: JsonPropertyName("success")] bool Success,
     [property: JsonPropertyName("data")] List<ModVersion>? Data
 );
-

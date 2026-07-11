@@ -37,6 +37,7 @@ public static class ServiceCollectionExtensions
             new ProductInfoHeaderValue("(+https://github.com/TerribleTurtle/CheckModsExtended)")
         );
     }
+
     /// <summary>
     /// Registers all CheckModsExtended services with the dependency injection container.
     /// </summary>
@@ -133,31 +134,37 @@ public static class ServiceCollectionExtensions
                 ConfigureDefaultUserAgent(client);
             }
         );
-        
-        httpClientBuilder.AddResilienceHandler("pacer", builder =>
-        {
-            var rateLimiter = new System.Threading.RateLimiting.TokenBucketRateLimiter(
-                new System.Threading.RateLimiting.TokenBucketRateLimiterOptions
-                {
-                    TokenLimit = RateLimiterTokenLimit,
-                    TokensPerPeriod = 1,
-                    ReplenishmentPeriod = TimeSpan.FromMilliseconds(RateLimiterReplenishmentPeriodMs),
-                    QueueLimit = 10_000,
-                    QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst,
-                    AutoReplenishment = true
-                });
 
-            builder.AddRateLimiter(new Polly.RateLimiting.RateLimiterStrategyOptions 
-            { 
-                RateLimiter = args => rateLimiter.AcquireAsync(1, args.Context.CancellationToken)
-            });
-        });
-        
+        httpClientBuilder.AddResilienceHandler(
+            "pacer",
+            builder =>
+            {
+                var rateLimiter = new System.Threading.RateLimiting.TokenBucketRateLimiter(
+                    new System.Threading.RateLimiting.TokenBucketRateLimiterOptions
+                    {
+                        TokenLimit = RateLimiterTokenLimit,
+                        TokensPerPeriod = 1,
+                        ReplenishmentPeriod = TimeSpan.FromMilliseconds(RateLimiterReplenishmentPeriodMs),
+                        QueueLimit = 10_000,
+                        QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst,
+                        AutoReplenishment = true,
+                    }
+                );
+
+                builder.AddRateLimiter(
+                    new Polly.RateLimiting.RateLimiterStrategyOptions
+                    {
+                        RateLimiter = args => rateLimiter.AcquireAsync(1, args.Context.CancellationToken),
+                    }
+                );
+            }
+        );
+
         httpClientBuilder.AddStandardResilienceHandler(options =>
         {
             // Allow up to 5 minutes total to survive 429 Retry-After delays
             options.TotalRequestTimeout.Timeout = TimeSpan.FromMinutes(5);
-            
+
             // Prevent the Circuit Breaker from tripping during heavy rate limiting
             options.CircuitBreaker.FailureRatio = CircuitBreakerFailureRatioThreshold;
             options.CircuitBreaker.MinimumThroughput = 1000;
@@ -190,15 +197,17 @@ public static class ServiceCollectionExtensions
         });
 
         // Register the remote ignore-list client as a typed HttpClient.
-        services.AddHttpClient<IRemoteIgnoreFileClient, RemoteIgnoreFileClient>(
-            (serviceProvider, client) =>
-            {
-                var ignoredOptions = serviceProvider.GetRequiredService<IOptions<IgnoredUpdateOptions>>().Value;
-                client.Timeout = TimeSpan.FromSeconds(ignoredOptions.RemoteTimeoutSeconds);
+        services
+            .AddHttpClient<IRemoteIgnoreFileClient, RemoteIgnoreFileClient>(
+                (serviceProvider, client) =>
+                {
+                    var ignoredOptions = serviceProvider.GetRequiredService<IOptions<IgnoredUpdateOptions>>().Value;
+                    client.Timeout = TimeSpan.FromSeconds(ignoredOptions.RemoteTimeoutSeconds);
 
-                ConfigureDefaultUserAgent(client);
-            }
-        ).AddStandardResilienceHandler();
+                    ConfigureDefaultUserAgent(client);
+                }
+            )
+            .AddStandardResilienceHandler();
 
         services.AddTransient<IWorkflowStep, RemoveLegacyApiKeyStep>();
         services.AddTransient<IWorkflowStep, ValidateSptPathStep>();
@@ -217,5 +226,3 @@ public static class ServiceCollectionExtensions
         return services;
     }
 }
-
-

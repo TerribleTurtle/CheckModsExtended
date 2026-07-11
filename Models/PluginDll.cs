@@ -15,4 +15,3 @@ public sealed record PluginDll(
     string? AssemblyName,
     IReadOnlySet<string> ReferencedAssemblyNames
 );
-

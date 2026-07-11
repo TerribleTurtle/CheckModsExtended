@@ -5,17 +5,16 @@ using CheckModsExtended.Models.Pipeline;
 using CheckModsExtended.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 
-
 namespace CheckModsExtended.Services.Pipeline.Steps;
 
 /// <summary>
 /// Workflow step that matches mods with the Forge API.
 /// </summary>
-
 public sealed class MatchModsWithApiStep(
     IModMatchingService modMatchingService,
     IModCheckReporter reporter,
-    ILogger<MatchModsWithApiStep> logger) : IWorkflowStep
+    ILogger<MatchModsWithApiStep> logger
+) : IWorkflowStep
 {
     /// <inheritdoc />
     public async Task ExecuteAsync(UpdateWorkflowContext context, CancellationToken cancellationToken)
@@ -41,8 +40,7 @@ public sealed class MatchModsWithApiStep(
 
         reporter.UnverifiedMods(matchedMods.ToList());
         reporter.Rule();
-        
+
         context.Mods = matchedMods.ToList();
     }
 }
-

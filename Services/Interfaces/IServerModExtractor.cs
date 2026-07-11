@@ -26,9 +26,5 @@ public interface IServerModExtractor
     /// <param name="modDirectory">The absolute path to the server mod directory.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A populated Mod object, or null if the directory does not contain a valid package.json.</returns>
-    Task<Mod?> ExtractServerModPackageMetadataAsync(
-        string modDirectory,
-        CancellationToken cancellationToken = default
-    );
+    Task<Mod?> ExtractServerModPackageMetadataAsync(string modDirectory, CancellationToken cancellationToken = default);
 }
-

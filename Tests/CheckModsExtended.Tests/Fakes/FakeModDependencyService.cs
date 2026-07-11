@@ -31,4 +31,3 @@ public sealed class FakeModDependencyService : IModDependencyService
         return Task.FromResult<(IReadOnlyList<Mod>, DependencyAnalysisResult)>((mods.ToList(), ResultToReturn));
     }
 }
-

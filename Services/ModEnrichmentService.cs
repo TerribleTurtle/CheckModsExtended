@@ -73,4 +73,3 @@ public sealed class ModEnrichmentService(IForgeApiService forgeApiService, ILogg
         return modsDict.Values.ToList();
     }
 }
-

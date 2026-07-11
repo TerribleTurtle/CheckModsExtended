@@ -3,11 +3,10 @@ using CheckModsExtended.Models;
 using CheckModsExtended.Services.Interfaces;
 using CheckModsExtended.Services.UI;
 using CheckModsExtended.Tests.Fakes;
+using CheckModsExtended.Tests.Fixtures;
 using Spectre.Console;
 using Spectre.Console.Testing;
 using Xunit;
-
-using CheckModsExtended.Tests.Fixtures;
 
 namespace CheckModsExtended.Tests.Services.UI;
 
@@ -38,7 +37,10 @@ public sealed class ReconciliationUiRendererTests
         AnsiConsole.Console = console;
         var renderer = new ReconciliationUiRenderer(new FakeTextRenderer());
 
-        var mod = ModFixture.CreateClientMod("warning.mod", "Warning Mod") with { LoadWarnings = new List<string> { "Mod load failed" } };
+        var mod = ModFixture.CreateClientMod("warning.mod", "Warning Mod") with
+        {
+            LoadWarnings = new List<string> { "Mod load failed" },
+        };
 
         renderer.LoadingWarnings(new List<Mod> { mod });
 
@@ -82,7 +84,10 @@ public sealed class ReconciliationUiRendererTests
         AnsiConsole.Console = console;
         var renderer = new ReconciliationUiRenderer(new FakeTextRenderer());
 
-        var serverMod = ModFixture.CreateServerMod("server.guid", "Test Mod") with { Api = new ForgeApiMetadata { ApiUrl = "https://forge.com/mod" } };
+        var serverMod = ModFixture.CreateServerMod("server.guid", "Test Mod") with
+        {
+            Api = new ForgeApiMetadata { ApiUrl = "https://forge.com/mod" },
+        };
 
         var clientMod = ModFixture.CreateClientMod("client.guid", "Test Mod");
 
@@ -109,4 +114,3 @@ public sealed class ReconciliationUiRendererTests
         Assert.Contains("GUIDs differ", output);
     }
 }
-

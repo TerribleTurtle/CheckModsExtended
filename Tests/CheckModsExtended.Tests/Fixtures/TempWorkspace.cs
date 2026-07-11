@@ -44,4 +44,3 @@ internal static class TempWorkspace
         }
     }
 }
-

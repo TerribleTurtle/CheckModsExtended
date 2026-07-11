@@ -134,13 +134,21 @@ public sealed class FakeModCheckReporter : IModCheckReporter
     }
 
     /// <inheritdoc />
-    public async Task RunForgeQueryProgressAsync(int total, Func<Action<int>, Task> work, CancellationToken cancellationToken = default)
+    public async Task RunForgeQueryProgressAsync(
+        int total,
+        Func<Action<int>, Task> work,
+        CancellationToken cancellationToken = default
+    )
     {
         await work(_ => { });
     }
 
     /// <inheritdoc />
-    public async Task<T> RunForgeQueryProgressAsync<T>(int total, Func<Action<int>, Task<T>> work, CancellationToken cancellationToken = default)
+    public async Task<T> RunForgeQueryProgressAsync<T>(
+        int total,
+        Func<Action<int>, Task<T>> work,
+        CancellationToken cancellationToken = default
+    )
     {
         return await work(_ => { });
     }
@@ -248,4 +256,3 @@ public sealed class FakeModCheckReporter : IModCheckReporter
         return Task.FromResult(true);
     }
 }
-

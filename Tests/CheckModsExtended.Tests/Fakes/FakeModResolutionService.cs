@@ -23,7 +23,10 @@ public sealed class FakeModResolutionService : IModResolutionService
         return Task.FromResult<IReadOnlyList<Mod>>(mods.ToList());
     }
 
-    public Task<(IReadOnlyList<ModPair> UpdatedPairs, IReadOnlyList<Mod> UpdatedMods)> FetchSourceCodeUrlsForPairedModsAsync(
+    public Task<(
+        IReadOnlyList<ModPair> UpdatedPairs,
+        IReadOnlyList<Mod> UpdatedMods
+    )> FetchSourceCodeUrlsForPairedModsAsync(
         IEnumerable<ModPair> pairs,
         Version sptVersion,
         CancellationToken cancellationToken = default
@@ -33,4 +36,3 @@ public sealed class FakeModResolutionService : IModResolutionService
         return Task.FromResult<(IReadOnlyList<ModPair>, IReadOnlyList<Mod>)>((pairs.ToList(), []));
     }
 }
-

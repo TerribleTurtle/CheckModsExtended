@@ -41,4 +41,3 @@ public sealed class FakeUpdateOrchestrationService : IUpdateOrchestrationService
         return Task.FromResult<IReadOnlyList<Mod>>(mods.ToList());
     }
 }
-

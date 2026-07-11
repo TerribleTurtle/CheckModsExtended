@@ -76,4 +76,3 @@ public sealed class UpdateDependencyDelta
         get { return Added.Count > 0 || Removed.Count > 0; }
     }
 }
-

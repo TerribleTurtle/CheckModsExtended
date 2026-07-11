@@ -37,4 +37,3 @@ public sealed class UpdateWorkflowContext
     /// </summary>
     public bool IsCancelled { get; set; }
 }
-

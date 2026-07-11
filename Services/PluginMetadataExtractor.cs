@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using Mono.Cecil;
 using System.Threading;
 using System.Threading.Tasks;
 using CheckModsExtended.Configuration;
@@ -13,6 +12,7 @@ using CheckModsExtended.Services.Interfaces;
 using CheckModsExtended.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Mono.Cecil;
 using SPTarkov.DI.Annotations;
 
 namespace CheckModsExtended.Services;
@@ -29,7 +29,7 @@ public sealed class PluginMetadataExtractor(
     /// <inheritdoc />
     public List<string> GetValidClientDllFiles(string pluginsPath)
     {
-        var sptDir = Path.Combine(pluginsPath, "spt");
+        var sptDir = Path.Combine(pluginsPath, "spt") + Path.DirectorySeparatorChar;
 
         return new DirectoryInfo(pluginsPath)
             .EnumerateFiles("*.dll", SearchOption.AllDirectories)
@@ -53,13 +53,14 @@ public sealed class PluginMetadataExtractor(
             new ParallelOptions
             {
                 MaxDegreeOfParallelism = Environment.ProcessorCount,
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
             },
             async (dllPath, ct) =>
             {
                 var mod = await ExtractClientModMetadataAsync(dllPath, warnings, ct);
                 results.Add(mod);
-            });
+            }
+        );
 
         foreach (var (fileName, reason) in warnings)
         {
@@ -77,7 +78,11 @@ public sealed class PluginMetadataExtractor(
     }
 
     /// <inheritdoc />
-    public async Task<List<Mod>> ConsolidateDirectoryModsAsync(string directory, List<string> dllPaths, CancellationToken cancellationToken = default)
+    public async Task<List<Mod>> ConsolidateDirectoryModsAsync(
+        string directory,
+        List<string> dllPaths,
+        CancellationToken cancellationToken = default
+    )
     {
         var allPlugins = await ReadPluginDllsAsync(dllPaths, cancellationToken);
 
@@ -88,7 +93,10 @@ public sealed class PluginMetadataExtractor(
 
         var directoryName = Path.GetFileName(directory);
 
-        return partitioner.PartitionByRelatedness(allPlugins).Select(group => CreateConsolidatedMod(group, directoryName)).ToList();
+        return partitioner
+            .PartitionByRelatedness(allPlugins)
+            .Select(group => CreateConsolidatedMod(group, directoryName))
+            .ToList();
     }
 
     /// <inheritdoc />
@@ -123,7 +131,10 @@ public sealed class PluginMetadataExtractor(
     }
 
     /// <inheritdoc />
-    public async Task<List<PluginDll>> ReadPluginDllsAsync(List<string> dllPaths, CancellationToken cancellationToken = default)
+    public async Task<List<PluginDll>> ReadPluginDllsAsync(
+        List<string> dllPaths,
+        CancellationToken cancellationToken = default
+    )
     {
         List<PluginDll> plugins = [];
 
@@ -133,7 +144,7 @@ public sealed class PluginMetadataExtractor(
             {
                 using var stream = new FileStream(dllPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                 using var module = ModuleDefinition.ReadModule(stream);
-                
+
                 BepInPluginAttribute? plugin = null;
                 foreach (var type in module.Types)
                 {
@@ -149,8 +160,8 @@ public sealed class PluginMetadataExtractor(
                     continue;
                 }
 
-                var referencedNames = module.AssemblyReferences
-                    .Select(r => r.Name)
+                var referencedNames = module
+                    .AssemblyReferences.Select(r => r.Name)
                     .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
                 plugins.Add(new PluginDll(dllPath, plugin, module.Assembly.Name.Name, referencedNames));
@@ -182,7 +193,11 @@ public sealed class PluginMetadataExtractor(
         return new MisplacedMod(false, mod.Local.Guid, mod.Local.LocalName, mod.Local.LocalVersion, primaryDll);
     }
 
-    private static async Task<Mod?> ExtractClientModMetadataAsync(string dllPath, ConcurrentBag<(string FileName, string Reason)> warnings, CancellationToken cancellationToken)
+    private static async Task<Mod?> ExtractClientModMetadataAsync(
+        string dllPath,
+        ConcurrentBag<(string FileName, string Reason)> warnings,
+        CancellationToken cancellationToken
+    )
     {
         try
         {
@@ -220,10 +235,11 @@ public sealed class PluginMetadataExtractor(
             return null;
         }
 
-        var attr = type.CustomAttributes.FirstOrDefault(a => 
-            a.AttributeType.Name == "BepInPlugin" || 
-            a.AttributeType.Name == "BepInPluginAttribute" ||
-            a.AttributeType.FullName.Contains("BepInPlugin"));
+        var attr = type.CustomAttributes.FirstOrDefault(a =>
+            a.AttributeType.Name == "BepInPlugin"
+            || a.AttributeType.Name == "BepInPluginAttribute"
+            || a.AttributeType.FullName.Contains("BepInPlugin")
+        );
 
         if (attr is null || !attr.HasConstructorArguments || attr.ConstructorArguments.Count < 3)
         {
@@ -241,8 +257,6 @@ public sealed class PluginMetadataExtractor(
 
         return new BepInPluginAttribute(guid, name, version);
     }
-
-
 
     private static Mod CreateConsolidatedMod(List<PluginDll> group, string directoryName)
     {
@@ -422,5 +436,3 @@ public sealed class PluginMetadataExtractor(
         return SemVer.TryParse(version, "PluginMetadataExtractor").IsT0;
     }
 }
-
-

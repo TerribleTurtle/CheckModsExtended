@@ -7,17 +7,16 @@ using CheckModsExtended.Models.Pipeline;
 using CheckModsExtended.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 
-
 namespace CheckModsExtended.Services.Pipeline.Steps;
 
 /// <summary>
 /// Workflow step that checks mod dependencies.
 /// </summary>
-
 public sealed class CheckModDependenciesStep(
     IModDependencyService modDependencyService,
     IModCheckReporter reporter,
-    ILogger<CheckModDependenciesStep> logger) : IWorkflowStep
+    ILogger<CheckModDependenciesStep> logger
+) : IWorkflowStep
 {
     /// <inheritdoc />
     public async Task ExecuteAsync(UpdateWorkflowContext context, CancellationToken cancellationToken)
@@ -31,13 +30,15 @@ public sealed class CheckModDependenciesStep(
 
         reporter.Blank();
 
-        var installedGuids = context.Mods.Where(m => !string.IsNullOrWhiteSpace(m.Local.Guid))
+        var installedGuids = context
+            .Mods.Where(m => !string.IsNullOrWhiteSpace(m.Local.Guid))
             .Select(m => m.Local.Guid)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var matchedCount = context.Mods.Count(m => m.IsMatched && m.Api.ApiModId.HasValue);
 
-        var updatableCount = context.Mods.Where(m =>
+        var updatableCount = context
+            .Mods.Where(m =>
                 m.IsMatched
                 && m.Api.ApiModId.HasValue
                 && m.Update.UpdateStatus == UpdateStatus.UpdateAvailable
@@ -65,4 +66,3 @@ public sealed class CheckModDependenciesStep(
         context.Mods = updatedMods.ToList();
     }
 }
-

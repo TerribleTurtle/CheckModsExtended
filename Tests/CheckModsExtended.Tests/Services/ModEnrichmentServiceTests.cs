@@ -126,4 +126,3 @@ public sealed class ModEnrichmentServiceTests
         Assert.Equal(UpdateStatus.UpdateAvailable, matchedMod.Update.UpdateStatus);
     }
 }
-

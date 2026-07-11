@@ -12,7 +12,11 @@ namespace CheckModsExtended.Services.UI;
 public sealed class ProgressRenderer : IProgressRenderer
 {
     /// <inheritdoc />
-    public async Task RunForgeQueryProgressAsync(int total, Func<Action<int>, Task> work, CancellationToken cancellationToken = default)
+    public async Task RunForgeQueryProgressAsync(
+        int total,
+        Func<Action<int>, Task> work,
+        CancellationToken cancellationToken = default
+    )
     {
         cancellationToken.ThrowIfCancellationRequested();
         await CreateForgeProgress()
@@ -26,7 +30,11 @@ public sealed class ProgressRenderer : IProgressRenderer
     }
 
     /// <inheritdoc />
-    public async Task<T> RunForgeQueryProgressAsync<T>(int total, Func<Action<int>, Task<T>> work, CancellationToken cancellationToken = default)
+    public async Task<T> RunForgeQueryProgressAsync<T>(
+        int total,
+        Func<Action<int>, Task<T>> work,
+        CancellationToken cancellationToken = default
+    )
     {
         cancellationToken.ThrowIfCancellationRequested();
         return await CreateForgeProgress()
@@ -52,4 +60,3 @@ public sealed class ProgressRenderer : IProgressRenderer
             );
     }
 }
-

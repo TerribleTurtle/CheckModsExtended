@@ -128,4 +128,3 @@ public sealed class CachedForgeApiService(
         return GetCachedAsync(key, () => inner.GetModDependenciesAsync(versionsList, cancellationToken));
     }
 }
-

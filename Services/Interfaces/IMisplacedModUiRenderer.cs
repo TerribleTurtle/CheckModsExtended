@@ -13,4 +13,3 @@ public interface IMisplacedModUiRenderer
     /// <param name="report">The misplaced mod report.</param>
     void MisplacedMods(MisplacedModReport report);
 }
-

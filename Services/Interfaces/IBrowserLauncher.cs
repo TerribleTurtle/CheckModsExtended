@@ -10,4 +10,3 @@ public interface IBrowserLauncher
     /// </summary>
     bool TryOpenUrl(string url);
 }
-

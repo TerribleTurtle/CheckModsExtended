@@ -34,4 +34,3 @@ public sealed record CheckModsExtendedUpdateResult(
     string? LatestVersion = null,
     string? DownloadLink = null
 );
-

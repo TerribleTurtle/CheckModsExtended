@@ -39,4 +39,3 @@ public sealed record SptVersionResult(
     [property: JsonPropertyName("created_at")] string? CreatedAt,
     [property: JsonPropertyName("updated_at")] string? UpdatedAt
 );
-

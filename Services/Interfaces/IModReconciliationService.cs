@@ -67,4 +67,3 @@ public sealed class ModPair
     /// </summary>
     public required IReadOnlyList<string> Notes { get; init; }
 }
-

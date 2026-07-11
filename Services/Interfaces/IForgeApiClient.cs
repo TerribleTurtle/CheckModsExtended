@@ -10,7 +10,10 @@ namespace CheckModsExtended.Services.Interfaces;
 public interface IForgeApiClient
 {
     /// <summary>
-    /// Issues a GET request and returns its status code and body. 
+    /// Issues a GET request and returns its status code and body.
     /// </summary>
-    Task<(HttpStatusCode StatusCode, string Body, bool IsSuccessStatusCode)> GetJsonAsync(string url, CancellationToken cancellationToken = default);
+    Task<(HttpStatusCode StatusCode, string Body, bool IsSuccessStatusCode)> GetJsonAsync(
+        string url,
+        CancellationToken cancellationToken = default
+    );
 }

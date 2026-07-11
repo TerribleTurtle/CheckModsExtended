@@ -2,11 +2,10 @@ using System.Collections.Generic;
 using CheckModsExtended.Models;
 using CheckModsExtended.Services;
 using CheckModsExtended.Tests.Fakes;
+using CheckModsExtended.Tests.Fixtures;
 using SemanticVersioning;
 using Xunit;
 using Version = SemanticVersioning.Version;
-
-using CheckModsExtended.Tests.Fixtures;
 
 namespace CheckModsExtended.Tests.Services;
 
@@ -128,4 +127,3 @@ public sealed class CompatibilityValidationServiceTests
         Assert.Contains(_reporter.Warnings, w => w.Contains("invalid version constraint"));
     }
 }
-

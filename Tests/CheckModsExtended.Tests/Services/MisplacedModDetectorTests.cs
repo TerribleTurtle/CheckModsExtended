@@ -21,7 +21,11 @@ public sealed class MisplacedModDetectorTests : IDisposable
         _fixture = new SptSandboxFixture();
         _sptPath = _fixture.SandboxPath;
         var options = Options.Create(new ModScannerOptions { MaxDllSizeBytes = 10 * 1024 * 1024 });
-        var pluginExtractor = new PluginMetadataExtractor(new ModPartitioner(), options, NullLogger<PluginMetadataExtractor>.Instance);
+        var pluginExtractor = new PluginMetadataExtractor(
+            new ModPartitioner(),
+            options,
+            NullLogger<PluginMetadataExtractor>.Instance
+        );
         var serverExtractor = new ServerModExtractor(NullLogger<ServerModExtractor>.Instance);
         _detector = new MisplacedModDetector(
             new ModPartitioner(),
@@ -45,7 +49,8 @@ public class Plugin {}
         _fixture.CompileDummyDll(misplacedClientPath, clientCode);
 
         var misplacedServerPath = Path.Combine("BepInEx", "plugins", "wrong-server", "WrongServer.dll");
-        var serverCode = @"
+        var serverCode =
+            @"
             using System;
             public abstract class AbstractModMetadata { }
             public class ValidModMetadata : AbstractModMetadata 
@@ -138,4 +143,3 @@ public class Plugin2 {}
         _fixture.Dispose();
     }
 }
-

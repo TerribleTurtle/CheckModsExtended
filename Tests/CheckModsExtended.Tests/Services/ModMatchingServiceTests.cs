@@ -1,10 +1,7 @@
 using CheckModsExtended.Models;
+using CheckModsExtended.Services;
 using CheckModsExtended.Tests.Fakes;
 using CheckModsExtended.Tests.Fixtures;
-
-
-
-using CheckModsExtended.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace CheckModsExtended.Tests;
@@ -20,7 +17,12 @@ public sealed class ModMatchingServiceTests
 
     private static ModMatchingService CreateService(FakeForgeApiService api)
     {
-        return new ModMatchingService(new ModLookupStrategy(api), Microsoft.Extensions.Options.Options.Create(new CheckModsExtended.Configuration.ModMatchingOptions()), new CheckModsExtended.Tests.Fakes.FakeModCheckReporter(), NullLogger<ModMatchingService>.Instance);
+        return new ModMatchingService(
+            new ModLookupStrategy(api),
+            Microsoft.Extensions.Options.Options.Create(new CheckModsExtended.Configuration.ModMatchingOptions()),
+            new CheckModsExtended.Tests.Fakes.FakeModCheckReporter(),
+            NullLogger<ModMatchingService>.Instance
+        );
     }
 
     private static Mod ClientMod(string guid, string name = "Mod", string version = "1.0.0")
@@ -381,5 +383,3 @@ public sealed class ModMatchingServiceTests
         Assert.DoesNotContain(queries, q => q.Contains("Unknown"));
     }
 }
-
-

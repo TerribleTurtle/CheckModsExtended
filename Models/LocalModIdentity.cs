@@ -55,4 +55,3 @@ public sealed record LocalModIdentity
     /// </summary>
     public string? Url { get; init; }
 }
-

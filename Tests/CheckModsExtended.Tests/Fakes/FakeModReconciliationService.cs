@@ -24,4 +24,3 @@ public sealed class FakeModReconciliationService : IModReconciliationService
         return ResultToReturn;
     }
 }
-

@@ -15,10 +15,7 @@ namespace CheckModsExtended.Services;
 public sealed class CompatibilityValidationService(IModCheckReporter reporter) : ICompatibilityValidationService
 {
     /// <inheritdoc />
-    public IReadOnlyList<Mod> CheckModVersionCompatibility(
-        IEnumerable<Mod> mods,
-        Version sptVersion
-    )
+    public IReadOnlyList<Mod> CheckModVersionCompatibility(IEnumerable<Mod> mods, Version sptVersion)
     {
         var updatedMods = new List<Mod>();
         foreach (var mod in mods)
@@ -86,16 +83,17 @@ public sealed class CompatibilityValidationService(IModCheckReporter reporter) :
         // Find the latest compatible version to suggest
         compatibleVersion = mod
             .Api.ApiVersions!.Where(v => SemVer.SatisfiesRange(v.SptVersionConstraint, sptVersion))
-            .OrderByDescending(v =>
-                (
-                    SemVer
-                        .TryParse(v.Version, "CompatibilityValidationService")
-                        .Match(v => v, _ => new SemanticVersioning.Version(0, 0, 0))
-                )
-            )
-            .FirstOrDefault()?.Version;
+            .Select(v => new
+            {
+                VersionString = v.Version,
+                ParsedVersion = SemVer
+                    .TryParse(v.Version, "CompatibilityValidationService")
+                    .Match(parsed => parsed, _ => new SemanticVersioning.Version(0, 0, 0)),
+            })
+            .OrderByDescending(x => x.ParsedVersion)
+            .FirstOrDefault()
+            ?.VersionString;
 
         return false;
     }
 }
-

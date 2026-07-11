@@ -19,4 +19,3 @@ public interface IModEnrichmentService
         CancellationToken cancellationToken = default
     );
 }
-

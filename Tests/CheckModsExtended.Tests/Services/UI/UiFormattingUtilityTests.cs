@@ -56,4 +56,3 @@ public sealed class UiFormattingUtilityTests
         Assert.False(UiFormattingUtility.IsLinkUrlSafe("[red]not a url[/]"));
     }
 }
-

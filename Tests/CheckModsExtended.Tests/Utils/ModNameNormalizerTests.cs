@@ -86,4 +86,3 @@ public sealed class ModNameNormalizerTests
         Assert.Equal(100, ModNameNormalizer.GetFuzzyMatchScore("My Mod", "my-mod"));
     }
 }
-

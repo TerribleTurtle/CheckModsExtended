@@ -29,4 +29,3 @@ public interface ISptInstallationService
         CancellationToken cancellationToken = default
     );
 }
-

@@ -1,7 +1,7 @@
-using CheckModsExtended.Tests.Fixtures;
 using CheckModsExtended.Configuration;
 using CheckModsExtended.Models;
 using CheckModsExtended.Services;
+using CheckModsExtended.Tests.Fixtures;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -115,5 +115,3 @@ public sealed class IgnoredUpdateStoreTests : IDisposable
         Assert.False(File.Exists(_path + ".tmp"));
     }
 }
-
-

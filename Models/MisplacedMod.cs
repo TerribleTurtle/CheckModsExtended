@@ -57,23 +57,21 @@ public sealed record MisplacedModReport(
     /// each non-ambiguous cross-installed directory. Ambiguous directories are excluded by folder instead (see
     /// <see cref="ExcludedDirectories"/>).
     /// </summary>
-    public IReadOnlyList<string> ExcludedFilePaths { get; } = WrongFolder
-        .Select(mod => mod.FilePath)
-        .Concat(
-            CrossInstalled
-                .Where(directory => !directory.Ambiguous)
-                .SelectMany(directory => directory.Misplaced)
-                .Select(mod => mod.FilePath)
-        )
-        .ToList();
+    public IReadOnlyList<string> ExcludedFilePaths { get; } =
+        WrongFolder
+            .Select(mod => mod.FilePath)
+            .Concat(
+                CrossInstalled
+                    .Where(directory => !directory.Ambiguous)
+                    .SelectMany(directory => directory.Misplaced)
+                    .Select(mod => mod.FilePath)
+            )
+            .ToList();
 
     /// <summary>
     /// Cross-installed directories whose intruder could not be identified. Every mod inside such a folder is dropped
     /// from the remaining checks.
     /// </summary>
-    public IReadOnlyList<string> ExcludedDirectories { get; } = CrossInstalled
-        .Where(directory => directory.Ambiguous)
-        .Select(directory => directory.Directory)
-        .ToList();
+    public IReadOnlyList<string> ExcludedDirectories { get; } =
+        CrossInstalled.Where(directory => directory.Ambiguous).Select(directory => directory.Directory).ToList();
 }
-
