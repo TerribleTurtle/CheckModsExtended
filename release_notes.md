@@ -21,8 +21,8 @@ First, a sincere thank you to Refringe for the foundational work on the original
 - **Pipeline Architecture**
   The core codebase has been restructured into discrete, testable workflow steps to make it easier to maintain and extend.
   
-- **Project Rename**
-  Renamed to "Check Mods Extended" to reflect the structural divergence from the original repository and establish it as an independent fork.
+- **Package-Only Server Mod Parsing**
+  Added full support for scanning "package-only" server mods. Pure JavaScript mods (which only contain a `package.json` and no `.dll` file) are now correctly parsed and checked for updates on Linux and Windows.
   
 - **Linux & Steam Deck Support**
   Releases continue to provide a pre-compiled Linux binary for running natively on Linux servers, WSL, and the Steam Deck.
