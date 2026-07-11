@@ -100,6 +100,10 @@ public static class ServiceCollectionExtensions
         {
             // Allow up to 5 minutes total to survive 429 Retry-After delays
             options.TotalRequestTimeout.Timeout = TimeSpan.FromMinutes(5);
+            
+            // Prevent the Circuit Breaker from tripping during heavy rate limiting
+            options.CircuitBreaker.FailureRatio = 0.99;
+            options.CircuitBreaker.MinimumThroughput = 1000;
         });
 
         services.AddTransient<IForgeApiService, CachedForgeApiService>(sp =>
