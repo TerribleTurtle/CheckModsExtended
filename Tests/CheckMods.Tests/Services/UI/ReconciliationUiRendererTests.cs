@@ -38,19 +38,7 @@ public sealed class ReconciliationUiRendererTests
         AnsiConsole.Console = console;
         var renderer = new ReconciliationUiRenderer(new FakeTextRenderer());
 
-        var mod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "warning.mod",
-                FilePath = "warning.dll",
-                IsServerMod = false,
-                LocalName = "Warning Mod",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-            },
-            LoadWarnings = new List<string> { "Mod load failed" },
-        };
+        var mod = ModFixture.CreateClientMod("warning.mod", "Warning Mod") with { LoadWarnings = new List<string> { "Mod load failed" } };
 
         renderer.LoadingWarnings(new List<Mod> { mod });
 
@@ -94,19 +82,7 @@ public sealed class ReconciliationUiRendererTests
         AnsiConsole.Console = console;
         var renderer = new ReconciliationUiRenderer(new FakeTextRenderer());
 
-        var serverMod = new Mod
-        {
-            Local = new LocalModIdentity
-            {
-                Guid = "server.guid",
-                IsServerMod = true,
-                LocalName = "Test Mod",
-                FilePath = "server.dll",
-                LocalAuthor = "Author",
-                LocalVersion = "1.0.0",
-            },
-            Api = new ForgeApiMetadata { ApiUrl = "https://forge.com/mod" },
-        };
+        var serverMod = ModFixture.CreateServerMod("server.guid", "Test Mod") with { Api = new ForgeApiMetadata { ApiUrl = "https://forge.com/mod" } };
 
         var clientMod = ModFixture.CreateClientMod("client.guid", "Test Mod");
 
