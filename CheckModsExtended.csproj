@@ -15,7 +15,8 @@
     <PublishAot>true</PublishAot>
     <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
     <ApplicationIcon>check-mods.ico</ApplicationIcon>
-    <Copyright>2026 Refringe</Copyright>
+    <Authors>TerribleTurtle, Refringe</Authors>
+    <Copyright>Copyright (c) 2026 TerribleTurtle, Copyright (c) 2025 Refringe</Copyright>
     <Product>https://github.com/TerribleTurtle/CheckModsExtended</Product>
     <AssemblyTitle>CheckModsExtended</AssemblyTitle>
     <!--
