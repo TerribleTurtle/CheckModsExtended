@@ -43,7 +43,7 @@ export async function systemOpen(target) {
     const response = await fetch('/api/system/open', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(target)
+        body: JSON.stringify({ target: target })
     });
     if (!response.ok) throw new Error(`Failed to open target`);
 }
