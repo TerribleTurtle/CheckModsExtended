@@ -1,11 +1,10 @@
 import { state } from './state.js';
 import { fetchStatus, fetchScan, ignoreMod, unignoreMod, systemOpen } from './api.js';
 import { logToConsole } from './utils.js';
-import {
-    setTheme, setFilter, toggleConsole, handleCopyLog, 
-    render, showOverview, renderDetailRow,
-    updateLastScanTime, startLoaderAnimation, stopLoaderAnimation, renderEmptyState
-} from './ui.js';
+import { setTheme, setFilter, render } from './ui/table.js';
+import { toggleConsole, handleCopyLog, updateLastScanTime, startLoaderAnimation, stopLoaderAnimation, renderEmptyState } from './ui/components.js';
+import { showOverview } from './ui/dashboard.js';
+import { renderDetailRow } from './ui/details.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const btnScan = document.getElementById('btn-scan');
