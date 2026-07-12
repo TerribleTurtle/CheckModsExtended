@@ -32,12 +32,7 @@ export function renderDetailRow(mod) {
 
     let generalActions = '';
     if (mod.status !== 'UpdateAvailable' && !mod.isIgnored) {
-        if (mod.modUrl) {
-            generalActions += `<button class="btn-secondary action-system-open" data-target="${escapeHtml(mod.modUrl)}">Open Mod Page</button> `;
-        }
-        if (mod.localDirectory) {
-            generalActions += `<button class="btn-secondary action-system-open" data-target="${escapeHtml(mod.localDirectory)}">Open Local Folder</button> `;
-        }
+        generalActions = renderActions(mod);
     }
     if (generalActions) {
         html += `<div style="margin-bottom: 20px; display: flex; gap: 10px;">
