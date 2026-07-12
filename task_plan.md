@@ -23,7 +23,7 @@ Phase 3
 - [x] Step 4.2 — Search, Filter & Sort
 - [x] Step 4.3 — Overview Dashboard & Bulk Actions
 - [x] Step 4.4 — Auto-Scan, Export & Ignore Persistence
-- [ ] Step 4.5 — Detail Pane Enhancements (ZIPs, Folders, Color versions)
+- [x] Step 4.5 — Detail Pane Enhancements (ZIPs, Folders, Color versions)
 - [ ] Step 4.6 — Backend System Integration (Open Folder API & Settings)
 - **Status:** in progress
 
