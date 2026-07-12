@@ -406,8 +406,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 valA = order[a.status] !== undefined ? order[a.status] : 8;
                 valB = order[b.status] !== undefined ? order[b.status] : 8;
             } else if (sort.column === 'version') {
-                valA = a.localVersion ? a.localVersion.toLowerCase() : '';
-                valB = b.localVersion ? b.localVersion.toLowerCase() : '';
+                const parseVer = v => (v || '').split('-')[0].split('.').map(n => parseInt(n) || 0);
+                const pA = parseVer(a.localVersion);
+                const pB = parseVer(b.localVersion);
+                const len = Math.max(pA.length, pB.length);
+                let cmp = 0;
+                for (let i = 0; i < len; i++) {
+                    const nA = pA[i] || 0;
+                    const nB = pB[i] || 0;
+                    if (nA > nB) { cmp = 1; break; }
+                    if (nA < nB) { cmp = -1; break; }
+                }
+                return sort.direction === 'asc' ? cmp : -cmp;
             } else {
                 valA = ''; valB = '';
             }
