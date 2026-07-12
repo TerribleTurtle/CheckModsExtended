@@ -715,3 +715,9 @@ tr.keyboard-focus { outline: 2px solid var(--accent-brand); outline-offset: -2px
   .header-controls { flex-direction: column; }
   .filter-chips { flex-wrap: wrap; }
 }
+
+/* Version Colors */
+.ver-ok { color: var(--status-success); }
+.ver-warn { color: var(--status-warning); font-weight: 600; }
+.ver-error { color: var(--status-error); font-weight: 600; }
+.ver-info { color: var(--status-info); font-weight: 600; }
