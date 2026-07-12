@@ -7,6 +7,18 @@ export const state = {
     meta: { sptVersion: null, appVersion: null, lastScan: null, theme: 'dark' }
 };
 
+export const selectors = {
+    activeMods: (s) => s.mods.filter(m => !m.isIgnored),
+    ignoredMods: (s) => s.mods.filter(m => m.isIgnored),
+    updatesAvailable: (s) => selectors.activeMods(s).filter(m => m.status === 'UpdateAvailable'),
+    updatesBlocked: (s) => selectors.activeMods(s).filter(m => m.status === 'UpdateBlocked'),
+    incompatibleMods: (s) => selectors.activeMods(s).filter(m => m.status === 'Incompatible'),
+    attentionRequired: (s) => selectors.activeMods(s).filter(m => ['UpdateAvailable', 'UpdateBlocked', 'Incompatible'].includes(m.status)),
+    downloadableUpdates: (s) => selectors.updatesAvailable(s).filter(m => m.downloadUrl),
+    pageUpdates: (s) => selectors.updatesAvailable(s).filter(m => m.modUrl),
+    upToDate: (s) => selectors.activeMods(s).filter(m => ['UpToDate', 'NewerInstalled'].includes(m.status)),
+};
+
 export function applyFilters(mods, filters) {
     return mods.filter(mod => {
         if (filters.search) {

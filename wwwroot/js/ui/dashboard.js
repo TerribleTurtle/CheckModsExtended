@@ -1,4 +1,4 @@
-import { state } from '../state.js';
+import { state, selectors } from '../state.js';
 import { fetchIgnores, systemOpen } from '../api.js';
 import { escapeHtml, logToConsole } from '../utils.js';
 
@@ -8,10 +8,10 @@ export function renderBulkBar(selectedIds) {
     if (!bulkBar || !bulkCount) return;
 
     if (selectedIds.size > 0) {
-        bulkBar.hidden = false;
+        bulkBar.classList.remove('bulk-bar-hidden');
         bulkCount.textContent = `${selectedIds.size} selected`;
     } else {
-        bulkBar.hidden = true;
+        bulkBar.classList.add('bulk-bar-hidden');
     }
 }
 
@@ -65,20 +65,21 @@ export async function showOverview() {
     
     overviewPane.style.display = 'flex';
 
-    const updateMods = state.mods.filter(m => m.status === 'UpdateAvailable' && !m.isIgnored);
-    const blockedMods = state.mods.filter(m => m.status === 'UpdateBlocked' && !m.isIgnored);
-    const incompatMods = state.mods.filter(m => m.status === 'Incompatible' && !m.isIgnored);
+    const updateMods = selectors.updatesAvailable(state);
+    const blockedMods = selectors.updatesBlocked(state);
+    const incompatMods = selectors.incompatibleMods(state);
+    const activeCount = selectors.activeMods(state).length;
     
     let summaryHtml = '';
     if (updateMods.length === 0 && blockedMods.length === 0 && incompatMods.length === 0) {
         summaryHtml = `<div style="flex: 1; background: var(--status-success-bg); border: 1px solid var(--status-success); color: var(--status-success); padding: 15px; border-radius: var(--radius-md);">
             <h3 style="margin-bottom: 10px;">All systems nominal</h3>
-            <p>Your workspace is fully up to date with ${state.mods.length} mods installed.</p>
+            <p>Your workspace is fully up to date with ${activeCount} active mods installed.</p>
         </div>`;
     } else {
         summaryHtml = `<div style="flex: 1; background: var(--status-warning-bg); border: 1px solid var(--status-warning); color: var(--text-primary); padding: 15px; border-radius: var(--radius-md);">
             <h3 style="color: var(--status-warning); margin-bottom: 10px;">Action Required</h3>
-            <p>Out of ${state.mods.length} total mods:</p>
+            <p>Out of ${activeCount} active mods:</p>
             <ul style="margin-top:10px; margin-left: 20px;">
                 ${updateMods.length > 0 ? `<li><strong>${updateMods.length}</strong> updates available</li>` : ''}
                 ${blockedMods.length > 0 ? `<li><strong>${blockedMods.length}</strong> updates blocked</li>` : ''}
@@ -87,13 +88,16 @@ export async function showOverview() {
         </div>`;
     }
 
+    const downloadableUpdates = selectors.downloadableUpdates(state);
+    const pageUpdates = selectors.pageUpdates(state);
+
     const bulkToolbar = `
         <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
             <h4 style="color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; font-size: 0.8rem;">Workspace Actions</h4>
             <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
                 <button id="btn-copy-mods" class="btn-secondary">Copy Mods List to Clipboard</button>
-                ${updateMods.filter(m => m.downloadUrl).length > 0 ? `<button id="btn-download-updates" class="btn-primary">Download Updates (${updateMods.filter(m => m.downloadUrl).length})</button>` : ''}
-                ${updateMods.filter(m => m.modUrl).length > 0 ? `<button id="btn-open-pages" class="btn-secondary">Open Update Pages (${updateMods.filter(m => m.modUrl).length})</button>` : ''}
+                ${downloadableUpdates.length > 0 ? `<button id="btn-download-updates" class="btn-primary">Download Updates (${downloadableUpdates.length})</button>` : ''}
+                ${pageUpdates.length > 0 ? `<button id="btn-open-pages" class="btn-secondary">Open Update Pages (${pageUpdates.length})</button>` : ''}
                 <button id="btn-manage-ignored" class="btn-secondary">Manage Ignored Mods</button>
                 <button id="btn-edit-settings" class="btn-secondary">Edit Settings</button>
             </div>
@@ -117,8 +121,7 @@ export async function showOverview() {
     const btnDownloadUpdates = document.getElementById('btn-download-updates');
     if (btnDownloadUpdates) {
         btnDownloadUpdates.addEventListener('click', async () => {
-            const dlMods = updateMods.filter(m => m.downloadUrl);
-            for (const m of dlMods) {
+            for (const m of downloadableUpdates) {
                 try {
                     await systemOpen(m.downloadUrl);
                 } catch (e) {
@@ -131,8 +134,7 @@ export async function showOverview() {
     const btnOpenPages = document.getElementById('btn-open-pages');
     if (btnOpenPages) {
         btnOpenPages.addEventListener('click', async () => {
-            const pageMods = updateMods.filter(m => m.modUrl);
-            for (const m of pageMods) {
+            for (const m of pageUpdates) {
                 try {
                     await systemOpen(m.modUrl);
                 } catch (e) {
@@ -145,9 +147,16 @@ export async function showOverview() {
     const btnManageIgnored = document.getElementById('btn-manage-ignored');
     if (btnManageIgnored) {
         btnManageIgnored.addEventListener('click', async () => {
+            state.ui.lastFocus = document.activeElement;
             await renderIgnoreDashboard();
             const modal = document.getElementById('ignore-modal');
-            if (modal) modal.classList.remove('hidden');
+            if (modal) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    const closeBtn = document.getElementById('btn-close-modal');
+                    if (closeBtn) closeBtn.focus();
+                }, 50);
+            }
         });
     }
 

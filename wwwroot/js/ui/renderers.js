@@ -1,6 +1,10 @@
 import { escapeHtml } from '../utils.js';
 
-export function renderStatusPill(status) {
+export function renderStatusPill(status, isIgnored = false) {
+    if (isIgnored) {
+        return `<span class="status-pill status-pill-unknown" title="Status: IGNORED">IGNORED</span>`;
+    }
+    
     let text, colorClass;
     switch(status) {
         case 'UpToDate': text = 'UP TO DATE'; colorClass = 'status-pill-ok'; break;
@@ -14,7 +18,7 @@ export function renderStatusPill(status) {
 }
 
 export function renderVersionCell(mod) {
-    if (mod.status === 'UpdateAvailable') {
+    if (mod.status === 'UpdateAvailable' && !mod.isIgnored) {
         return `<span class="version-outdated" title="Current Version">v${escapeHtml(mod.localVersion)}</span> <span class="version-arrow">→</span> <span class="version-newer" title="Latest Version">v${escapeHtml(mod.latestVersion)}</span>`;
     }
     if (mod.localVersion) {

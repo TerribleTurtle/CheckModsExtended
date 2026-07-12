@@ -1,4 +1,4 @@
-import { state, applyFilters, applySort } from '../state.js';
+import { state, selectors, applyFilters, applySort } from '../state.js';
 import { escapeHtml } from '../utils.js';
 import { renderEmptyState } from './components.js';
 import { renderVersionCell, renderStatusPill } from './renderers.js';
@@ -13,8 +13,8 @@ export function renderHealthBanner(mods) {
         return;
     }
 
-    const activeMods = mods.filter(m => !m.isIgnored);
-    const actionableMods = activeMods.filter(m => ['UpdateAvailable', 'UpdateBlocked', 'Incompatible'].includes(m.status)).length;
+    const activeMods = selectors.activeMods(state);
+    const actionableMods = selectors.attentionRequired(state).length;
 
     healthBanner.hidden = false;
     healthBanner.className = 'health-banner'; 
@@ -49,7 +49,8 @@ export function renderTable(filteredMods, sort, ui) {
         tr.dataset.id = mod.id;
         
         let statusClass = 'status-unknown';
-        if (mod.status === 'UpToDate') statusClass = 'status-ok';
+        if (mod.isIgnored) statusClass = 'status-unknown';
+        else if (mod.status === 'UpToDate') statusClass = 'status-ok';
         else if (mod.status === 'NewerInstalled') statusClass = 'status-newer';
         else if (mod.status === 'UpdateAvailable') statusClass = 'status-warn';
         else if (['UpdateBlocked', 'Incompatible', 'Error', 'NoVersionsFound'].includes(mod.status)) statusClass = 'status-error';
@@ -62,7 +63,7 @@ export function renderTable(filteredMods, sort, ui) {
             : '<span style="color: var(--status-info); font-weight: 600;" title="Client Mod">Client</span>';
         
         const actionHtml = renderVersionCell(mod);
-        const statusPill = renderStatusPill(mod.status);
+        const statusPill = renderStatusPill(mod.status, mod.isIgnored);
 
         tr.innerHTML = `
             <td>
@@ -94,7 +95,7 @@ export function updateTitle(mods) {
         document.title = "CheckModsExtended // MANAGER";
         return;
     }
-    const outdatedCount = mods.filter(m => m.status === 'UpdateAvailable' || m.status === 'UpdateBlocked').length;
+    const outdatedCount = selectors.updatesAvailable(state).length + selectors.updatesBlocked(state).length;
     if (outdatedCount > 0) {
         document.title = `(${outdatedCount} outdated) Check Mods Extended`;
     } else {
@@ -109,9 +110,9 @@ export function renderChipCounts(mods, filteredMods, filters) {
     const countIgnored = document.getElementById('chip-count-ignored');
     const elSearchCount = document.getElementById('search-count');
 
-    const ignoredMods = mods.filter(m => m.isIgnored === true);
-    const upToDateMods = mods.filter(m => !m.isIgnored && (m.status === 'UpToDate' || m.status === 'NewerInstalled'));
-    const attentionMods = mods.filter(m => !m.isIgnored && ['UpdateAvailable', 'UpdateBlocked', 'Incompatible'].includes(m.status));
+    const ignoredMods = selectors.ignoredMods(state);
+    const upToDateMods = selectors.upToDate(state);
+    const attentionMods = selectors.attentionRequired(state);
 
     if (countAll) countAll.textContent = mods.length;
     if (countOk) countOk.textContent = upToDateMods.length;
@@ -145,6 +146,12 @@ export function render() {
     renderTable(state.filteredMods, state.sort, state.ui);
     renderBulkBar(state.ui.selectedIds);
     updateTitle(state.mods);
+    
+    // Announce to screen readers
+    const announcer = document.getElementById('a11y-announcer');
+    if (announcer) {
+        announcer.textContent = `Showing ${state.filteredMods.length} of ${state.mods.length} mods.`;
+    }
 
     // Sync select-all checkbox
     const selectAll = document.getElementById('select-all');
@@ -163,8 +170,13 @@ export function setFilter(filter) {
     state.filters.status = filter;
     localStorage.setItem('cme-filter-status', filter);
     document.querySelectorAll('.chip').forEach(c => {
-        if (c.dataset.filter === filter) c.classList.add('active');
-        else c.classList.remove('active');
+        if (c.dataset.filter === filter) {
+            c.classList.add('active');
+            c.setAttribute('aria-pressed', 'true');
+        } else {
+            c.classList.remove('active');
+            c.setAttribute('aria-pressed', 'false');
+        }
     });
     render();
 }

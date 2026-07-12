@@ -18,10 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const detailTitle = document.getElementById('detail-title');
     const detailContent = document.getElementById('detail-content');
     const btnCloseDetail = document.getElementById('btn-close-detail');
-    
-    const consoleDrawer = document.getElementById('console-drawer');
-    const btnConsoleToggle = document.getElementById('btn-console-toggle');
-    const btnCopyLog = document.getElementById('btn-copy-log');
 
     const ignoreModal = document.getElementById('ignore-modal');
     const btnCloseModal = document.getElementById('btn-close-modal');
@@ -42,9 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Restore console state
-        const savedConsole = localStorage.getItem('cme-console-collapsed') === 'true';
-        if (savedConsole) toggleConsole(true);
 
         // Fetch initial status
         fetchStatus().then(data => {
@@ -66,12 +59,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Event Listeners
         btnScan.addEventListener('click', handleScan);
         btnTheme.addEventListener('click', () => setTheme(state.meta.theme === 'dark' ? 'light' : 'dark'));
-        btnConsoleToggle.addEventListener('click', () => toggleConsole(!state.ui.consoleCollapsed));
-        btnCopyLog.addEventListener('click', handleCopyLog);
         btnCloseDetail.addEventListener('click', () => {
+            const selectedRow = document.querySelector('#mods-list tr.selected');
             document.querySelectorAll('#mods-list tr.selected').forEach(c => c.classList.remove('selected'));
             state.ui.selectedIds.clear();
             showOverview();
+            if (selectedRow) {
+                const checkbox = selectedRow.querySelector('.row-checkbox');
+                if (checkbox) checkbox.focus();
+            }
         });
         
         // Event delegation for mod list actions
@@ -83,13 +79,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (btnCloseModal) {
             btnCloseModal.addEventListener('click', () => {
-                if (ignoreModal) ignoreModal.classList.add('hidden');
+                if (ignoreModal) {
+                    ignoreModal.classList.add('hidden');
+                    if (state.ui.lastFocus) {
+                        state.ui.lastFocus.focus();
+                        state.ui.lastFocus = null;
+                    }
+                }
             });
         }
         
         if (ignoreModal) {
             ignoreModal.addEventListener('click', (e) => {
-                if (e.target === ignoreModal) ignoreModal.classList.add('hidden');
+                if (e.target === ignoreModal) {
+                    ignoreModal.classList.add('hidden');
+                    if (state.ui.lastFocus) {
+                        state.ui.lastFocus.focus();
+                        state.ui.lastFocus = null;
+                    }
+                }
             });
         }
 
@@ -189,10 +197,54 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleKeyboardNavigation(e) {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
+        const ignoreModal = document.getElementById('ignore-modal');
+        const modalOpen = ignoreModal && !ignoreModal.classList.contains('hidden');
+
+        // Modal Focus Trap
+        if (modalOpen && e.key === 'Tab') {
+            const focusableElements = ignoreModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (focusableElements.length > 0) {
+                const first = focusableElements[0];
+                const last = focusableElements[focusableElements.length - 1];
+
+                if (e.shiftKey) {
+                    if (document.activeElement === first || document.activeElement === document.body) {
+                        e.preventDefault();
+                        last.focus();
+                    }
+                } else {
+                    if (document.activeElement === last || document.activeElement === document.body) {
+                        e.preventDefault();
+                        first.focus();
+                    }
+                }
+            }
+            return;
+        }
+
         if (e.key === 'Escape') {
+            if (modalOpen) {
+                ignoreModal.classList.add('hidden');
+                if (state.ui.lastFocus) {
+                    state.ui.lastFocus.focus();
+                    state.ui.lastFocus = null;
+                }
+                return;
+            }
+
+            const selectedRow = document.querySelector('#mods-list tr.selected');
             document.querySelectorAll('#mods-list tr.selected').forEach(c => c.classList.remove('selected'));
             showOverview();
-        } else if (e.key === 'j' || e.key === 'k') {
+            if (selectedRow) {
+                const checkbox = selectedRow.querySelector('.row-checkbox');
+                if (checkbox) checkbox.focus();
+            }
+        } else if (e.key === 'j' || e.key === 'k' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            // Scope to table or body to avoid hijacking other interactive elements
+            if (document.activeElement !== document.body && !e.target.closest('.master-list')) {
+                return;
+            }
+            e.preventDefault();
             const rows = Array.from(document.querySelectorAll('#mods-list tr'));
             if (rows.length === 0) return;
 
@@ -200,9 +252,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (selectedIdx === -1) {
                 selectedIdx = 0;
             } else {
-                if (e.key === 'j') {
+                if (e.key === 'j' || e.key === 'ArrowDown') {
                     selectedIdx = Math.min(selectedIdx + 1, rows.length - 1);
-                } else if (e.key === 'k') {
+                } else if (e.key === 'k' || e.key === 'ArrowUp') {
                     selectedIdx = Math.max(selectedIdx - 1, 0); 
                 }
             }
@@ -215,6 +267,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const id = row.dataset.id;
             const mod = state.mods.find(m => String(m.id) === String(id));
             if (mod) renderDetailRow(mod);
+            
+            const checkbox = row.querySelector('.row-checkbox');
+            if (checkbox) checkbox.focus();
+        } else if (e.key === 'Enter') {
+            if (document.activeElement !== document.body && !e.target.closest('.master-list')) {
+                return;
+            }
+            const selectedRow = document.querySelector('#mods-list tr.selected');
+            if (selectedRow && !detailPane.classList.contains('hidden')) {
+                const detailContent = document.getElementById('detail-content');
+                if (detailContent) {
+                    detailContent.setAttribute('tabindex', '-1');
+                    detailContent.focus();
+                }
+            }
         }
     }
     
@@ -245,6 +312,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.querySelectorAll('#mods-list tr.selected').forEach(c => c.classList.remove('selected'));
                 tr.classList.add('selected');
                 renderDetailRow(mod);
+                setTimeout(() => {
+                    const closeBtn = document.getElementById('btn-close-detail');
+                    if (closeBtn) closeBtn.focus();
+                }, 50);
             }
         }
     }

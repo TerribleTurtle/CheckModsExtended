@@ -77,42 +77,66 @@ export function updateLastScanTime() {
 
 let loaderState = { active: false, interval: null };
 export function startLoaderAnimation() {
+    if (loaderState.active) return;
     loaderState.active = true;
     const loaderText = document.getElementById('loader-text');
     const fill = document.querySelector('.progress-bar-fill');
     if (!loaderText || !fill) return;
 
     fill.classList.remove('done');
+    fill.classList.add('pulsing');
+    fill.style.transition = 'width 0.2s cubic-bezier(0.25, 1, 0.5, 1)';
     fill.style.width = '0%';
     
-    const steps = [
-        { text: '> Initiating workspace scan...', wait: 600, p: 10 },
-        { text: '> Indexing local mod directories...', wait: 800, p: 35 },
-        { text: '> Connecting to Forge API...', wait: 900, p: 60 },
-        { text: '> Reconciling version hashes...', wait: 1200, p: 75 },
-        { text: '> Analyzing dependencies...', wait: 2000, p: 90 }
-    ];
+    loaderText.textContent = '> Initiating workspace scan...';
 
-    let i = 0;
+    let currentP = 0;
+    const targetMax = 95;
     
-    async function runSequence() {
-        while(loaderState.active && i < steps.length) {
-            loaderText.textContent = steps[i].text;
-            fill.style.width = steps[i].p + '%';
-            await new Promise(r => setTimeout(r, steps[i].wait));
-            i++;
+    // Increment the progress bar asymptotically
+    loaderState.interval = setInterval(() => {
+        if (!loaderState.active) {
+            clearInterval(loaderState.interval);
+            return;
         }
-    }
-    runSequence();
+        
+        // The closer we get to max, the slower we grow
+        if (currentP < targetMax) {
+            const remaining = targetMax - currentP;
+            const step = Math.max(remaining * 0.05, 0.1); 
+            currentP += step;
+            
+            if (currentP > targetMax) {
+                currentP = targetMax;
+            }
+            
+            if (currentP > 20 && loaderText.textContent.includes('Initiating')) {
+                loaderText.textContent = '> Indexing local mod directories...';
+            } else if (currentP > 50 && loaderText.textContent.includes('Indexing')) {
+                loaderText.textContent = '> Reconciling version hashes...';
+            } else if (currentP > 80 && loaderText.textContent.includes('Reconciling')) {
+                loaderText.textContent = '> Analyzing dependencies...';
+            }
+            
+            fill.style.width = currentP + '%';
+        }
+    }, 100);
 }
 
 export function stopLoaderAnimation() {
     loaderState.active = false;
+    if (loaderState.interval) {
+        clearInterval(loaderState.interval);
+        loaderState.interval = null;
+    }
     const loaderText = document.getElementById('loader-text');
     const fill = document.querySelector('.progress-bar-fill');
     if (loaderText) loaderText.textContent = '> SCAN COMPLETE';
     if (fill) {
+        fill.classList.remove('pulsing');
         fill.classList.add('done');
+        fill.style.transition = 'width 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
         fill.style.width = '100%';
     }
 }
+

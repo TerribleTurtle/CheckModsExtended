@@ -18,7 +18,8 @@
     </script>
 </head>
 <body>
-    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <a href="#main-content" class="skip-link sr-only sr-only-focusable">Skip to main content</a>
+    <div id="a11y-announcer" aria-live="polite" class="sr-only"></div>
     <div class="terminal-container">
         <header class="app-header" role="banner">
             <div class="header-title">
@@ -32,7 +33,6 @@
             </div>
         </header>
 
-        <div id="health-banner" class="health-banner" hidden></div>
 
         <main class="dashboard" id="main-content">
             <!-- Workspace Overview -->
@@ -101,7 +101,7 @@
             </div>
 
             <!-- Bulk Bar -->
-            <div id="bulk-bar" class="bulk-bar" hidden>
+            <div id="bulk-bar" class="bulk-bar bulk-bar-hidden">
                 <span id="bulk-count">0 selected</span>
                 <button id="btn-bulk-open" class="btn-primary">Update Selected</button>
                 <button id="btn-bulk-ignore" class="btn-secondary" style="color: var(--status-warning);">Ignore All</button>
@@ -109,26 +109,13 @@
             </div>
         </main>
 
-        <footer class="console-drawer" id="console-drawer" role="contentinfo">
-            <div class="console-header">
-                <span>[SYSTEM_LOG]</span>
-                <div class="console-controls">
-                    <button id="btn-copy-log" class="console-copy-btn" aria-label="Copy log to clipboard">COPY</button>
-                    <span class="pulse-indicator"></span>
-                    <button id="btn-console-toggle" class="console-toggle" aria-label="Toggle console" aria-expanded="true">▼</button>
-                </div>
-            </div>
-            <div class="console-body" id="console-logs" aria-live="polite">
-                <div class="log-line">> SYSTEM ONLINE. WAITING FOR DIRECTIVE...</div>
-            </div>
-        </footer>
     </div>
     
     <!-- Modal for Ignored Mods -->
-    <div id="ignore-modal" class="modal-overlay hidden">
+    <div id="ignore-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="ignore-modal-title">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Manage Ignore List</h2>
+                <h2 id="ignore-modal-title">Manage Ignore List</h2>
                 <button id="btn-close-modal" class="btn-close-detail" aria-label="Close modal">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>

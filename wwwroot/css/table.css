@@ -63,11 +63,12 @@
     padding: var(--space-md);
     border-bottom: 1px solid var(--border-default);
     cursor: pointer;
-    transition: background-color var(--transition-fast);
+    transition: background-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
 }
 
 .mod-card:hover {
     background-color: var(--bg-elevated);
+    transform: translateX(4px);
 }
 
 .mod-card.selected {
@@ -122,8 +123,15 @@ thead th { position: sticky; top: 0; z-index: 10; }
   padding: var(--space-sm) var(--space-lg);
   background: var(--bg-overlay); border-top: 1px solid var(--border-strong);
   backdrop-filter: blur(8px);
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 300ms ease;
 }
-.bulk-bar[hidden] { display: none; }
+.bulk-bar.bulk-bar-hidden { 
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+}
 
 tr.selected { background: var(--accent-brand-subtle); }
 tr.keyboard-focus { outline: 2px solid var(--accent-brand); outline-offset: -2px; }
