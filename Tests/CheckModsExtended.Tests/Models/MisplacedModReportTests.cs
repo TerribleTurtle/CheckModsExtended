@@ -8,6 +8,7 @@ namespace CheckModsExtended.Tests.Models;
 /// </summary>
 public sealed class MisplacedModReportTests
 {
+    private static string MockPath(params string[] parts) => System.IO.Path.Combine(parts);
     private static MisplacedMod Mod(string name, string filePath, bool isServerMod = false)
     {
         return new MisplacedMod(isServerMod, $"com.author.{name}", name, "1.0.0", filePath);
@@ -26,8 +27,8 @@ public sealed class MisplacedModReportTests
     [Fact]
     public void Wrong_folder_mods_are_excluded_by_file_path()
     {
-        var serverInClient = Mod("ServerMod", @"C:\SPT\BepInEx\plugins\ServerMod.dll", isServerMod: true);
-        var clientInServer = Mod("ClientMod", @"C:\SPT\SPT\user\mods\ClientMod\ClientMod.dll");
+        var serverInClient = Mod("ServerMod", MockPath("SPT", "BepInEx", "plugins", "ServerMod.dll"), isServerMod: true);
+        var clientInServer = Mod("ClientMod", MockPath("SPT", "SPT", "user", "mods", "ClientMod", "ClientMod.dll"));
 
         var report = new MisplacedModReport([serverInClient, clientInServer], []);
 
@@ -39,11 +40,11 @@ public sealed class MisplacedModReportTests
     [Fact]
     public void Identified_cross_installed_intruder_is_excluded_but_the_legitimate_occupant_is_not()
     {
-        var legitimate = Mod("HostMod", @"C:\SPT\BepInEx\plugins\HostMod\HostMod.dll");
-        var intruder = Mod("Intruder", @"C:\SPT\BepInEx\plugins\HostMod\Intruder.dll");
+        var legitimate = Mod("HostMod", MockPath("SPT", "BepInEx", "plugins", "HostMod", "HostMod.dll"));
+        var intruder = Mod("Intruder", MockPath("SPT", "BepInEx", "plugins", "HostMod", "Intruder.dll"));
 
         var directory = new CrossInstalledDirectory(
-            @"C:\SPT\BepInEx\plugins\HostMod",
+            MockPath("SPT", "BepInEx", "plugins", "HostMod"),
             Misplaced: [intruder],
             Mods: [legitimate, intruder],
             Ambiguous: false
@@ -60,11 +61,11 @@ public sealed class MisplacedModReportTests
     [Fact]
     public void Ambiguous_cross_installed_directory_is_excluded_by_folder_not_by_file()
     {
-        var modA = Mod("ModA", @"C:\SPT\BepInEx\plugins\Shared\ModA.dll");
-        var modB = Mod("ModB", @"C:\SPT\BepInEx\plugins\Shared\ModB.dll");
+        var modA = Mod("ModA", MockPath("SPT", "BepInEx", "plugins", "Shared", "ModA.dll"));
+        var modB = Mod("ModB", MockPath("SPT", "BepInEx", "plugins", "Shared", "ModB.dll"));
 
         var directory = new CrossInstalledDirectory(
-            @"C:\SPT\BepInEx\plugins\Shared",
+            MockPath("SPT", "BepInEx", "plugins", "Shared"),
             Misplaced: [],
             Mods: [modA, modB],
             Ambiguous: true
