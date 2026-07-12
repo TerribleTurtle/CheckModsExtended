@@ -117,6 +117,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IUpdateOrchestrationService, UpdateOrchestrationService>();
 
         services.AddSingleton<IIgnoredUpdateStore, IgnoredUpdateStore>();
+        services.AddSingleton<IPluginScanCache, PluginScanCache>();
         services.AddSingleton<IModCheckReporter, SpectreModCheckReporter>();
         services.AddSingleton<IDependencyUiRenderer, DependencyUiRenderer>();
         services.AddSingleton<IMisplacedModUiRenderer, MisplacedModUiRenderer>();

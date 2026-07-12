@@ -31,11 +31,7 @@ public static class DependencyGraphBuilder
             return null;
         }
 
-    private static bool IsVersionOlder(string? currentVersion, string? recommendedVersion)
-    {
-        return currentVersion.ParseOrDefault() < recommendedVersion.ParseOrDefault();
-    }
-}
+
         if (
             dependency.Conflict
             && !conflicts.Any(c => c.ModGuid.Equals(dependency.Guid, StringComparison.OrdinalIgnoreCase))

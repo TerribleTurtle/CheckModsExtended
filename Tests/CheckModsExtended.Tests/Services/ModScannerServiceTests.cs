@@ -31,6 +31,7 @@ public sealed class ModScannerServiceTests : IDisposable
         _misplacedDetector = new FakeMisplacedModDetector();
 
         _service = new ModScannerService(
+            new FakePluginScanCache(),
             _pluginExtractor,
             _serverExtractor,
             _misplacedDetector,
@@ -150,10 +151,12 @@ public sealed class ModScannerServiceTests : IDisposable
             new ModPartitioner(),
             options,
             NullLogger<PluginMetadataExtractor>.Instance,
+            _reporter,
             _fixture.FileSystem
         );
-        var realServerExtractor = new ServerModExtractor(NullLogger<ServerModExtractor>.Instance, _fixture.FileSystem);
+        var realServerExtractor = new ServerModExtractor(NullLogger<ServerModExtractor>.Instance, _fixture.FileSystem, _reporter);
         var realMisplacedDetector = new MisplacedModDetector(
+            new FakePluginScanCache(),
             new ModPartitioner(),
             realPluginExtractor,
             realServerExtractor,
@@ -161,6 +164,7 @@ public sealed class ModScannerServiceTests : IDisposable
             _fixture.FileSystem
         );
         var realService = new ModScannerService(
+            new FakePluginScanCache(),
             realPluginExtractor,
             realServerExtractor,
             realMisplacedDetector,

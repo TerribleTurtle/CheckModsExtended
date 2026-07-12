@@ -36,7 +36,7 @@ public sealed class CompatibilityValidationService : ICompatibilityValidationSer
     /// Evaluates a single matched mod's installed version against the installed SPT version, flagging it when the
     /// constraint can't be parsed or isn't satisfied.
     /// </summary>
-    private bool IsCompatibleWithSpt(Mod mod, Version sptVersion, List<string> events, out string reason, out string? compatibleVersion)
+    private static bool IsCompatibleWithSpt(Mod mod, Version sptVersion, List<string> events, out string reason, out string? compatibleVersion)
     {
         reason = string.Empty;
         compatibleVersion = null;

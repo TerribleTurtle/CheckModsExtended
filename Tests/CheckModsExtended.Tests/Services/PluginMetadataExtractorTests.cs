@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CheckModsExtended.Configuration;
 using CheckModsExtended.Services;
+using CheckModsExtended.Tests.Fakes;
 using CheckModsExtended.Tests.Fixtures;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -26,6 +27,7 @@ public sealed class PluginMetadataExtractorTests : IDisposable
             new ModPartitioner(),
             options,
             NullLogger<PluginMetadataExtractor>.Instance,
+            new FakeModCheckReporter(),
             _fixture.FileSystem
         );
     }

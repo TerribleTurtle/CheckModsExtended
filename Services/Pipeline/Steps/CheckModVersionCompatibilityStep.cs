@@ -27,7 +27,7 @@ public sealed class CheckModVersionCompatibilityStep(
         {
             reporter.Warning(e);
         }
-        context.Mods = updatedMods;
+        context.Mods = updatedMods.ToList();
         reporter.VersionCompatibilityResults(context.Mods, context.SptVersion!);
 
         return Task.CompletedTask;

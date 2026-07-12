@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CheckModsExtended.Services;
+using CheckModsExtended.Tests.Fakes;
 using CheckModsExtended.Tests.Fixtures;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -19,7 +20,7 @@ public sealed class ServerModExtractorTests : IDisposable
     {
         _fixture = new SptSandboxFixture();
         _sptPath = _fixture.SandboxPath;
-        _extractor = new ServerModExtractor(NullLogger<ServerModExtractor>.Instance, _fixture.FileSystem);
+        _extractor = new ServerModExtractor(NullLogger<ServerModExtractor>.Instance, _fixture.FileSystem, new FakeModCheckReporter());
     }
 
     [Fact]

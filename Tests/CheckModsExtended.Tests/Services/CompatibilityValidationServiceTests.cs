@@ -16,7 +16,7 @@ public sealed class CompatibilityValidationServiceTests
 
     public CompatibilityValidationServiceTests()
     {
-        _sut = new CompatibilityValidationService(_reporter);
+        _sut = new CompatibilityValidationService();
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public sealed class CompatibilityValidationServiceTests
         mod = mod.WithApiMatch(apiResult);
 
         // Act
-        mod = _sut.CheckModVersionCompatibility([mod], sptVersion)[0];
+        mod = _sut.CheckModVersionCompatibility([mod], sptVersion).UpdatedMods[0];
 
         // Assert
         Assert.False(mod.Update.IsLocalSptIncompatible);
@@ -75,7 +75,7 @@ public sealed class CompatibilityValidationServiceTests
         mod = mod.WithApiMatch(apiResult);
 
         // Act
-        mod = _sut.CheckModVersionCompatibility([mod], sptVersion)[0];
+        mod = _sut.CheckModVersionCompatibility([mod], sptVersion).UpdatedMods[0];
 
         // Assert
         Assert.True(mod.Update.IsLocalSptIncompatible);
@@ -120,10 +120,11 @@ public sealed class CompatibilityValidationServiceTests
         mod = mod.WithApiMatch(apiResult);
 
         // Act
-        mod = _sut.CheckModVersionCompatibility([mod], sptVersion)[0];
+        var result = _sut.CheckModVersionCompatibility([mod], sptVersion);
+        mod = result.UpdatedMods[0];
 
         // Assert
         Assert.False(mod.Update.IsLocalSptIncompatible);
-        Assert.Contains(_reporter.Warnings, w => w.Contains("invalid version constraint"));
+        Assert.Contains(result.ValidationEvents, w => w.Contains("invalid version constraint"));
     }
 }

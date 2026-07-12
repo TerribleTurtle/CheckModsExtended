@@ -11,7 +11,6 @@ public sealed class FakeMisplacedModDetector : IMisplacedModDetector
 
     public Task<MisplacedModReport> DetectMisplacedModsAsync(
         string sptPath,
-        System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<PluginDll>> clientPluginCache,
         CancellationToken cancellationToken = default
     )
     {
