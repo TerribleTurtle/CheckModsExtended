@@ -153,3 +153,4 @@ fika_test.json
 *.exe
 findings.md
 progress.md
+.worktrees/
