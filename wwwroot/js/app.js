@@ -520,9 +520,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span style="color: var(--text-muted);">Author</span>
                 <span>${escapeHtml(mod.author || 'Unknown')}</span>
                 <span style="color: var(--text-muted);">Local Ver</span>
-                <span style="font-family: var(--font-mono);" class="${localVerClass}">${escapeHtml(mod.localVersion || 'N/A')}</span>
+                <span class="${localVerClass}">${escapeHtml(mod.localVersion || 'N/A')}</span>
                 <span style="color: var(--text-muted);">Latest Ver</span>
-                <span style="font-family: var(--font-mono);" class="${latestVerClass}">${escapeHtml(mod.latestVersion || 'N/A')}</span>
+                <span class="${latestVerClass}">${escapeHtml(mod.latestVersion || 'N/A')}</span>
                 <span style="color: var(--text-muted);">Type</span>
                 <span title="${mod.isServerMod ? 'Server Mod' : 'Client Mod'}">${mod.isServerMod ? 'Server Mod' : 'Client Mod'}</span>
             </div>
@@ -737,7 +737,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch('/api/system/open', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(targetStr)
+                    body: JSON.stringify({ target: targetStr })
                 });
             } catch(err) {
                 logToConsole(`> Error opening target: ${err.message}`, 'error');
