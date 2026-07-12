@@ -9,7 +9,7 @@ namespace CheckModsExtended.Services;
 /// <summary>
 /// Service responsible for analyzing mod dependencies and building a dependency tree.
 /// </summary>
-public sealed class ModDependencyService(IForgeApiService forgeApiService, ILogger<ModDependencyService> logger)
+public sealed class ModDependencyService(IModUpdateClient forgeApiService, ILogger<ModDependencyService> logger)
     : IModDependencyService
 {
     /// <inheritdoc />

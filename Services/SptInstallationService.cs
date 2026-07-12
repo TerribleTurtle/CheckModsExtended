@@ -11,7 +11,7 @@ namespace CheckModsExtended.Services;
 /// </summary>
 [Injectable(InjectionType.Transient)]
 public sealed class SptInstallationService(
-    IForgeApiService forgeApiService,
+    ISptVersionClient forgeApiService,
     IModScannerService scannerService,
     IModCheckReporter reporter,
     ILogger<SptInstallationService> logger,

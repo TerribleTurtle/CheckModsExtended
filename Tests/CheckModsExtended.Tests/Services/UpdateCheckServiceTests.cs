@@ -18,10 +18,11 @@ public sealed class UpdateCheckServiceTests
 
     private static readonly SemanticVersioning.Version SptVersion = new("3.0.0");
 
-    private static UpdateCheckService CreateService(FakeForgeApiService api)
+    private static UpdateCheckService CreateService(FakeModSearchClient searchClient, FakeModUpdateClient updateClient)
     {
         return new UpdateCheckService(
-            api,
+            searchClient,
+            updateClient,
             Options.Create(new UpdateCheckOptions { ForgeModId = ModId }),
             NullLogger<UpdateCheckService>.Instance
         );
@@ -191,9 +192,10 @@ public sealed class UpdateCheckServiceTests
             UpToDate: null,
             Incompatible: null
         );
-        var api = new FakeForgeApiService { OnGetModUpdates = () => data };
+        var searchClient = new FakeModSearchClient();
+        var updateClient = new FakeModUpdateClient { OnGetModUpdates = () => data };
 
-        var result = await CreateService(api).CheckAsync(SptVersion);
+        var result = await CreateService(searchClient, updateClient).CheckAsync(SptVersion);
 
         Assert.Equal(CheckModsExtendedUpdateStatus.UpdateAvailable, result.Status);
         Assert.Equal("9.9.9", result.LatestVersion);
@@ -202,9 +204,10 @@ public sealed class UpdateCheckServiceTests
     [Fact]
     public async Task Checkasync_reports_unavailable_on_api_error()
     {
-        var api = new FakeForgeApiService { OnGetModUpdates = () => new ApiError("boom") };
+        var searchClient = new FakeModSearchClient();
+        var updateClient = new FakeModUpdateClient { OnGetModUpdates = () => new ApiError("boom") };
 
-        var result = await CreateService(api).CheckAsync(SptVersion);
+        var result = await CreateService(searchClient, updateClient).CheckAsync(SptVersion);
 
         Assert.Equal(CheckModsExtendedUpdateStatus.Unavailable, result.Status);
     }
@@ -212,9 +215,8 @@ public sealed class UpdateCheckServiceTests
     [Fact]
     public async Task Checkasync_recommends_latest_stable_version_for_an_unrecognized_build()
     {
-        var api = new FakeForgeApiService
+        var searchClient = new FakeModSearchClient
         {
-            OnGetModUpdates = () => new NotFound(),
             OnGetModById = _ =>
                 ModWithVersions(
                     "https://detail",
@@ -223,8 +225,9 @@ public sealed class UpdateCheckServiceTests
                     ApiModVersion("1.2.0")
                 ),
         };
+        var updateClient = new FakeModUpdateClient { OnGetModUpdates = () => new NotFound() };
 
-        var result = await CreateService(api).CheckAsync(SptVersion);
+        var result = await CreateService(searchClient, updateClient).CheckAsync(SptVersion);
 
         Assert.Equal(CheckModsExtendedUpdateStatus.UnrecognizedBuild, result.Status);
         Assert.Equal("1.2.0", result.LatestVersion); // 2.0.0-beta.1 is excluded as a prerelease
@@ -233,14 +236,14 @@ public sealed class UpdateCheckServiceTests
     [Fact]
     public async Task Checkasync_orders_unrecognized_versions_by_semver_not_string()
     {
-        var api = new FakeForgeApiService
+        var searchClient = new FakeModSearchClient
         {
-            OnGetModUpdates = () => new NotFound(),
             OnGetModById = _ =>
                 ModWithVersions(null, ApiModVersion("1.2.0"), ApiModVersion("1.10.0"), ApiModVersion("1.9.0")),
         };
+        var updateClient = new FakeModUpdateClient { OnGetModUpdates = () => new NotFound() };
 
-        var result = await CreateService(api).CheckAsync(SptVersion);
+        var result = await CreateService(searchClient, updateClient).CheckAsync(SptVersion);
 
         Assert.Equal("1.10.0", result.LatestVersion);
     }
@@ -248,13 +251,13 @@ public sealed class UpdateCheckServiceTests
     [Fact]
     public async Task Checkasync_reports_unavailable_when_only_prereleases_exist()
     {
-        var api = new FakeForgeApiService
+        var searchClient = new FakeModSearchClient
         {
-            OnGetModUpdates = () => new NotFound(),
             OnGetModById = _ => ModWithVersions(null, ApiModVersion("1.0.0-alpha"), ApiModVersion("2.0.0-beta")),
         };
+        var updateClient = new FakeModUpdateClient { OnGetModUpdates = () => new NotFound() };
 
-        var result = await CreateService(api).CheckAsync(SptVersion);
+        var result = await CreateService(searchClient, updateClient).CheckAsync(SptVersion);
 
         Assert.Equal(CheckModsExtendedUpdateStatus.Unavailable, result.Status);
     }
@@ -262,13 +265,13 @@ public sealed class UpdateCheckServiceTests
     [Fact]
     public async Task Checkasync_uses_the_version_link_as_download_link_when_present()
     {
-        var api = new FakeForgeApiService
+        var searchClient = new FakeModSearchClient
         {
-            OnGetModUpdates = () => new NotFound(),
             OnGetModById = _ => ModWithVersions("https://detail", ApiModVersion("1.0.0", "https://download/1.0.0")),
         };
+        var updateClient = new FakeModUpdateClient { OnGetModUpdates = () => new NotFound() };
 
-        var result = await CreateService(api).CheckAsync(SptVersion);
+        var result = await CreateService(searchClient, updateClient).CheckAsync(SptVersion);
 
         Assert.Equal("https://download/1.0.0", result.DownloadLink);
     }
@@ -276,13 +279,13 @@ public sealed class UpdateCheckServiceTests
     [Fact]
     public async Task Checkasync_falls_back_to_detail_url_when_the_version_has_no_link()
     {
-        var api = new FakeForgeApiService
+        var searchClient = new FakeModSearchClient
         {
-            OnGetModUpdates = () => new NotFound(),
             OnGetModById = _ => ModWithVersions("https://detail-page", ApiModVersion("1.0.0", link: null)),
         };
+        var updateClient = new FakeModUpdateClient { OnGetModUpdates = () => new NotFound() };
 
-        var result = await CreateService(api).CheckAsync(SptVersion);
+        var result = await CreateService(searchClient, updateClient).CheckAsync(SptVersion);
 
         Assert.Equal("https://detail-page", result.DownloadLink);
     }
@@ -290,13 +293,13 @@ public sealed class UpdateCheckServiceTests
     [Fact]
     public async Task Checkasync_reports_unavailable_when_the_mod_is_not_found()
     {
-        var api = new FakeForgeApiService
+        var searchClient = new FakeModSearchClient
         {
-            OnGetModUpdates = () => new NotFound(),
             OnGetModById = _ => new NotFound(),
         };
+        var updateClient = new FakeModUpdateClient { OnGetModUpdates = () => new NotFound() };
 
-        var result = await CreateService(api).CheckAsync(SptVersion);
+        var result = await CreateService(searchClient, updateClient).CheckAsync(SptVersion);
 
         Assert.Equal(CheckModsExtendedUpdateStatus.Unavailable, result.Status);
     }
@@ -304,13 +307,13 @@ public sealed class UpdateCheckServiceTests
     [Fact]
     public async Task Checkasync_reports_unavailable_when_the_mod_has_no_versions()
     {
-        var api = new FakeForgeApiService
+        var searchClient = new FakeModSearchClient
         {
-            OnGetModUpdates = () => new NotFound(),
             OnGetModById = _ => ModWithVersions(detailUrl: "https://detail"),
         };
+        var updateClient = new FakeModUpdateClient { OnGetModUpdates = () => new NotFound() };
 
-        var result = await CreateService(api).CheckAsync(SptVersion);
+        var result = await CreateService(searchClient, updateClient).CheckAsync(SptVersion);
 
         Assert.Equal(CheckModsExtendedUpdateStatus.Unavailable, result.Status);
     }

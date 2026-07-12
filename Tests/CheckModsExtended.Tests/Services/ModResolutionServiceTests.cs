@@ -12,7 +12,7 @@ namespace CheckModsExtended.Tests.Services;
 
 public sealed class ModResolutionServiceTests
 {
-    private readonly FakeForgeApiService _forgeApiService = new();
+    private readonly FakeModSearchClient _forgeApiService = new();
     private readonly ModResolutionService _sut;
 
     public ModResolutionServiceTests()

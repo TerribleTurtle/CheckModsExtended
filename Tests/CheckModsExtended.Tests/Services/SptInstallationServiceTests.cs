@@ -15,7 +15,7 @@ public sealed class SptInstallationServiceTests : IDisposable
     private readonly SptSandboxFixture _fixture;
     private readonly SptInstallationService _service;
     private readonly CheckModsExtended.Tests.Fakes.FakeModScannerService _scannerService;
-    private readonly FakeForgeApiService _forgeApiService;
+    private readonly FakeSptVersionClient _forgeApiService;
     private readonly CheckModsExtended.Tests.Fakes.FakeModCheckReporter _reporter;
     private readonly string _sptPath;
 
@@ -25,7 +25,7 @@ public sealed class SptInstallationServiceTests : IDisposable
         _sptPath = _fixture.SandboxPath;
 
         _scannerService = new CheckModsExtended.Tests.Fakes.FakeModScannerService();
-        _forgeApiService = new FakeForgeApiService();
+        _forgeApiService = new FakeSptVersionClient();
         _reporter = new CheckModsExtended.Tests.Fakes.FakeModCheckReporter();
 
         _service = new SptInstallationService(

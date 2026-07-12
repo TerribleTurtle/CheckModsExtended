@@ -14,7 +14,7 @@ namespace CheckModsExtended.Services;
 
 /// <inheritdoc />
 [Injectable(InjectionType.Transient)]
-public sealed class ModLookupStrategy(IForgeApiService forgeApiService) : IModLookupStrategy
+public sealed class ModLookupStrategy(IModSearchClient forgeApiService) : IModLookupStrategy
 {
     /// <inheritdoc />
     public async Task<(ModSearchResult Match, int ConfidenceScore)?> LookupModAsync(

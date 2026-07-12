@@ -30,7 +30,12 @@ public sealed class ServiceCollectionExtensionsTests
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
-        var forgeApiService = serviceProvider.GetRequiredService<IForgeApiService>();
-        Assert.NotNull(forgeApiService);
+        var sptVersionClient = serviceProvider.GetRequiredService<ISptVersionClient>();
+        var modSearchClient = serviceProvider.GetRequiredService<IModSearchClient>();
+        var modUpdateClient = serviceProvider.GetRequiredService<IModUpdateClient>();
+        
+        Assert.NotNull(sptVersionClient);
+        Assert.NotNull(modSearchClient);
+        Assert.NotNull(modUpdateClient);
     }
 }

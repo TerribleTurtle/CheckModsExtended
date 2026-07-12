@@ -8,7 +8,7 @@ namespace CheckModsExtended.Tests.Services;
 
 public sealed class ModEnrichmentServiceTests
 {
-    private readonly FakeForgeApiService _forgeApiService = new();
+    private readonly FakeModUpdateClient _forgeApiService = new();
     private readonly FakeLogger<ModEnrichmentService> _logger = new();
     private readonly ModEnrichmentService _service;
     private readonly Version _sptVersion = Version.Parse("3.9.0");

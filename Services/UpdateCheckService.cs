@@ -13,7 +13,8 @@ namespace CheckModsExtended.Services;
 /// </summary>
 [Injectable(InjectionType.Transient)]
 public sealed class UpdateCheckService(
-    IForgeApiService forgeApiService,
+    IModSearchClient searchClient,
+    IModUpdateClient updateClient,
     IOptions<UpdateCheckOptions> options,
     ILogger<UpdateCheckService> logger
 ) : IUpdateCheckService
@@ -36,7 +37,7 @@ public sealed class UpdateCheckService(
             sptVersion
         );
 
-        var updatesResult = await forgeApiService.GetModUpdatesAsync(
+        var updatesResult = await updateClient.GetModUpdatesAsync(
             [(modId, currentVersion)],
             sptVersion,
             cancellationToken
@@ -108,7 +109,7 @@ public sealed class UpdateCheckService(
         CancellationToken cancellationToken
     )
     {
-        var modResult = await forgeApiService.GetModByIdAsync(modId, cancellationToken);
+        var modResult = await searchClient.GetModByIdAsync(modId, cancellationToken);
 
         if (!modResult.TryPickT0(out var mod, out _) || mod.Versions is not { Count: > 0 })
         {

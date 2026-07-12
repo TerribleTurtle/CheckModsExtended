@@ -10,11 +10,11 @@ namespace CheckModsExtended.Tests.Services;
 /// <summary>
 /// Tests for <see cref="ModDependencyService.AnalyzeDependenciesAsync"/>: tree building, missing-dependency and
 /// conflict tracking, installed-dependency detection, the circular-dependency guard, and per-mod fetch progress.
-/// Dependencies are supplied through an in-memory <see cref="FakeForgeApiService"/>.
+/// Dependencies are supplied through an in-memory <see cref="FakeModUpdateClient"/>.
 /// </summary>
 public sealed class ModDependencyServiceTests
 {
-    private static ModDependencyService CreateService(FakeForgeApiService api)
+    private static ModDependencyService CreateService(FakeModUpdateClient api)
     {
         return new ModDependencyService(api, NullLogger<ModDependencyService>.Instance);
     }
@@ -76,7 +76,7 @@ public sealed class ModDependencyServiceTests
     public async Task Returns_all_mods_as_roots_when_none_are_matched()
     {
         // OnGetModDependencies intentionally unset.
-        var api = new FakeForgeApiService();
+        var api = new FakeModUpdateClient();
         var mod = UnmatchedMod("com.x.mod", "Mod");
 
         var result = await CreateService(api).AnalyzeDependenciesAsync([mod], new HashSet<string>());
@@ -91,7 +91,7 @@ public sealed class ModDependencyServiceTests
     [Fact]
     public async Task Records_a_missing_dependency_with_a_download_link()
     {
-        var api = new FakeForgeApiService
+        var api = new FakeModUpdateClient
         {
             OnGetModDependencies = _ => new List<ModDependency>
             {
@@ -113,7 +113,7 @@ public sealed class ModDependencyServiceTests
     {
         var main = MatchedMod("com.author.main", "Main", 100);
         var depMod = MatchedMod("com.author.dep", "Dep", 200);
-        var api = new FakeForgeApiService
+        var api = new FakeModUpdateClient
         {
             OnGetModDependencies = id =>
                 id == "100" ? new List<ModDependency> { Dep("com.author.dep", id: 200) } : new List<ModDependency>(),
@@ -128,7 +128,7 @@ public sealed class ModDependencyServiceTests
     [Fact]
     public async Task Does_not_flag_a_dependency_listed_in_installed_guids()
     {
-        var api = new FakeForgeApiService
+        var api = new FakeModUpdateClient
         {
             OnGetModDependencies = _ => new List<ModDependency> { Dep("com.author.dep", id: 200) },
         };
@@ -145,7 +145,7 @@ public sealed class ModDependencyServiceTests
     [Fact]
     public async Task Detects_a_version_conflict()
     {
-        var api = new FakeForgeApiService
+        var api = new FakeModUpdateClient
         {
             OnGetModDependencies = _ => new List<ModDependency>
             {
@@ -168,7 +168,7 @@ public sealed class ModDependencyServiceTests
         var backEdgeToA = Dep("com.a", "A");
         var b = Dep("com.b", "B", nested: [backEdgeToA]);
         var a = Dep("com.a", "A", nested: [b]);
-        var api = new FakeForgeApiService { OnGetModDependencies = _ => new List<ModDependency> { a } };
+        var api = new FakeModUpdateClient { OnGetModDependencies = _ => new List<ModDependency> { a } };
 
         var result = await CreateService(api)
             .AnalyzeDependenciesAsync([MatchedMod("com.main", "Main", 100)], new HashSet<string>());
@@ -195,7 +195,7 @@ public sealed class ModDependencyServiceTests
         var m1 = MatchedMod("com.a.one", "One", 100);
         var m2 = MatchedMod("com.a.two", "Two", 100);
         var calls = new List<int>();
-        var api = new FakeForgeApiService { OnGetModDependencies = _ => new List<ModDependency>() };
+        var api = new FakeModUpdateClient { OnGetModDependencies = _ => new List<ModDependency>() };
 
         await CreateService(api)
             .AnalyzeDependenciesAsync(
@@ -210,7 +210,7 @@ public sealed class ModDependencyServiceTests
     [Fact]
     public async Task Treats_a_dependency_fetch_error_as_no_dependencies()
     {
-        var api = new FakeForgeApiService { OnGetModDependencies = _ => new ApiError("boom") };
+        var api = new FakeModUpdateClient { OnGetModDependencies = _ => new ApiError("boom") };
 
         var result = await CreateService(api)
             .AnalyzeDependenciesAsync([MatchedMod("com.main", "Main", 100)], new HashSet<string>());
@@ -224,7 +224,7 @@ public sealed class ModDependencyServiceTests
     public async Task Update_reports_a_newly_required_missing_dependency_with_a_download_link()
     {
         var main = UpdatableMod("com.author.main", "Main", 100, "2.0.0");
-        var api = new FakeForgeApiService
+        var api = new FakeModUpdateClient
         {
             OnGetModDependenciesVersioned = key =>
                 key switch
@@ -256,7 +256,7 @@ public sealed class ModDependencyServiceTests
     {
         var main = UpdatableMod("com.author.main", "Main", 100, "2.0.0");
         var dep = MatchedModWithVersion("com.author.dep", "Dep", 500, "3.0.0");
-        var api = new FakeForgeApiService
+        var api = new FakeModUpdateClient
         {
             OnGetModDependenciesVersioned = key =>
                 key switch
@@ -280,7 +280,7 @@ public sealed class ModDependencyServiceTests
     {
         var main = UpdatableMod("com.author.main", "Main", 100, "2.0.0");
         var dep = MatchedModWithVersion("com.author.dep", "Dep", 500, "2.0.0");
-        var api = new FakeForgeApiService
+        var api = new FakeModUpdateClient
         {
             OnGetModDependenciesVersioned = key =>
                 key switch
@@ -305,7 +305,7 @@ public sealed class ModDependencyServiceTests
     {
         var main = UpdatableMod("com.author.main", "Main", 100, "2.0.0");
         var nested = Dep("com.b", "B", id: 601, version: "1.0.0");
-        var api = new FakeForgeApiService
+        var api = new FakeModUpdateClient
         {
             OnGetModDependenciesVersioned = key =>
                 key switch
@@ -332,7 +332,7 @@ public sealed class ModDependencyServiceTests
     public async Task Update_reports_a_no_longer_required_dependency()
     {
         var main = UpdatableMod("com.author.main", "Main", 100, "2.0.0");
-        var api = new FakeForgeApiService
+        var api = new FakeModUpdateClient
         {
             OnGetModDependenciesVersioned = key =>
                 key switch
@@ -355,7 +355,7 @@ public sealed class ModDependencyServiceTests
     public async Task Does_not_attach_dependency_changes_when_no_update_is_available()
     {
         var main = MatchedMod("com.author.main", "Main", 100);
-        var api = new FakeForgeApiService { OnGetModDependencies = _ => new List<ModDependency>() };
+        var api = new FakeModUpdateClient { OnGetModDependencies = _ => new List<ModDependency>() };
 
         await CreateService(api).AnalyzeDependenciesAsync([main], new HashSet<string>());
 
@@ -366,7 +366,7 @@ public sealed class ModDependencyServiceTests
     public async Task A_target_version_fetch_error_leaves_changes_unset_but_keeps_the_current_analysis()
     {
         var main = UpdatableMod("com.author.main", "Main", 100, "2.0.0");
-        var api = new FakeForgeApiService
+        var api = new FakeModUpdateClient
         {
             OnGetModDependenciesVersioned = key =>
                 key switch
@@ -394,7 +394,7 @@ public sealed class ModDependencyServiceTests
     public async Task Update_surfaces_a_conflicting_new_dependency()
     {
         var main = UpdatableMod("com.author.main", "Main", 100, "2.0.0");
-        var api = new FakeForgeApiService
+        var api = new FakeModUpdateClient
         {
             OnGetModDependenciesVersioned = key =>
                 key switch

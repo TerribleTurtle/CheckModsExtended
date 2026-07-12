@@ -182,13 +182,33 @@ public static class ServiceCollectionExtensions
             return ActivatorUtilities.CreateInstance<ForgeApiClient>(sp, httpClient);
         });
 
-        services.AddTransient<IForgeApiService, CachedForgeApiService>(sp =>
+        services.AddTransient<ISptVersionClient, CachedSptVersionClient>(sp =>
         {
-            var inner = ActivatorUtilities.CreateInstance<ForgeApiService>(sp);
-            return new CachedForgeApiService(
+            var inner = ActivatorUtilities.CreateInstance<SptVersionClient>(sp);
+            return new CachedSptVersionClient(
                 inner,
                 sp.GetRequiredService<IMemoryCache>(),
-                sp.GetRequiredService<ILogger<CachedForgeApiService>>()
+                sp.GetRequiredService<ILogger<CachedSptVersionClient>>()
+            );
+        });
+
+        services.AddTransient<IModSearchClient, CachedModSearchClient>(sp =>
+        {
+            var inner = ActivatorUtilities.CreateInstance<ModSearchClient>(sp);
+            return new CachedModSearchClient(
+                inner,
+                sp.GetRequiredService<IMemoryCache>(),
+                sp.GetRequiredService<ILogger<CachedModSearchClient>>()
+            );
+        });
+
+        services.AddTransient<IModUpdateClient, CachedModUpdateClient>(sp =>
+        {
+            var inner = ActivatorUtilities.CreateInstance<ModUpdateClient>(sp);
+            return new CachedModUpdateClient(
+                inner,
+                sp.GetRequiredService<IMemoryCache>(),
+                sp.GetRequiredService<ILogger<CachedModUpdateClient>>()
             );
         });
 

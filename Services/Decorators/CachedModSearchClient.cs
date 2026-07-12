@@ -7,13 +7,13 @@ using OneOf;
 namespace CheckModsExtended.Services.Decorators;
 
 /// <summary>
-/// A decorator for IForgeApiService that caches method results.
+/// A decorator for IModSearchClient that caches method results.
 /// </summary>
-public sealed class CachedForgeApiService(
-    IForgeApiService inner,
+public sealed class CachedModSearchClient(
+    IModSearchClient inner,
     IMemoryCache cache,
-    ILogger<CachedForgeApiService> logger
-) : IForgeApiService
+    ILogger<CachedModSearchClient> logger
+) : IModSearchClient
 {
     private static readonly MemoryCacheEntryOptions _cacheEntryOptions = new()
     {
@@ -37,25 +37,6 @@ public sealed class CachedForgeApiService(
         }
 
         return result;
-    }
-
-    /// <inheritdoc />
-    public Task<OneOf<bool, InvalidSptVersion, ApiError>> ValidateSptVersionAsync(
-        string sptVersion,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var key = $"ForgeApi_ValidateSptVersion_{sptVersion}";
-        return GetCachedAsync(key, () => inner.ValidateSptVersionAsync(sptVersion, cancellationToken));
-    }
-
-    /// <inheritdoc />
-    public Task<OneOf<List<SptVersionResult>, ApiError>> GetAllSptVersionsAsync(
-        CancellationToken cancellationToken = default
-    )
-    {
-        var key = "ForgeApi_GetAllSptVersions";
-        return GetCachedAsync(key, () => inner.GetAllSptVersionsAsync(cancellationToken));
     }
 
     /// <inheritdoc />
@@ -99,32 +80,5 @@ public sealed class CachedForgeApiService(
     {
         var key = $"ForgeApi_GetModByGuid_{modGuid}_{sptVersion}";
         return GetCachedAsync(key, () => inner.GetModByGuidAsync(modGuid, sptVersion, cancellationToken));
-    }
-
-    /// <inheritdoc />
-    public Task<OneOf<ModUpdatesData, NotFound, ApiError>> GetModUpdatesAsync(
-        IEnumerable<(int ModId, string CurrentVersion)> modUpdates,
-        SemanticVersioning.Version sptVersion,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var updatesList = modUpdates.ToList();
-        var updatesKey = string.Join(",", updatesList.Select(m => $"{m.ModId}_{m.CurrentVersion}").OrderBy(x => x));
-        var key = $"ForgeApi_GetModUpdates_{updatesKey}_{sptVersion}";
-
-        return GetCachedAsync(key, () => inner.GetModUpdatesAsync(updatesList, sptVersion, cancellationToken));
-    }
-
-    /// <inheritdoc />
-    public Task<OneOf<List<ModDependency>, NotFound, ApiError>> GetModDependenciesAsync(
-        IEnumerable<(string Identifier, string Version)> modVersions,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var versionsList = modVersions.ToList();
-        var versionsKey = string.Join(",", versionsList.Select(m => $"{m.Identifier}_{m.Version}").OrderBy(x => x));
-        var key = $"ForgeApi_GetModDependencies_{versionsKey}";
-
-        return GetCachedAsync(key, () => inner.GetModDependenciesAsync(versionsList, cancellationToken));
     }
 }

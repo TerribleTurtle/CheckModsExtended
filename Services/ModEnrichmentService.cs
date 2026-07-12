@@ -9,7 +9,7 @@ namespace CheckModsExtended.Services;
 /// Service responsible for enriching matched mods with additional API data such as version information.
 /// </summary>
 [Injectable(InjectionType.Transient)]
-public sealed class ModEnrichmentService(IForgeApiService forgeApiService, ILogger<ModEnrichmentService> logger)
+public sealed class ModEnrichmentService(IModUpdateClient forgeApiService, ILogger<ModEnrichmentService> logger)
     : IModEnrichmentService
 {
     /// <inheritdoc />

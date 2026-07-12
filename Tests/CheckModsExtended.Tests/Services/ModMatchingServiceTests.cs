@@ -9,13 +9,13 @@ namespace CheckModsExtended.Tests;
 /// <summary>
 /// Tests for <see cref="ModMatchingService.MatchModsAsync"/>, focusing on per-mod failure isolation and the systemic
 /// failure surfacing (when every mod throws, the batch raises an error instead of silently reporting all as
-/// not-found). Drives matching through an in-memory <see cref="FakeForgeApiService"/>.
+/// not-found). Drives matching through an in-memory <see cref="FakeModSearchClient"/>.
 /// </summary>
 public sealed class ModMatchingServiceTests
 {
     private static readonly SemanticVersioning.Version SptVersion = new("3.0.0");
 
-    private static ModMatchingService CreateService(FakeForgeApiService api)
+    private static ModMatchingService CreateService(FakeModSearchClient api)
     {
         return new ModMatchingService(
             new ModLookupStrategy(api),
@@ -57,7 +57,7 @@ public sealed class ModMatchingServiceTests
     [Fact]
     public async Task Matches_a_mod_by_guid()
     {
-        var api = new FakeForgeApiService { OnGetModByGuid = _ => Match(2471, "Cool Mod", "cool-mod") };
+        var api = new FakeModSearchClient { OnGetModByGuid = _ => Match(2471, "Cool Mod", "cool-mod") };
         var mod = ClientMod("com.author.coolmod", "Cool Mod");
 
         var results = await CreateService(api).MatchModsAsync([mod], SptVersion);
@@ -70,7 +70,7 @@ public sealed class ModMatchingServiceTests
     [Fact]
     public async Task Falls_back_to_name_search_when_guid_misses()
     {
-        var api = new FakeForgeApiService
+        var api = new FakeModSearchClient
         {
             OnGetModByGuid = _ => new NotFound(),
             OnSearch = _ => new List<ModSearchResult> { Match(2471, "Cool Mod", "cool-mod") },
@@ -87,7 +87,7 @@ public sealed class ModMatchingServiceTests
     [Fact]
     public async Task Marks_a_mod_unmatched_when_nothing_matches()
     {
-        var api = new FakeForgeApiService
+        var api = new FakeModSearchClient
         {
             OnGetModByGuid = _ => new NotFound(),
             OnSearch = _ => new List<ModSearchResult>(),
@@ -105,7 +105,7 @@ public sealed class ModMatchingServiceTests
     public async Task Throws_when_every_mod_fails()
     {
         var boom = new InvalidOperationException("metadata parse failure");
-        var api = new FakeForgeApiService { OnGetModByGuid = _ => throw boom };
+        var api = new FakeModSearchClient { OnGetModByGuid = _ => throw boom };
         var mods = new[] { ClientMod("com.a.one"), ClientMod("com.a.two"), ClientMod("com.a.three") };
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -118,7 +118,7 @@ public sealed class ModMatchingServiceTests
     [Fact]
     public async Task Does_not_throw_when_a_lone_mod_fails()
     {
-        var api = new FakeForgeApiService { OnGetModByGuid = _ => throw new InvalidOperationException("boom") };
+        var api = new FakeModSearchClient { OnGetModByGuid = _ => throw new InvalidOperationException("boom") };
         var mod = ClientMod("com.a.lonely");
 
         var results = await CreateService(api).MatchModsAsync([mod], SptVersion);
@@ -132,7 +132,7 @@ public sealed class ModMatchingServiceTests
     [Fact]
     public async Task Does_not_throw_when_a_two_mod_install_all_fails()
     {
-        var api = new FakeForgeApiService { OnGetModByGuid = _ => throw new InvalidOperationException("boom") };
+        var api = new FakeModSearchClient { OnGetModByGuid = _ => throw new InvalidOperationException("boom") };
         var mods = new[] { ClientMod("com.a.one"), ClientMod("com.a.two") };
 
         var results = await CreateService(api).MatchModsAsync(mods, SptVersion);
@@ -144,7 +144,7 @@ public sealed class ModMatchingServiceTests
     [Fact]
     public async Task Isolates_a_single_failure_and_matches_the_rest()
     {
-        var api = new FakeForgeApiService
+        var api = new FakeModSearchClient
         {
             OnGetModByGuid = guid =>
                 guid.Contains("boom") ? throw new InvalidOperationException("boom") : Match(1, "Mod", "mod"),
@@ -167,7 +167,7 @@ public sealed class ModMatchingServiceTests
     [Fact]
     public async Task Does_not_throw_on_partial_failure()
     {
-        var api = new FakeForgeApiService
+        var api = new FakeModSearchClient
         {
             OnGetModByGuid = guid =>
                 guid.Contains("boom") ? throw new InvalidOperationException("boom") : Match(1, "Mod", "mod"),
@@ -189,7 +189,7 @@ public sealed class ModMatchingServiceTests
     [Fact]
     public async Task Returns_empty_for_no_mods()
     {
-        var api = new FakeForgeApiService
+        var api = new FakeModSearchClient
         {
             OnGetModByGuid = _ => throw new InvalidOperationException("should not run"),
         };
@@ -209,7 +209,7 @@ public sealed class ModMatchingServiceTests
     [Fact]
     public async Task Invokes_progress_callback_once_per_mod()
     {
-        var api = new FakeForgeApiService { OnGetModByGuid = _ => Match(1, "Mod", "mod") };
+        var api = new FakeModSearchClient { OnGetModByGuid = _ => Match(1, "Mod", "mod") };
         var mods = new[] { ClientMod("com.a.one"), ClientMod("com.a.two"), ClientMod("com.a.three") };
         var progressCalls = new List<int>();
 
@@ -236,7 +236,7 @@ public sealed class ModMatchingServiceTests
     public async Task FindBestMatch_matches_by_exact_normalized_name()
     {
         // Name normalizes to the local name; slug deliberately does not.
-        var api = new FakeForgeApiService
+        var api = new FakeModSearchClient
         {
             OnGetModByGuid = _ => new NotFound(),
             OnSearch = _ => new List<ModSearchResult> { Match(10, "super-mod", "zzz") },
@@ -253,7 +253,7 @@ public sealed class ModMatchingServiceTests
     [Fact]
     public async Task FindBestMatch_matches_after_removing_component_suffix()
     {
-        var api = new FakeForgeApiService
+        var api = new FakeModSearchClient
         {
             OnGetModByGuid = _ => new NotFound(),
             OnSearch = _ => new List<ModSearchResult> { Match(20, "CoolMod", "zzz") },
@@ -270,7 +270,7 @@ public sealed class ModMatchingServiceTests
     [Fact]
     public async Task FindBestMatch_matches_by_slug_when_name_differs()
     {
-        var api = new FakeForgeApiService
+        var api = new FakeModSearchClient
         {
             OnGetModByGuid = _ => new NotFound(),
             OnSearch = _ => new List<ModSearchResult> { Match(30, "Totally Different", "awesome-thing") },
@@ -288,7 +288,7 @@ public sealed class ModMatchingServiceTests
     public async Task FindBestMatch_matches_by_author_and_name()
     {
         // Name matches only after suffix removal and the slug is blank.
-        var api = new FakeForgeApiService
+        var api = new FakeModSearchClient
         {
             OnGetModByGuid = _ => new NotFound(),
             OnSearch = _ => new List<ModSearchResult> { Match(40, "HeroModClient", "", ownerName: "JaneDoe") },
@@ -306,7 +306,7 @@ public sealed class ModMatchingServiceTests
     public async Task FindBestMatch_matches_by_fuzzy_score_above_threshold()
     {
         // One-character typo: well above the fuzzy threshold but not an exact/slug/author match.
-        var api = new FakeForgeApiService
+        var api = new FakeModSearchClient
         {
             OnGetModByGuid = _ => new NotFound(),
             OnSearch = _ => new List<ModSearchResult> { Match(50, "Inventory Managr", "zzz") },
@@ -323,7 +323,7 @@ public sealed class ModMatchingServiceTests
     [Fact]
     public async Task FindBestMatch_returns_no_match_for_unrelated_results()
     {
-        var api = new FakeForgeApiService
+        var api = new FakeModSearchClient
         {
             OnGetModByGuid = _ => new NotFound(),
             OnSearch = _ => new List<ModSearchResult> { Match(60, "Completely Unrelated Zeta", "zzz") },
@@ -343,7 +343,7 @@ public sealed class ModMatchingServiceTests
     public async Task BuildSearchTerms_includes_name_suffix_guid_and_author_variants()
     {
         var queries = new List<string>();
-        var api = new FakeForgeApiService
+        var api = new FakeModSearchClient
         {
             OnGetModByGuid = _ => new NotFound(),
             OnSearch = q =>
@@ -370,7 +370,7 @@ public sealed class ModMatchingServiceTests
     public async Task BuildSearchTerms_excludes_author_term_for_unknown_author()
     {
         var queries = new List<string>();
-        var api = new FakeForgeApiService
+        var api = new FakeModSearchClient
         {
             OnGetModByGuid = _ => new NotFound(),
             OnSearch = q =>
