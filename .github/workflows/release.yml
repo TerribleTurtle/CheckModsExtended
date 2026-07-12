@@ -92,7 +92,7 @@ jobs:
       with:
         subject-path: './publish/artifacts/CheckModsExtended-*'
 
-    - name: Extract prerelease flag
+    - name: Extract prerelease flag and version
       id: version
       run: |
         VERSION=${GITHUB_REF#refs/tags/}
@@ -102,6 +102,27 @@ jobs:
         else
           echo "prerelease=false" >> $GITHUB_OUTPUT
         fi
+        echo "version=${VERSION_CLEAN}" >> $GITHUB_OUTPUT
+
+    - name: Extract Release Notes from CHANGELOG
+      id: extract_notes
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/}
+        VERSION_CLEAN=${VERSION#v}
+        awk "/^## \[${VERSION_CLEAN}\]/{flag=1; next} /^## \[/{if(flag) exit} flag" CHANGELOG.md > current_notes.md
+        if [ ! -s current_notes.md ]; then
+          echo "No release notes found for ${VERSION_CLEAN} in CHANGELOG.md" > current_notes.md
+        fi
+
+    - name: Package SPT Hub Release
+      run: |
+        mkdir -p ./publish/artifacts/SptHub
+        cp ./publish/artifacts/CheckModsExtended-win-x64.exe ./publish/artifacts/SptHub/
+        cp README.md ./publish/artifacts/SptHub/
+        cp LICENSE ./publish/artifacts/SptHub/
+        cp CHANGELOG.md ./publish/artifacts/SptHub/
+        cd ./publish/artifacts/SptHub
+        zip -r ../CheckModsExtended-${{ steps.version.outputs.version }}-SptHub.zip ./*
 
     - name: Create Release
       uses: softprops/action-gh-release@v3
@@ -109,8 +130,9 @@ jobs:
         files: |
           ./publish/artifacts/CheckModsExtended-*
           ./publish/artifacts/checksums.txt
+          ./publish/artifacts/*.zip
         generate_release_notes: true
-        body_path: release_notes.md
+        body_path: current_notes.md
         prerelease: ${{ steps.version.outputs.prerelease == 'true' }}
 
     - name: VirusTotal Scan
