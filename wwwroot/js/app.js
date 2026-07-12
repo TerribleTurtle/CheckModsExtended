@@ -541,10 +541,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderActions(mod) {
         let actions = '';
         if (mod.downloadUrl) {
-            actions += `<a href="${escapeHtml(mod.downloadUrl)}" target="_blank" class="btn-primary" style="text-decoration: none;">Download ZIP</a> `;
+            actions += `<button class="btn-primary action-system-open" data-target="${escapeHtml(mod.downloadUrl)}">Download ZIP</button> `;
         }
         if (mod.modUrl) {
-            actions += `<a href="${escapeHtml(mod.modUrl)}" target="_blank" class="btn-secondary" style="text-decoration: none;">View Page</a> `;
+            actions += `<button class="btn-secondary action-system-open" data-target="${escapeHtml(mod.modUrl)}">Open Mod Page</button> `;
+        }
+        if (mod.localDirectory) {
+            actions += `<button class="btn-secondary action-system-open" data-target="${escapeHtml(mod.localDirectory)}">Open Local Folder</button> `;
         }
         if (mod.status === 'UpdateAvailable') {
             actions += `<button class="btn-secondary action-ignore" data-id="${escapeHtml(mod.id)}" data-local="${escapeHtml(mod.localVersion)}" data-latest="${escapeHtml(mod.latestVersion)}">Ignore Update</button> `;
@@ -573,28 +576,47 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (mod.status === 'UpdateAvailable' || mod.isIgnored) {
             html += `<div style="background: var(--status-warning-bg); border: 1px solid var(--status-warning); padding: 15px; border-radius: var(--radius-md); margin-bottom: 20px;">
                 <h3 style="color: var(--status-warning); margin-bottom: 10px;">${mod.isIgnored ? 'Update Ignored' : 'Update Available'}</h3>
-                <p>Version <strong>${escapeHtml(mod.latestVersion)}</strong> is available. You are running <strong>${escapeHtml(mod.localVersion)}</strong>.</p>
+                <p>Version <strong class="ver-ok">${escapeHtml(mod.latestVersion)}</strong> is available. You are running <strong class="ver-warn">${escapeHtml(mod.localVersion)}</strong>.</p>
                 <div style="margin-top: 15px; display: flex; gap: 10px;">
                     ${renderActions(mod)}
                 </div>
             </div>`;
         }
 
-        if (mod.modUrl && mod.status !== 'UpdateAvailable' && !mod.isIgnored) {
-            html += `<div style="margin-bottom: 20px;">
-                <a href="${escapeHtml(mod.modUrl)}" target="_blank" class="btn-secondary" style="text-decoration: none;">Open Mod Page</a>
+        let generalActions = '';
+        if (mod.status !== 'UpdateAvailable' && !mod.isIgnored) {
+            if (mod.modUrl) {
+                generalActions += `<button class="btn-secondary action-system-open" data-target="${escapeHtml(mod.modUrl)}">Open Mod Page</button> `;
+            }
+            if (mod.localDirectory) {
+                generalActions += `<button class="btn-secondary action-system-open" data-target="${escapeHtml(mod.localDirectory)}">Open Local Folder</button> `;
+            }
+        }
+        if (generalActions) {
+            html += `<div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                ${generalActions}
             </div>`;
         }
         
+        let localVerClass = 'ver-ok';
+        let latestVerClass = 'ver-ok';
+        if (mod.status === 'UpdateAvailable' || mod.isIgnored) {
+            localVerClass = 'ver-warn';
+        } else if (mod.status === 'UpdateBlocked' || mod.status === 'Incompatible') {
+            localVerClass = 'ver-error';
+        } else if (mod.status === 'NewerInstalled') {
+            localVerClass = 'ver-info';
+        }
+
         html += `<div style="margin-bottom: 20px;">
             <h4 style="color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; font-size: 0.8rem;">Metadata</h4>
             <div style="display: grid; grid-template-columns: 100px 1fr; gap: 8px; font-size: 0.9rem;">
                 <span style="color: var(--text-muted);">Author</span>
                 <span>${escapeHtml(mod.author || 'Unknown')}</span>
                 <span style="color: var(--text-muted);">Local Ver</span>
-                <span style="font-family: var(--font-mono);">${escapeHtml(mod.localVersion || 'N/A')}</span>
+                <span class="${localVerClass}">${escapeHtml(mod.localVersion || 'N/A')}</span>
                 <span style="color: var(--text-muted);">Latest Ver</span>
-                <span style="font-family: var(--font-mono);">${escapeHtml(mod.latestVersion || 'N/A')}</span>
+                <span class="${latestVerClass}">${escapeHtml(mod.latestVersion || 'N/A')}</span>
                 <span style="color: var(--text-muted);">Type</span>
                 <span title="${mod.isServerMod ? 'Server Mod' : 'Client Mod'}">${mod.isServerMod ? 'Server Mod' : 'Client Mod'}</span>
             </div>
@@ -807,6 +829,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch(err) {
                 logToConsole(`> Error un-ignoring mod: ${err.message}`, 'error');
+            }
+        } else if (e.target.classList.contains('action-system-open')) {
+            const btn = e.target;
+            const targetStr = btn.dataset.target;
+            if (!targetStr) return;
+            
+            try {
+                fetch('/api/system/open', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target: targetStr })
+                });
+            } catch(err) {
+                logToConsole(`> Error opening target: ${err.message}`, 'error');
             }
         }
     }
