@@ -105,7 +105,7 @@ public static class WebManagerHost
             AnsiConsole.MarkupLine("[grey]Press Ctrl+C to shut down.[/]");
             
             var browserLauncher = app.Services.GetRequiredService<IBrowserLauncher>();
-            browserLauncher.TryOpenUrl(actualUrl);
+            var _ = browserLauncher.TryOpenUrl(actualUrl);
         });
 
         await app.RunAsync(cancellationToken);

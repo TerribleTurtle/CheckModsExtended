@@ -68,7 +68,7 @@ public sealed class IgnoredUpdateWorkflow(
         var opened = 0;
         foreach (var url in urls)
         {
-            if (browserLauncher.TryOpenUrl(url))
+            if (browserLauncher.TryOpenUrl(url).IsT0)
             {
                 opened++;
             }
@@ -163,7 +163,7 @@ public sealed class IgnoredUpdateWorkflow(
         }
 
         var url = IgnoreReportUrl.Build(reportable, out var prefilled);
-        var opened = browserLauncher.TryOpenUrl(url);
+        var opened = browserLauncher.TryOpenUrl(url).IsT0;
         reporter.IgnoreReportOpened(url, opened, prefilled);
     }
 

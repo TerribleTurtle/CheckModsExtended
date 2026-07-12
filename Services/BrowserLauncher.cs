@@ -15,29 +15,32 @@ public sealed class BrowserLauncher(
 ) : IBrowserLauncher
 {
     /// <inheritdoc />
-    public bool TryOpenUrl(string url)
+    public OneOf.OneOf<OneOf.Types.Success, CheckModsExtended.Models.ApiError> TryOpenUrl(string url)
     {
-        // Only passes http(s) URLs to the shell.
-        if (
-            !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
-            && !url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
-        )
-        {
-            logger.LogWarning("Refusing to open non-http(s) URL");
-            return false;
-        }
-
         try
         {
-            // UseShellExecute lets the OS pick the default browser; the returned process may be null.
             processRunner.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-            return true;
+            return new OneOf.Types.Success();
         }
-        catch (Exception ex)
-            when (ex is System.ComponentModel.Win32Exception or ObjectDisposedException or FileNotFoundException)
+        catch (System.ComponentModel.Win32Exception ex)
         {
             logger.LogWarning(ex, "Could not open the browser");
-            return false;
+            return new CheckModsExtended.Models.ApiError($"Failed to open target: {ex.Message}");
+        }
+        catch (System.IO.FileNotFoundException ex)
+        {
+            logger.LogWarning(ex, "Could not open the browser");
+            return new CheckModsExtended.Models.ApiError($"Target not found: {ex.Message}");
+        }
+        catch (System.ObjectDisposedException ex)
+        {
+            logger.LogWarning(ex, "Could not open the browser");
+            return new CheckModsExtended.Models.ApiError($"Process disposed: {ex.Message}");
+        }
+        catch (System.Exception ex)
+        {
+            logger.LogWarning(ex, "Could not open the browser");
+            return new CheckModsExtended.Models.ApiError($"Process failed: {ex.Message}");
         }
     }
 }

@@ -8,5 +8,5 @@ public interface IBrowserLauncher
     /// <summary>
     /// Attempts to open <paramref name="url"/> in the default browser, returning false on any failure or a non-http(s) URL.
     /// </summary>
-    bool TryOpenUrl(string url);
+    OneOf.OneOf<OneOf.Types.Success, CheckModsExtended.Models.ApiError> TryOpenUrl(string url);
 }
