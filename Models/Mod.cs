@@ -32,6 +32,11 @@ public sealed record Mod
     /// </summary>
     public IReadOnlyList<string> LoadWarnings { get; init; } = [];
 
+    /// <summary>
+    /// Indicates whether this mod is a duplicate installation of another mod.
+    /// </summary>
+    public bool IsDuplicate { get; init; }
+
     #endregion
 
     #region Display Properties (computed)

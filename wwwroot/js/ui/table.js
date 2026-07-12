@@ -57,6 +57,7 @@ export function renderTable(filteredMods, sort, ui) {
 
         const escapedName = escapeHtml(mod.name || 'Unknown');
         const escapedAuthor = escapeHtml(mod.author || 'Unknown');
+        const duplicateHtml = mod.isDuplicate ? '<span class="status-badge" style="background-color: var(--status-warning); color: var(--text-dark); margin-left: 8px; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; vertical-align: middle;">DUPLICATE</span>' : '';
         const warningHtml = mod.hasWarnings ? '<span title="Mod has warnings. Check details pane." style="color: var(--status-warning); margin-left: 5px; font-size: 0.9rem;">⚠️</span>' : '';
         const typeLabel = mod.isServerMod 
             ? '<span style="color: var(--status-success); font-weight: 600;" title="Server Mod">Server</span>' 
@@ -77,7 +78,7 @@ export function renderTable(filteredMods, sort, ui) {
             </td>
             <td data-label="Mod Name">
                 <div class="mod-card-primary">
-                    <div class="mod-card-title" style="font-weight: 600;">${escapedName}${warningHtml}</div>
+                    <div class="mod-card-title" style="font-weight: 600;">${escapedName}${warningHtml}${duplicateHtml}</div>
                     <div class="mod-card-meta">by ${escapedAuthor} • ${typeLabel}</div>
                 </div>
             </td>

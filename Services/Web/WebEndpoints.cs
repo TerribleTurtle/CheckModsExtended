@@ -99,6 +99,7 @@ public static class WebEndpoints
                 SourceCodeUrl: m.Api.ApiSourceCodeUrl,
                 LocalSptVersion: m.Local.LocalSptVersion,
                 HasWarnings: m.HasWarnings,
+                IsDuplicate: m.IsDuplicate,
                 LoadWarnings: m.LoadWarnings.Count > 0 ? m.LoadWarnings.ToList() : null,
                 IsIgnored: m.Update.UpdateSuppressed,
                 IsPaired: m.Local.PairedComponentPath != null,

@@ -52,6 +52,7 @@ public record ModDto(
     string? SourceCodeUrl = null,
     string? LocalSptVersion = null,
     bool HasWarnings = false,
+    bool IsDuplicate = false,
     IReadOnlyList<string>? LoadWarnings = null,
     bool IsIgnored = false,
     bool IsPaired = false,

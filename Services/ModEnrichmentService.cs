@@ -101,6 +101,11 @@ public sealed class ModEnrichmentService(
         // Fix duplicate mod statuses: if a mod is an older duplicate, it cannot be UpToDate.
         foreach (var group in uniqueModsById.Values.Where(g => g.Count > 1))
         {
+            foreach (var mod in group)
+            {
+                modsDict[mod.Local.Guid] = modsDict[mod.Local.Guid] with { IsDuplicate = true };
+            }
+
             var highestMod = modsDict[group[0].Local.Guid];
             var latestVer = highestMod.Update.LatestVersion ?? highestMod.Local.LocalVersion;
             
