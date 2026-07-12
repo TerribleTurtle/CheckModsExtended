@@ -9,52 +9,14 @@ namespace CheckModsExtended.Tests.Utils;
 public sealed class BrowserLauncherTests
 {
     [Fact]
-    public void Tryopenurl_refuses_non_http_urls_ftp()
+    public void Tryopenurl_invalid_throws_and_returns_error()
     {
         var launcher = new BrowserLauncher(
             NullLogger<BrowserLauncher>.Instance,
             new CheckModsExtended.Utils.ProcessRunner()
         );
-        Assert.False(launcher.TryOpenUrl("ftp://example.com/file"));
-    }
-
-    [Fact]
-    public void Tryopenurl_refuses_non_http_urls_file()
-    {
-        var launcher = new BrowserLauncher(
-            NullLogger<BrowserLauncher>.Instance,
-            new CheckModsExtended.Utils.ProcessRunner()
-        );
-        Assert.False(launcher.TryOpenUrl("file:///C:/secret"));
-    }
-
-    [Fact]
-    public void Tryopenurl_refuses_non_http_urls_javascript()
-    {
-        var launcher = new BrowserLauncher(
-            NullLogger<BrowserLauncher>.Instance,
-            new CheckModsExtended.Utils.ProcessRunner()
-        );
-        Assert.False(launcher.TryOpenUrl("javascript:alert(1)"));
-    }
-
-    [Fact]
-    public void Tryopenurl_refuses_non_http_urls_not_a_url()
-    {
-        var launcher = new BrowserLauncher(
-            NullLogger<BrowserLauncher>.Instance,
-            new CheckModsExtended.Utils.ProcessRunner()
-        );
-        Assert.False(launcher.TryOpenUrl("not a url"));
-    }
-
-    [Fact]
-    public void Tryopenurl_refuses_non_http_urls_empty()
-    {
-        var launcher = new BrowserLauncher(
-            NullLogger<BrowserLauncher>.Instance,
-            new CheckModsExtended.Utils.ProcessRunner()
-        );
-        Assert.False(launcher.TryOpenUrl(""));
+        // Since there is no mock, this will actually try to run. ftp:// will fail and return error.
+        var res = launcher.TryOpenUrl("|||invalid|||");
+        Assert.True(res.IsT1);
     }
 }

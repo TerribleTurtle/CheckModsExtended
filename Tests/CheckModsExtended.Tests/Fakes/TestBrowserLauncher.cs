@@ -14,9 +14,10 @@ public sealed class TestBrowserLauncher : IBrowserLauncher
 
     public Task<string> WaitForUrlAsync() => _tcs.Task;
 
-    public bool TryOpenUrl(string url)
+    public OneOf.OneOf<OneOf.Types.Success, CheckModsExtended.Models.ApiError> TryOpenUrl(string url)
     {
         _tcs.TrySetResult(url);
-        return true;
+        if (url.Contains("invalid")) return new CheckModsExtended.Models.ApiError("Invalid URL");
+        return new OneOf.Types.Success();
     }
 }

@@ -161,27 +161,40 @@ public static class WebEndpoints
         });
 
         
-        api.MapPost("/system/open", (OpenSystemRequest req) => 
+        app.MapPost("/api/system/open", (OpenSystemRequest req, CheckModsExtended.Services.Interfaces.IBrowserLauncher browserLauncher) => 
         {
-            if (string.IsNullOrWhiteSpace(req.Target))
-            {
-                return Results.BadRequest(new ErrorResponse("Target is required"));
-            }
-                
-            try
-            {
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo 
-                { 
-                    FileName = req.Target, 
-                    UseShellExecute = true 
-                });
-                return Results.Ok(new MessageResponse("Opened target"));
-            }
-            catch (System.Exception ex)
-            {
-                return Results.BadRequest(new ErrorResponse($"Failed to open target: {ex.Message}"));
-            }
+            var result = OpenSystemTarget(req.Target);
+            return result.Match(
+                success => Results.Ok(new MessageResponse("Opened target")),
+                apiError => Results.BadRequest(new ErrorResponse(apiError.Message)),
+                invalid => Results.BadRequest(new ErrorResponse(invalid.Message))
+            );
         });
+    }
 
+    private static OneOf.OneOf<OneOf.Types.Success, CheckModsExtended.Models.ApiError, CheckModsExtended.Models.InvalidInput> OpenSystemTarget(string? target)
+    {
+        if (string.IsNullOrWhiteSpace(target))
+        {
+            return new CheckModsExtended.Models.InvalidInput("Target", "Target is required");
+        }
+            
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo 
+            { 
+                FileName = target, 
+                UseShellExecute = true 
+            });
+            return new OneOf.Types.Success();
+        }
+        catch (System.ComponentModel.Win32Exception ex)
+        {
+            return new CheckModsExtended.Models.ApiError($"Failed to open target: {ex.Message}");
+        }
+        catch (System.IO.FileNotFoundException ex)
+        {
+            return new CheckModsExtended.Models.ApiError($"Target not found: {ex.Message}");
+        }
     }
 }

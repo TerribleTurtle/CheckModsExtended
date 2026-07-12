@@ -15,6 +15,7 @@ using Xunit;
 
 namespace CheckModsExtended.Tests.Services.Web;
 
+[Collection("Sequential")]
 public class WebEndpointsTests
 {
     public record OpenSystemRequest(string Target);
