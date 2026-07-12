@@ -160,41 +160,18 @@ public static class WebEndpoints
             return Results.Ok(new MessageResponse($"Removed ignore for {modId}"));
         });
 
-        
         app.MapPost("/api/system/open", (OpenSystemRequest req, CheckModsExtended.Services.Interfaces.IBrowserLauncher browserLauncher) => 
         {
-            var result = OpenSystemTarget(req.Target);
+            if (string.IsNullOrWhiteSpace(req.Target))
+            {
+                return Results.BadRequest(new ErrorResponse("Target is required"));
+            }
+            
+            var result = browserLauncher.TryOpenUrl(req.Target);
             return result.Match(
                 success => Results.Ok(new MessageResponse("Opened target")),
-                apiError => Results.BadRequest(new ErrorResponse(apiError.Message)),
-                invalid => Results.BadRequest(new ErrorResponse(invalid.Message))
+                apiError => Results.BadRequest(new ErrorResponse(apiError.Message))
             );
         });
-    }
-
-    private static OneOf.OneOf<OneOf.Types.Success, CheckModsExtended.Models.ApiError, CheckModsExtended.Models.InvalidInput> OpenSystemTarget(string? target)
-    {
-        if (string.IsNullOrWhiteSpace(target))
-        {
-            return new CheckModsExtended.Models.InvalidInput("Target", "Target is required");
-        }
-            
-        try
-        {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo 
-            { 
-                FileName = target, 
-                UseShellExecute = true 
-            });
-            return new OneOf.Types.Success();
-        }
-        catch (System.ComponentModel.Win32Exception ex)
-        {
-            return new CheckModsExtended.Models.ApiError($"Failed to open target: {ex.Message}");
-        }
-        catch (System.IO.FileNotFoundException ex)
-        {
-            return new CheckModsExtended.Models.ApiError($"Target not found: {ex.Message}");
-        }
     }
 }
