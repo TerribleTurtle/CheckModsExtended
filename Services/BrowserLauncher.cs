@@ -36,5 +36,6 @@ public sealed class BrowserLauncher(
         {
             logger.LogWarning(ex, "Could not open the browser");
             return new CheckModsExtended.Models.ApiError($"Process disposed: {ex.Message}");
+        }
     }
 }
