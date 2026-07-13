@@ -34,20 +34,15 @@ public static class WebEndpoints
             await _statusLock.WaitAsync(token);
             try
             {
-                SemanticVersioning.Version? sptVer = null;
-                try { 
-                    var path = args.Length > 0 ? args[0] : Environment.CurrentDirectory;
-                    sptVer = await sptInstall.GetAndValidateSptVersionAsync(path, token); 
-                } catch { }
+                var path = args.Length > 0 ? args[0] : Environment.CurrentDirectory;
+                var sptVer = await sptInstall.GetAndValidateSptVersionAsync(path, token);
                 
                 bool updateAvailable = false;
                 string? latestAppVersion = null;
                 if (sptVer != null) {
-                    try {
-                        var updateInfo = await updateCheck.CheckAsync(sptVer, token);
-                        updateAvailable = updateInfo.Status == CheckModsExtended.Models.CheckModsExtendedUpdateStatus.UpdateAvailable;
-                        latestAppVersion = updateInfo.LatestVersion;
-                    } catch { }
+                    var updateInfo = await updateCheck.CheckAsync(sptVer, token);
+                    updateAvailable = updateInfo.Status == CheckModsExtended.Models.CheckModsExtendedUpdateStatus.UpdateAvailable;
+                    latestAppVersion = updateInfo.LatestVersion;
                 }
                 
                 return Results.Ok(new StatusResponse("running", CheckModsExtended.Utils.VersionInfo.SemVer, sptVer?.ToString(), latestAppVersion, updateAvailable));
