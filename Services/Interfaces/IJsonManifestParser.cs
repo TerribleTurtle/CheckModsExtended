@@ -7,10 +7,12 @@ public record ServerModManifestInfo(
     string? Name,
     string? Author,
     string? Version,
-    string? SptVersion
+    string? SptVersion,
+    string? Url
 );
 
 public interface IJsonManifestParser
 {
     Task<ServerModManifestInfo?> ParseServerModManifestAsync(string packagePath, CancellationToken cancellationToken = default);
 }
+
