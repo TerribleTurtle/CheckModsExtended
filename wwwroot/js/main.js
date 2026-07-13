@@ -147,8 +147,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (state.sort.column === col) {
                     if (state.sort.direction === 'asc') {
                         state.sort.direction = 'desc';
+                    } else if (state.sort.direction === 'desc' && col === 'type') {
+                        state.sort.direction = 'paired';
                     } else {
-                        // 3rd click: Clear to default 'status' asc, UNLESS we clicked 'status', then clear to 'name' asc
+                        // Clear to default 'status' asc, UNLESS we clicked 'status', then clear to 'name' asc
                         state.sort.column = col === 'status' ? 'name' : 'status';
                         state.sort.direction = 'asc';
                     }

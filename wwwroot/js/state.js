@@ -74,9 +74,18 @@ export function applySort(mods, sort) {
             }
             return sort.direction === 'asc' ? cmp : -cmp;
         } else if (sort.column === 'type') {
-            const getTypeScore = m => m.isPaired ? 2 : (m.isServerMod ? 0 : 1);
-            valA = getTypeScore(a);
-            valB = getTypeScore(b);
+            if (sort.direction === 'asc' || sort.direction === 'paired') {
+                // 'asc' (lowest first): Client -> Server -> Paired
+                // 'paired' (highest first): Paired -> Server -> Client
+                const getTypeScore = m => m.isPaired ? 2 : (m.isServerMod ? 1 : 0);
+                valA = getTypeScore(a);
+                valB = getTypeScore(b);
+            } else {
+                // 'desc' (highest first): Server -> Client -> Paired
+                const getTypeScore = m => m.isPaired ? 0 : (m.isServerMod ? 2 : 1);
+                valA = getTypeScore(a);
+                valB = getTypeScore(b);
+            }
         } else {
             valA = ''; valB = '';
         }
