@@ -58,6 +58,10 @@ public class FakeFileSystem : IFileSystem
 
     public Task<string> ReadAllTextAsync(string path, CancellationToken cancellationToken = default)
     {
+        if (UnauthorizedPaths.Contains(path))
+        {
+            throw new System.UnauthorizedAccessException("Access denied");
+        }
         if (!Files.TryGetValue(path, out var content))
         {
             throw new FileNotFoundException("File not found.", path);
@@ -68,6 +72,10 @@ public class FakeFileSystem : IFileSystem
 
     public Task WriteAllTextAsync(string path, string contents, CancellationToken cancellationToken = default)
     {
+        if (UnauthorizedPaths.Contains(path))
+        {
+            throw new System.UnauthorizedAccessException("Access denied");
+        }
         Files[path] = System.Text.Encoding.UTF8.GetBytes(contents);
         return Task.CompletedTask;
     }
@@ -165,3 +173,4 @@ public class FakeFileSystem : IFileSystem
         return Files.TryGetValue(path, out var c) ? c.Length : 0;
     }
 }
+
