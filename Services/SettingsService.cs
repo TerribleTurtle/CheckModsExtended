@@ -12,18 +12,29 @@ using OneOf;
 namespace CheckModsExtended.Services;
 
 [Injectable(InjectionType.Transient)]
-public class SettingsService : ISettingsService
+/// <summary>
+/// Service for managing settings via the file system.
+/// </summary>
+public sealed class SettingsService : ISettingsService
 {
     private readonly IFileSystem _fileSystem;
 
+    /// <summary>
+    /// Initializes a new instance of the SettingsService class.
+    /// </summary>
+    /// <param name="fileSystem">The file system abstraction.</param>
     public SettingsService(IFileSystem fileSystem)
     {
         _fileSystem = fileSystem;
     }
 
+    /// <summary>
+    /// Gets the settings content as a JSON string.
+    /// </summary>
+    /// <param name="token">Cancellation token.</param>
     public async Task<string> GetSettingsAsync(CancellationToken token = default)
     {
-        var path = "appsettings.json";
+        string path = "appsettings.json";
         if (!_fileSystem.FileExists(path))
         {
             if (_fileSystem.FileExists("appsettings.example.json"))
@@ -35,6 +46,11 @@ public class SettingsService : ISettingsService
         return await _fileSystem.ReadAllTextAsync(path, token);
     }
 
+    /// <summary>
+    /// Updates the settings file with the provided JSON payload.
+    /// </summary>
+    /// <param name="jsonPayload">The JSON settings payload.</param>
+    /// <param name="token">Cancellation token.</param>
     public async Task<OneOf<MessageResponse, ApiError>> UpdateSettingsAsync(string jsonPayload, CancellationToken token = default)
     {
         // Validate JSON before saving
