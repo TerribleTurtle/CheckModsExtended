@@ -12,7 +12,14 @@ using Version = SemanticVersioning.Version;
 
 namespace CheckModsExtended.Services;
 
-/// <inheritdoc />
+/// <summary>
+/// Orchestrates the process of checking for SPT and Check Mods updates,
+/// and applying user update suppressions.
+/// </summary>
+/// <param name="sptInstallationService">The SPT installation service.</param>
+/// <param name="updateCheckService">The update check service.</param>
+/// <param name="ignoredUpdateStore">The ignored update store.</param>
+/// <param name="reporter">The mod check reporter.</param>
 [Injectable(InjectionType.Transient)]
 public sealed class UpdateOrchestrationService(
     ISptInstallationService sptInstallationService,
