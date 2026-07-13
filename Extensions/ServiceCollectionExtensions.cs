@@ -129,6 +129,9 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ISptInstallationService, SptInstallationService>();
         services.AddTransient<IUpdateCheckService, UpdateCheckService>();
         services.AddTransient<IUpdateOrchestrationService, UpdateOrchestrationService>();
+        services.AddTransient<IIgnoreService, IgnoreService>();
+        services.AddTransient<IMaintenanceService, MaintenanceService>();
+        services.AddTransient<IDiagnosticService, DiagnosticService>();
 
         services.AddSingleton<IScanCacheService, ScanCacheService>();
         services.AddSingleton<IIgnoredUpdateStore, IgnoredUpdateStore>();

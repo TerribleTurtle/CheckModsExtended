@@ -1,10 +1,10 @@
 using System;
-using System.IO;
-using System.IO.Compression;
+
+
 using System.Threading;
 using System.Threading.Tasks;
-using CheckModsExtended.Configuration;
-using Microsoft.Extensions.Options;
+
+using CheckModsExtended.Services.Interfaces;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -15,15 +15,14 @@ namespace CheckModsExtended.Commands;
 /// </summary>
 public sealed class DiagCommand : AsyncCommand<GlobalSettings>
 {
-    private readonly AppPaths _appPaths;
+    private readonly IDiagnosticService _diagnosticService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DiagCommand"/> class.
     /// </summary>
-    /// <param name="appPaths">The application paths.</param>
-    public DiagCommand(IOptions<AppPaths> appPaths)
+    public DiagCommand(IDiagnosticService diagnosticService)
     {
-        _appPaths = appPaths.Value;
+        _diagnosticService = diagnosticService;
     }
 
     /// <inheritdoc/>
@@ -36,25 +35,20 @@ public sealed class DiagCommand : AsyncCommand<GlobalSettings>
         return ExecuteInternalAsync(context, settings, cancellationToken);
     }
 
-    internal Task<int> ExecuteInternalAsync(
+    internal async Task<int> ExecuteInternalAsync(
         CommandContext context,
         GlobalSettings settings,
         CancellationToken cancellationToken
     )
     {
-        var logsDir = Path.Combine(_appPaths.AppDataDirectory, "logs");
-        if (!Directory.Exists(logsDir))
+        var zipPath = await _diagnosticService.ExportLogsAsync(cancellationToken);
+        if (zipPath == null)
         {
             AnsiConsole.MarkupLine("[yellow]Logs directory does not exist, nothing to export.[/]");
-            return Task.FromResult(0);
+            return 0;
         }
 
-        var zipPath = Path.Combine(
-            Directory.GetCurrentDirectory(),
-            $"spt-check-mods-logs-{DateTime.Now:yyyyMMdd-HHmmss}.zip"
-        );
-        ZipFile.CreateFromDirectory(logsDir, zipPath);
         AnsiConsole.MarkupLine($"[green]Successfully exported logs to {zipPath}[/]");
-        return Task.FromResult(0);
+        return 0;
     }
 }

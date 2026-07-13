@@ -14,7 +14,7 @@ namespace CheckModsExtended.Commands;
 /// </summary>
 public sealed class IgnoreAddCommand : AsyncCommand<IgnoreAddCommand.Settings>
 {
-    private readonly IIgnoredUpdateStore _store;
+    private readonly IIgnoreService _ignoreService;
     private readonly IModCheckReporter _reporter;
 
     public sealed class Settings : GlobalSettings
@@ -32,9 +32,9 @@ public sealed class IgnoreAddCommand : AsyncCommand<IgnoreAddCommand.Settings>
         public string LatestVersion { get; set; } = string.Empty;
     }
 
-    public IgnoreAddCommand(IIgnoredUpdateStore store, IModCheckReporter reporter)
+    public IgnoreAddCommand(IIgnoreService ignoreService, IModCheckReporter reporter)
     {
-        _store = store;
+        _ignoreService = ignoreService;
         _reporter = reporter;
     }
 
@@ -51,24 +51,13 @@ public sealed class IgnoreAddCommand : AsyncCommand<IgnoreAddCommand.Settings>
         CancellationToken cancellationToken
     )
     {
-        var ignores = (await _store.LoadAsync(cancellationToken)).ToList();
+        var added = await _ignoreService.AddIgnoreAsync(settings.ApiModId, settings.LocalVersion, settings.LatestVersion, cancellationToken);
 
-        var newIgnore = new IgnoredUpdate(
-            ApiModId: settings.ApiModId,
-            LocalVersion: settings.LocalVersion,
-            IgnoredLatestVersion: settings.LatestVersion,
-            Source: IgnoreSource.User,
-            DismissedUtc: DateTimeOffset.UtcNow
-        );
-
-        if (ignores.Any(i => string.Equals(i.Key, newIgnore.Key, StringComparison.OrdinalIgnoreCase)))
+        if (!added)
         {
             _reporter.IgnoreAddAlreadyIgnored(settings.ApiModId, settings.LocalVersion, settings.LatestVersion);
             return 0;
         }
-
-        ignores.Add(newIgnore);
-        await _store.SaveAsync(ignores, cancellationToken);
 
         _reporter.IgnoreAddSuccess(settings.ApiModId, settings.LocalVersion, settings.LatestVersion);
         return 0;

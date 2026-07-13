@@ -1,9 +1,9 @@
 using System;
-using System.IO;
+
 using System.Threading;
 using System.Threading.Tasks;
-using CheckModsExtended.Configuration;
-using Microsoft.Extensions.Options;
+
+using CheckModsExtended.Services.Interfaces;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -14,15 +14,14 @@ namespace CheckModsExtended.Commands;
 /// </summary>
 public sealed class CleanCommand : AsyncCommand<GlobalSettings>
 {
-    private readonly AppPaths _appPaths;
+    private readonly IMaintenanceService _maintenanceService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CleanCommand"/> class.
     /// </summary>
-    /// <param name="appPaths">The application paths.</param>
-    public CleanCommand(IOptions<AppPaths> appPaths)
+    public CleanCommand(IMaintenanceService maintenanceService)
     {
-        _appPaths = appPaths.Value;
+        _maintenanceService = maintenanceService;
     }
 
     /// <inheritdoc/>
@@ -35,15 +34,15 @@ public sealed class CleanCommand : AsyncCommand<GlobalSettings>
         return ExecuteInternalAsync(context, settings, cancellationToken);
     }
 
-    internal Task<int> ExecuteInternalAsync(
+    internal async Task<int> ExecuteInternalAsync(
         CommandContext context,
         GlobalSettings settings,
         CancellationToken cancellationToken
     )
     {
-        if (Directory.Exists(_appPaths.AppDataDirectory))
+        var cleaned = await _maintenanceService.CleanAppDataAsync(cancellationToken);
+        if (cleaned)
         {
-            Directory.Delete(_appPaths.AppDataDirectory, true);
             AnsiConsole.MarkupLine("[green]Successfully cleared app data directory.[/]");
         }
         else
@@ -51,6 +50,6 @@ public sealed class CleanCommand : AsyncCommand<GlobalSettings>
             AnsiConsole.MarkupLine("[yellow]App data directory does not exist, nothing to clean.[/]");
         }
 
-        return Task.FromResult(0);
+        return 0;
     }
 }

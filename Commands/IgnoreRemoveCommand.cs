@@ -13,7 +13,7 @@ namespace CheckModsExtended.Commands;
 /// </summary>
 public sealed class IgnoreRemoveCommand : AsyncCommand<IgnoreRemoveCommand.Settings>
 {
-    private readonly IIgnoredUpdateStore _store;
+    private readonly IIgnoreService _ignoreService;
     private readonly IModCheckReporter _reporter;
 
     public sealed class Settings : GlobalSettings
@@ -23,9 +23,9 @@ public sealed class IgnoreRemoveCommand : AsyncCommand<IgnoreRemoveCommand.Setti
         public int ApiModId { get; set; }
     }
 
-    public IgnoreRemoveCommand(IIgnoredUpdateStore store, IModCheckReporter reporter)
+    public IgnoreRemoveCommand(IIgnoreService ignoreService, IModCheckReporter reporter)
     {
-        _store = store;
+        _ignoreService = ignoreService;
         _reporter = reporter;
     }
 
@@ -42,17 +42,13 @@ public sealed class IgnoreRemoveCommand : AsyncCommand<IgnoreRemoveCommand.Setti
         CancellationToken cancellationToken
     )
     {
-        var ignores = (await _store.LoadAsync(cancellationToken)).ToList();
-
-        var removedCount = ignores.RemoveAll(i => i.ApiModId == settings.ApiModId);
+        var removedCount = await _ignoreService.RemoveIgnoreAsync(settings.ApiModId, cancellationToken);
 
         if (removedCount == 0)
         {
             _reporter.IgnoreRemoveNotFound(settings.ApiModId);
             return 0;
         }
-
-        await _store.SaveAsync(ignores, cancellationToken);
 
         _reporter.IgnoreRemoveSuccess(removedCount, settings.ApiModId);
         return 0;
