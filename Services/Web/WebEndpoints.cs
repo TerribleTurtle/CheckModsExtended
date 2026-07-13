@@ -72,7 +72,7 @@ public static class WebEndpoints
         
         api.MapPost("/ignore", async (CheckModsExtended.Services.Interfaces.IIgnoredUpdateStore ignoreStore, HttpRequest request, CancellationToken token) => 
         {
-            var req = await request.ReadFromJsonAsync<IgnoreRequest>(cancellationToken: token);
+            var req = await request.ReadFromJsonAsync(CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.IgnoreRequest, cancellationToken: token) as IgnoreRequest;
             if (req != null && req.Id > 0 && !string.IsNullOrEmpty(req.LocalVersion) && !string.IsNullOrEmpty(req.LatestVersion))
             {
                 var entry = new CheckModsExtended.Models.IgnoredUpdate(req.Id, req.LocalVersion, req.LatestVersion)

@@ -12,11 +12,11 @@ namespace CheckModsExtended.Services;
 
 public sealed class GitHubReleaseClient(HttpClient httpClient, ILogger<GitHubReleaseClient> logger) : IGitHubReleaseClient
 {
-    private sealed record GitHubReleaseResponse(
+    internal sealed record GitHubReleaseResponse(
         [property: JsonPropertyName("assets")] GitHubAsset[]? Assets
     );
 
-    private sealed record GitHubAsset(
+    internal sealed record GitHubAsset(
         [property: JsonPropertyName("name")] string? Name,
         [property: JsonPropertyName("browser_download_url")] string? BrowserDownloadUrl
     );
@@ -68,7 +68,9 @@ public sealed class GitHubReleaseClient(HttpClient httpClient, ILogger<GitHubRel
                 return null;
             }
 
-            var release = await response.Content.ReadFromJsonAsync<GitHubReleaseResponse>(cancellationToken: token);
+            var release = await response.Content.ReadFromJsonAsync(
+                CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.GitHubReleaseResponse,
+                cancellationToken: token);
             if (release?.Assets == null)
             {
                 return null;
