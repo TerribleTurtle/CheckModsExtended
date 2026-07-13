@@ -228,7 +228,12 @@ public sealed class VersionTableUiRenderer(ITextRenderer textRenderer) : IVersio
             .AddColumn("[white]Current Version[/]")
             .AddColumn("[white]Latest Version[/]");
 
-        foreach (var mod in mods)
+        var sortedMods = mods
+            .OrderBy(m => GetDtoStatusSortScore(m.Status, m.IsIgnored))
+            .ThenBy(m => m.Name)
+            .ToList();
+
+        foreach (var mod in sortedMods)
         {
             var (displayName, displayAuthor) = UiFormattingUtility.FormatModDisplayStrings(
                 mod.Name,
@@ -355,7 +360,48 @@ public sealed class VersionTableUiRenderer(ITextRenderer textRenderer) : IVersio
     private static List<Mod> GetDeduplicatedVerifiedMods(List<Mod> mods)
     {
         return mods.Where(m => m.IsMatched)
-            .OrderBy(m => m.DisplayName)
+            .OrderBy(m => GetUpdateStatusSortScore(m.Update.UpdateStatus, m.Update.UpdateSuppressed))
+            .ThenBy(m => m.DisplayName)
             .ToList();
+    }
+
+    private static int GetUpdateStatusSortScore(UpdateStatus status, bool isIgnored)
+    {
+        if (isIgnored)
+        {
+            return 8;
+        }
+
+        return status switch
+        {
+            UpdateStatus.UpdateAvailable => 0,
+            UpdateStatus.UpdateBlocked => 1,
+            UpdateStatus.NewerInstalled => 2,
+            UpdateStatus.UpToDate => 3,
+            UpdateStatus.NoVersionsFound => 4,
+            UpdateStatus.Unknown => 5,
+            _ => 9
+        };
+    }
+
+    private static int GetDtoStatusSortScore(string status, bool isIgnored)
+    {
+        if (isIgnored)
+        {
+            return 8;
+        }
+        
+        return status switch
+        {
+            "UpdateAvailable" => 0,
+            "UpdateBlocked" => 1,
+            "Incompatible" => 2,
+            "NewerInstalled" => 3,
+            "UpToDate" => 4,
+            "NoVersionsFound" => 5,
+            "Error" => 6,
+            "Unknown" => 7,
+            _ => 9
+        };
     }
 }
