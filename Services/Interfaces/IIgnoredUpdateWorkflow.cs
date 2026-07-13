@@ -11,5 +11,5 @@ public interface IIgnoredUpdateWorkflow
     /// <summary>
     /// Runs the end-of-run flow for the given mod list, falling back to a plain exit prompt when the list is null or empty.
     /// </summary>
-    Task RunAsync(IReadOnlyList<Mod>? mods, CancellationToken cancellationToken = default);
+    Task<EndOfRunChoice> RunAsync(IReadOnlyList<Mod>? mods, CancellationToken cancellationToken = default);
 }

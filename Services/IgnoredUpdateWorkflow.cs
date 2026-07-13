@@ -22,7 +22,7 @@ public sealed class IgnoredUpdateWorkflow(
 ) : IIgnoredUpdateWorkflow
 {
     /// <inheritdoc />
-    public async Task RunAsync(IReadOnlyList<Mod>? mods, CancellationToken cancellationToken = default)
+    public async Task<EndOfRunChoice> RunAsync(IReadOnlyList<Mod>? mods, CancellationToken cancellationToken = default)
     {
         // One row per Forge mod id (paired server/client mods share an id and a single table row).
         var candidates = (mods ?? [])
@@ -52,8 +52,13 @@ public sealed class IgnoredUpdateWorkflow(
                     await ManageIgnoredUpdatesAsync(mods!, candidates, cancellationToken);
                     break;
 
+                case EndOfRunChoice.Rescan:
+                case EndOfRunChoice.LaunchWebGui:
+                case EndOfRunChoice.Exit:
+                    return choice;
+
                 default:
-                    return;
+                    return EndOfRunChoice.Exit;
             }
         }
     }

@@ -61,6 +61,8 @@ public sealed class InteractivePromptService : IUserPromptService
             prompt.AddChoice(EndOfRunChoice.ManageIgnoredUpdates);
         }
 
+        prompt.AddChoice(EndOfRunChoice.Rescan);
+        prompt.AddChoice(EndOfRunChoice.LaunchWebGui);
         prompt.AddChoice(EndOfRunChoice.Exit);
 
         return AnsiConsole.Prompt(prompt);
@@ -130,6 +132,8 @@ public sealed class InteractivePromptService : IUserPromptService
             EndOfRunChoice.OpenUpdatePages =>
                 $"Open {openableUpdateCount} mod page{(openableUpdateCount == 1 ? "" : "s")} with updates in your browser",
             EndOfRunChoice.ManageIgnoredUpdates => "Manage ignored updates",
+            EndOfRunChoice.Rescan => "Rescan mods",
+            EndOfRunChoice.LaunchWebGui => "Launch Web GUI",
             EndOfRunChoice.Exit => "Close Check Mods",
             _ => choice.ToString(),
         };

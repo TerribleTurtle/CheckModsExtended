@@ -43,7 +43,8 @@ public sealed class CheckModsCommand : AsyncCommand<CheckModsCommand.Settings>
 
         if (contextResult?.Mods is not null)
         {
-            await _ignoredUpdateWorkflow.RunAsync(contextResult.Mods, cancellationToken);
+            var endOfRunChoice = await _ignoredUpdateWorkflow.RunAsync(contextResult.Mods, cancellationToken);
+            // TODO: Route endOfRunChoice in Step 6.3
         }
 
         return 0; // Success

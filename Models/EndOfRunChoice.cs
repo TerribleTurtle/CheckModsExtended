@@ -16,6 +16,16 @@ public enum EndOfRunChoice
     ManageIgnoredUpdates = 1,
 
     /// <summary>
+    /// Rescan the mods directory and check for updates again.
+    /// </summary>
+    Rescan = 3,
+
+    /// <summary>
+    /// Launch the Web GUI.
+    /// </summary>
+    LaunchWebGui = 4,
+
+    /// <summary>
     /// Close the application.
     /// </summary>
     Exit = 2,
