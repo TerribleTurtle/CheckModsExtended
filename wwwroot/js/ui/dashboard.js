@@ -1,5 +1,5 @@
 import { state, selectors , setMods, setFilteredMods, setSearchFilter, setStatusFilter, setSortColumn, setSortDirection, setScanning, setConsoleCollapsed, setLastFocus, setLastScan, setAppVersion, setSptVersion, setThemeMeta, clearSelectedIds, addSelectedId, removeSelectedId } from '../state.js';;
-import { fetchIgnores, systemOpen } from '../api.js';
+import { fetchIgnores, systemOpen, fetchSettings, saveSettings } from '../api.js';
 import { escapeHtml, logToConsole } from '../utils.js';
 
 /**
@@ -193,11 +193,107 @@ export async function showOverview() {
     const btnEditSettings = document.getElementById('btn-edit-settings');
     if (btnEditSettings) {
         btnEditSettings.addEventListener('click', async () => {
-            try {
-                await systemOpen('appsettings.json');
-            } catch (e) {
-                import('./components.js').then(c => c.showToast(`Error opening settings: ${e}`, 'error'));
+            setLastFocus(document.activeElement);
+            const modal = document.getElementById('settings-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    const closeBtn = document.getElementById('btn-close-settings-modal');
+                    if (closeBtn) closeBtn.focus();
+                }, 50);
             }
+            await renderSettingsDashboard();
         });
+    }
+}
+
+/**
+ * Renders the settings dashboard modal content.
+ */
+export async function renderSettingsDashboard() {
+    const modalBody = document.getElementById('settings-modal-body');
+    if (modalBody) {
+        modalBody.innerHTML = `<div class="flex justify-center p-20"><div class="loader-spinner spinner-sm"></div><span class="ml-2 text-muted">Loading settings...</span></div>`;
+    }
+    try {
+        const settings = await fetchSettings();
+        
+        let html = '<div class="settings-form grid grid-cols-1 gap-md">';
+        
+        // AppPaths
+        html += `<div class="settings-group">
+            <h3 class="mb-2">App Paths</h3>
+            <label class="form-label">App Data Directory</label>
+            <input type="text" id="setting-AppDataDirectory" class="form-input w-full" value="${escapeHtml(settings.AppPaths?.AppDataDirectory || '')}" placeholder="Leave empty for default">
+        </div>`;
+        
+        // LoggingOptions
+        html += `<div class="settings-group">
+            <h3 class="mb-2">Logging Options</h3>
+            <label class="form-label flex align-center gap-sm">
+                <input type="checkbox" id="setting-EnableFileLogging" class="row-checkbox" ${settings.LoggingOptions?.EnableFileLogging ? 'checked' : ''}> Enable File Logging
+            </label>
+            <label class="form-label mt-2">Minimum Log Level</label>
+            <select id="setting-MinimumLogLevel" class="form-input w-full">
+                <option value="Debug" ${settings.LoggingOptions?.MinimumLogLevel === 'Debug' ? 'selected' : ''}>Debug</option>
+                <option value="Information" ${settings.LoggingOptions?.MinimumLogLevel === 'Information' ? 'selected' : ''}>Information</option>
+                <option value="Warning" ${settings.LoggingOptions?.MinimumLogLevel === 'Warning' ? 'selected' : ''}>Warning</option>
+                <option value="Error" ${settings.LoggingOptions?.MinimumLogLevel === 'Error' ? 'selected' : ''}>Error</option>
+            </select>
+            <label class="form-label mt-2">Log File Path</label>
+            <input type="text" id="setting-LogFilePath" class="form-input w-full" value="${escapeHtml(settings.LoggingOptions?.LogFilePath || '')}">
+            <label class="form-label mt-2">Max File Size (Bytes)</label>
+            <input type="number" id="setting-MaxFileSizeBytes" class="form-input w-full" value="${settings.LoggingOptions?.MaxFileSizeBytes || 10485760}">
+        </div>`;
+
+        // ModScannerOptions
+        html += `<div class="settings-group">
+            <h3 class="mb-2">Scanner Options</h3>
+            <label class="form-label">Max DLL Size (Bytes)</label>
+            <input type="number" id="setting-MaxDllSizeBytes" class="form-input w-full" value="${settings.ModScannerOptions?.MaxDllSizeBytes || 104857600}">
+        </div>`;
+
+        html += '</div>';
+        
+        if (modalBody) {
+            modalBody.innerHTML = html;
+        }
+
+        const btnSave = document.getElementById('btn-save-settings');
+        if (btnSave) {
+            btnSave.onclick = async () => {
+                const updatedSettings = {
+                    ...settings,
+                    AppPaths: {
+                        ...settings.AppPaths,
+                        AppDataDirectory: document.getElementById('setting-AppDataDirectory').value
+                    },
+                    LoggingOptions: {
+                        ...settings.LoggingOptions,
+                        EnableFileLogging: document.getElementById('setting-EnableFileLogging').checked,
+                        MinimumLogLevel: document.getElementById('setting-MinimumLogLevel').value,
+                        LogFilePath: document.getElementById('setting-LogFilePath').value,
+                        MaxFileSizeBytes: parseInt(document.getElementById('setting-MaxFileSizeBytes').value, 10)
+                    },
+                    ModScannerOptions: {
+                        ...settings.ModScannerOptions,
+                        MaxDllSizeBytes: parseInt(document.getElementById('setting-MaxDllSizeBytes').value, 10)
+                    }
+                };
+                
+                try {
+                    await saveSettings(updatedSettings);
+                    document.getElementById('settings-modal').classList.add('hidden');
+                    import('./components.js').then(c => c.showToast('Settings saved! A restart may be required.', 'success'));
+                } catch (e) {
+                    import('./components.js').then(c => c.showToast(`Error saving settings: ${e.message}`, 'error'));
+                }
+            };
+        }
+        
+    } catch (e) {
+        if (modalBody) {
+            modalBody.innerHTML = `<div class="text-error mt-20">Error loading settings: ${e.message}</div>`;
+        }
     }
 }

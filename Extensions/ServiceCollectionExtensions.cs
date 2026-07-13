@@ -64,6 +64,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IModReconciliationService, ModReconciliationService>();
         services.AddTransient<IModResolutionService, ModResolutionService>();
         services.AddTransient<IModScannerService, ModScannerService>();
+        services.AddTransient<ISettingsService, SettingsService>();
         services.AddTransient<IUpdateWorkflowOrchestrator, UpdateWorkflowOrchestrator>();
         services.AddTransient<IModPartitioner, ModPartitioner>();
         services.AddTransient<IPluginMetadataExtractor, PluginMetadataExtractor>();

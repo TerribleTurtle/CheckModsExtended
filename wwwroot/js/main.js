@@ -32,6 +32,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCloseModal = document.getElementById('btn-close-modal');
     const ignoreModalBody = document.getElementById('ignore-modal-body');
 
+    const settingsModal = document.getElementById('settings-modal');
+    const btnCloseSettingsModal = document.getElementById('btn-close-settings-modal');
+    const btnCancelSettings = document.getElementById('btn-cancel-settings');
+
     function init() {
         // Restore theme
         const savedTheme = localStorage.getItem('cme-theme') || 'dark';
@@ -123,6 +127,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         state.ui.lastFocus.focus();
                         setLastFocus(null);
                     }
+                }
+            });
+        }
+
+        const closeSettings = () => {
+            if (settingsModal) {
+                settingsModal.classList.add('hidden');
+                if (state.ui.lastFocus) {
+                    state.ui.lastFocus.focus();
+                    setLastFocus(null);
+                }
+            }
+        };
+
+        if (btnCloseSettingsModal) btnCloseSettingsModal.addEventListener('click', closeSettings);
+        if (btnCancelSettings) btnCancelSettings.addEventListener('click', closeSettings);
+        if (settingsModal) {
+            settingsModal.addEventListener('click', (e) => {
+                if (e.target === settingsModal) {
+                    closeSettings();
                 }
             });
         }
@@ -240,11 +264,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
         const ignoreModal = document.getElementById('ignore-modal');
-        const modalOpen = ignoreModal && !ignoreModal.classList.contains('hidden');
+        const settingsModal = document.getElementById('settings-modal');
+        const modalOpen = (ignoreModal && !ignoreModal.classList.contains('hidden')) || 
+                          (settingsModal && !settingsModal.classList.contains('hidden'));
 
         // Modal Focus Trap
         if (modalOpen && e.key === 'Tab') {
-            const focusableElements = ignoreModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            const activeModal = (!ignoreModal.classList.contains('hidden')) ? ignoreModal : settingsModal;
+            const focusableElements = activeModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
             if (focusableElements.length > 0) {
                 const first = focusableElements[0];
                 const last = focusableElements[focusableElements.length - 1];
@@ -266,7 +293,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (e.key === 'Escape') {
             if (modalOpen) {
-                ignoreModal.classList.add('hidden');
+                if (ignoreModal) ignoreModal.classList.add('hidden');
+                if (settingsModal) settingsModal.classList.add('hidden');
                 if (state.ui.lastFocus) {
                     state.ui.lastFocus.focus();
                     setLastFocus(null);

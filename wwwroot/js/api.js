@@ -94,3 +94,27 @@ export async function fetchCache() {
         return null;
     }
 }
+
+/**
+ * Fetches the current settings from the backend.
+ * @returns {Promise<Object>} The settings object.
+ */
+export async function fetchSettings() {
+    const response = await fetch('/api/settings');
+    if (!response.ok) throw new Error('Failed to fetch settings');
+    return await response.json();
+}
+
+/**
+ * Saves the settings object to the backend.
+ * @param {Object} settings - The updated settings object.
+ * @returns {Promise<void>}
+ */
+export async function saveSettings(settings) {
+    const response = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings, null, 2)
+    });
+    if (!response.ok) throw new Error('Failed to save settings');
+}

@@ -418,3 +418,45 @@ a.btn-secondary {
     animation: spin 0.75s linear infinite;
     color: var(--text-primary);
 }
+
+/* Forms */
+.form-label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-2xs);
+    font-weight: 600;
+}
+.form-input {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    color: var(--text-primary);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-ui);
+}
+.form-input:focus {
+    border-color: var(--accent-brand);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent-brand-focus);
+}
+.settings-group {
+    background: var(--bg-elevated);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-default);
+}
+.settings-group h3 {
+    margin-top: 0;
+    color: var(--accent-brand);
+}
+.modal-footer {
+    padding: var(--space-md);
+    border-top: 1px solid var(--border-default);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-md);
+}
+.modal-lg {
+    max-width: 800px;
+}

@@ -31,6 +31,7 @@ public static class WebEndpoints
         api.MapPost("/ignore", PostIgnoreAsync);
         api.MapGet("/ignores", GetIgnoresAsync);
         api.MapDelete("/ignore/{modId}", DeleteIgnoreAsync);
+        SettingsEndpoints.MapSettingsEndpoints(api);
         app.MapPost("/api/system/open", PostSystemOpen);
     }
 
@@ -140,6 +141,8 @@ public static class WebEndpoints
             return Results.Json(new ErrorResponse(ex.Message), statusCode: StatusCodes.Status500InternalServerError);
         }
     }
+
+
 
     private static IResult PostSystemOpen(OpenSystemRequest req, IBrowserLauncher browserLauncher)
     {
