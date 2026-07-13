@@ -48,4 +48,26 @@ public class ScanCacheServiceTests
         Assert.NotNull(loaded);
         Assert.Equal("3.8.0", loaded.Response.SptVersion);
     }
+
+    [Fact]
+    public async Task SaveCacheAsync_SwallowsExceptions_AndLogsWarning()
+    {
+        _fileSystem.UnauthorizedPaths.Add("C:\\AppData\\scan_cache.json.tmp");
+        var response = new ScanResponse(new List<ModDto>(), null, "3.8.0");
+        var record = new ScanCacheRecord(TimeProvider.System.GetUtcNow(), response);
+        
+        // Should not throw
+        await _service.SaveCacheAsync(record);
+    }
+
+    [Fact]
+    public async Task LoadCacheAsync_SwallowsExceptions_AndReturnsNull()
+    {
+        await _fileSystem.WriteAllTextAsync("C:\\AppData\\scan_cache.json", "{}");
+        _fileSystem.UnauthorizedPaths.Add("C:\\AppData\\scan_cache.json");
+        
+        // Should not throw
+        var loaded = await _service.LoadCacheAsync();
+        Assert.Null(loaded);
+    }
 }

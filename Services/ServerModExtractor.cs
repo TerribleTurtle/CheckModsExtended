@@ -114,6 +114,7 @@ public sealed class ServerModExtractor(
                     LocalAuthor = author,
                     LocalVersion = version,
                     LocalSptVersion = sptVersion,
+                    Url = manifest?.Url,
                 },
                 LoadWarnings = warnings,
             };
@@ -126,3 +127,4 @@ public sealed class ServerModExtractor(
         }
     }
 }
+

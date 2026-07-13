@@ -86,10 +86,14 @@ public sealed class ModEnrichmentService(
         foreach (var modId in modsDict.Keys.ToList())
         {
             var mod = modsDict[modId];
+            var sourceUrl = !string.IsNullOrWhiteSpace(mod.Api.ApiSourceCodeUrl)
+                ? mod.Api.ApiSourceCodeUrl
+                : mod.Local.Url;
+
             if (string.IsNullOrWhiteSpace(mod.Update.DownloadLink) &&
-                !string.IsNullOrWhiteSpace(mod.Api.ApiSourceCodeUrl))
+                !string.IsNullOrWhiteSpace(sourceUrl))
             {
-                var assetUrl = await gitHubReleaseClient.TryGetLatestReleaseAssetUrlAsync(mod.Api.ApiSourceCodeUrl, cancellationToken);
+                var assetUrl = await gitHubReleaseClient.TryGetLatestReleaseAssetUrlAsync(sourceUrl, cancellationToken);
                 if (!string.IsNullOrWhiteSpace(assetUrl))
                 {
                     modsDict[modId] = mod with
@@ -143,3 +147,6 @@ public sealed class ModEnrichmentService(
         return modsDict.Values.ToList();
     }
 }
+
+
+

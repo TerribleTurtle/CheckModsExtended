@@ -127,4 +127,72 @@ public sealed class ModEnrichmentServiceTests
         Assert.Equal("http://download", matchedMod.Update.DownloadLink);
         Assert.Equal(UpdateStatus.UpdateAvailable, matchedMod.Update.UpdateStatus);
     }
+    [Fact]
+    public async Task Falls_back_to_local_url_when_api_source_code_url_is_missing()
+    {
+        // Arrange
+        var matchedMod = new Mod
+        {
+            Local = new CheckModsExtended.Models.LocalModIdentity
+            {
+                Guid = "com.test.mod",
+                FilePath = "test.dll",
+                IsServerMod = true,
+                LocalName = "Test Mod",
+                LocalAuthor = "Author",
+                LocalVersion = "1.0.0",
+                Url = "https://github.com/author/testmod"
+            },
+        };
+        matchedMod = matchedMod.WithApiMatch(
+            new ModSearchResult(123, null, "Test Mod", "test-mod", null, null, 0, null, null, null, null)
+        );
+
+        _forgeApiService.OnGetModUpdates = () =>
+            new ModUpdatesData(null, null, [new UpToDateMod(null, 123, null, null, "1.0.0", null)], null);
+
+        _gitHubClient.OnTryGetLatestReleaseAssetUrlAsync = _ => "https://github.com/author/testmod/releases/download/v1.0.0/testmod.zip";
+
+        // Act
+        var result = (await _service.EnrichAllWithVersionDataAsync([matchedMod], _sptVersion))[0];
+
+        // Assert
+        Assert.Equal("https://github.com/author/testmod/releases/download/v1.0.0/testmod.zip", result.Update.DownloadLink);
+    }
+
+    [Fact]
+    public async Task Gracefully_handles_invalid_fallback_url()
+    {
+        // Arrange
+        var matchedMod = new Mod
+        {
+            Local = new CheckModsExtended.Models.LocalModIdentity
+            {
+                Guid = "com.test.mod",
+                FilePath = "test.dll",
+                IsServerMod = true,
+                LocalName = "Test Mod",
+                LocalAuthor = "Author",
+                LocalVersion = "1.0.0",
+                Url = "not a valid url format!!"
+            },
+        };
+        matchedMod = matchedMod.WithApiMatch(
+            new ModSearchResult(123, null, "Test Mod", "test-mod", null, null, 0, null, null, null, null)
+        );
+
+        _forgeApiService.OnGetModUpdates = () =>
+            new ModUpdatesData(null, null, [new UpToDateMod(null, 123, null, null, "1.0.0", null)], null);
+
+        // TryGetLatestReleaseAssetUrlAsync returns null when the URL is invalid.
+        _gitHubClient.OnTryGetLatestReleaseAssetUrlAsync = _ => null;
+
+        // Act
+        var result = (await _service.EnrichAllWithVersionDataAsync([matchedMod], _sptVersion))[0];
+
+        // Assert
+        Assert.Null(result.Update.DownloadLink);
+    }
 }
+
+

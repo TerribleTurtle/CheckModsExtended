@@ -24,8 +24,9 @@ public class JsonManifestParser(IFileSystem fileSystem) : IJsonManifestParser
         var author = GetStringPropertyFromJson(root, "author");
         var version = GetStringPropertyFromJson(root, "version");
         var sptVersion = GetStringPropertyFromJson(root, "sptVersion") ?? GetStringPropertyFromJson(root, "akiVersion");
+        var url = GetStringPropertyFromJson(root, "url");
 
-        return new ServerModManifestInfo(name, author, version, sptVersion);
+        return new ServerModManifestInfo(name, author, version, sptVersion, url);
     }
 
     private static string? GetStringPropertyFromJson(JsonElement root, string propertyName)
@@ -43,3 +44,4 @@ public class JsonManifestParser(IFileSystem fileSystem) : IJsonManifestParser
         };
     }
 }
+
