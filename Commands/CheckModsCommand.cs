@@ -15,9 +15,12 @@ public sealed class CheckModsCommand : AsyncCommand<CheckModsCommand.Settings>
 {
     private readonly IUpdateWorkflowOrchestrator _orchestrator;
     private readonly IIgnoredUpdateWorkflow _ignoredUpdateWorkflow;
-    private readonly IScanCacheService _scanCacheService;
     private readonly IUserPromptService _userPromptService;
     private readonly CheckModsExtended.Utils.IProcessRunner _processRunner;
+    private readonly IPluginScanCache _pluginScanCache;
+    private readonly Microsoft.Extensions.Caching.Memory.IMemoryCache _memoryCache;
+    private readonly IScanCacheService _scanCacheService;
+    private readonly IModCheckReporter _reporter;
 
     /// <summary>
     /// Command line settings.
@@ -32,15 +35,21 @@ public sealed class CheckModsCommand : AsyncCommand<CheckModsCommand.Settings>
     public CheckModsCommand(
         IUpdateWorkflowOrchestrator orchestrator, 
         IIgnoredUpdateWorkflow ignoredUpdateWorkflow,
-        IScanCacheService scanCacheService,
         IUserPromptService userPromptService,
-        CheckModsExtended.Utils.IProcessRunner processRunner)
+        CheckModsExtended.Utils.IProcessRunner processRunner,
+        IPluginScanCache pluginScanCache,
+        Microsoft.Extensions.Caching.Memory.IMemoryCache memoryCache,
+        IScanCacheService scanCacheService,
+        IModCheckReporter reporter)
     {
         _orchestrator = orchestrator;
         _ignoredUpdateWorkflow = ignoredUpdateWorkflow;
-        _scanCacheService = scanCacheService;
         _userPromptService = userPromptService;
         _processRunner = processRunner;
+        _pluginScanCache = pluginScanCache;
+        _memoryCache = memoryCache;
+        _scanCacheService = scanCacheService;
+        _reporter = reporter;
     }
 
     protected override async Task<int> ExecuteAsync(
@@ -54,17 +63,8 @@ public sealed class CheckModsCommand : AsyncCommand<CheckModsCommand.Settings>
         var cache = await _scanCacheService.LoadCacheAsync(cancellationToken);
         if (cache != null && _userPromptService.PromptLoadFromCache(cache.CachedAtUtc))
         {
-            var processPath = System.Environment.ProcessPath;
-            if (processPath != null)
-            {
-                var guiArgs = string.IsNullOrWhiteSpace(settings.SptPath) ? "gui" : $"gui \"{settings.SptPath}\"";
-                var startInfo = new System.Diagnostics.ProcessStartInfo(processPath, guiArgs)
-                {
-                    UseShellExecute = true
-                };
-                _processRunner.Start(startInfo);
-                return 0;
-            }
+            _reporter.CachedVersionTable(cache.Response.Mods);
+            return 0;
         }
 
         while (true)
@@ -77,6 +77,11 @@ public sealed class CheckModsCommand : AsyncCommand<CheckModsCommand.Settings>
                 
                 if (endOfRunChoice == EndOfRunChoice.Rescan)
                 {
+                    _pluginScanCache.Clear();
+                    if (_memoryCache is Microsoft.Extensions.Caching.Memory.MemoryCache concreteCache)
+                    {
+                        concreteCache.Clear();
+                    }
                     continue;
                 }
                 

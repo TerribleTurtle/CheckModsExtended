@@ -6,6 +6,7 @@ using CheckModsExtended.Configuration;
 using CheckModsExtended.Models;
 using CheckModsExtended.Services.Interfaces;
 using CheckModsExtended.Services.UI;
+using CheckModsExtended.Services.Web;
 
 namespace CheckModsExtended.Services;
 
@@ -280,6 +281,14 @@ public sealed class SpectreModCheckReporter : IModCheckReporter
         if (ShouldRender())
         {
             _versionTableRenderer.VersionTable(mods);
+        }
+    }
+
+    public void CachedVersionTable(IReadOnlyList<ModDto> mods)
+    {
+        if (ShouldRender())
+        {
+            _versionTableRenderer.CachedVersionTable(mods);
         }
     }
 

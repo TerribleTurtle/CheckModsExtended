@@ -206,6 +206,75 @@ public sealed class VersionTableUiRenderer(ITextRenderer textRenderer) : IVersio
         AnsiConsole.WriteLine();
     }
 
+    /// <inheritdoc />
+    public void CachedVersionTable(IReadOnlyList<CheckModsExtended.Services.Web.ModDto> mods)
+    {
+        if (mods.Count == 0)
+        {
+            return;
+        }
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[bold blue]Cached Mod Version Summary[/]");
+        AnsiConsole.MarkupLine("[grey]Note: This is cached data from a previous run.[/]");
+        AnsiConsole.WriteLine();
+
+        var table = new Table()
+            .Title("[blue]Mod Version Summary (Cached)[/]")
+            .BorderColor(Color.Grey)
+            .AddColumn("[white]Name[/]")
+            .AddColumn("[white]Type[/]")
+            .AddColumn("[white]Author[/]")
+            .AddColumn("[white]Current Version[/]")
+            .AddColumn("[white]Latest Version[/]");
+
+        foreach (var mod in mods)
+        {
+            var (displayName, displayAuthor) = UiFormattingUtility.FormatModDisplayStrings(
+                mod.Name,
+                mod.Author
+            );
+            
+            var latestVersionDisplay = mod.Status switch
+            {
+                "UpToDate" => $"[green]{mod.LatestVersion?.EscapeMarkup()}[/]",
+                "UpdateAvailable" => $"[red]{mod.LatestVersion?.EscapeMarkup()}[/]",
+                "UpdateBlocked" => $"[darkorange]{mod.LatestVersion?.EscapeMarkup()}[/]",
+                "NewerInstalled" => $"[blue]{mod.LatestVersion?.EscapeMarkup()}[/]",
+                _ => mod.LatestVersion?.EscapeMarkup() ?? "[grey]Unknown[/]"
+            };
+            
+            if (mod.IsIgnored)
+            {
+                latestVersionDisplay = $"[grey]{mod.LatestVersion?.EscapeMarkup() ?? "Unknown"} (ignored)[/]";
+            }
+
+            var nameDisplay = UiFormattingUtility.FormatModLink(displayName, mod.ModUrl);
+
+            var typeDisplay = mod.IsPaired
+                ? "[green]Server[/] & [cyan]Client[/]"
+                : (mod.IsServerMod ? "[green]Server[/]" : "[cyan]Client[/]");
+
+            table.AddRow(
+                nameDisplay,
+                typeDisplay,
+                displayAuthor.EscapeMarkup(),
+                mod.LocalVersion?.EscapeMarkup() ?? "Unknown",
+                latestVersionDisplay
+            );
+        }
+
+        AnsiConsole.Write(table);
+
+        AnsiConsole.MarkupLine(
+            "[grey]Version colors: [green]Up to date[/] | [red]Update available[/] | [darkorange]Update blocked[/] | [blue]Newer than latest[/] | [grey]Ignored[/][/]"
+        );
+
+        AnsiConsole.WriteLine();
+        textRenderer.Rule();
+        AnsiConsole.WriteLine();
+    }
+
     internal static string FormatVersionDisplay(Mod mod)
     {
         var latestVersion = mod.Update.LatestVersion;

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using CheckModsExtended.Models;
+using CheckModsExtended.Services.Web;
 
 namespace CheckModsExtended.Services.Interfaces;
 
@@ -15,6 +16,7 @@ public interface IResultRenderer
     void UnverifiedMods(List<Mod> mods);
     void DependencyResults(DependencyAnalysisResult result);
     void VersionTable(List<Mod> mods);
+    void CachedVersionTable(IReadOnlyList<ModDto> mods);
     void PendingConfirmationsSummary(IReadOnlyList<PendingConfirmation> pendingConfirmations);
     void IgnoredUpdatesList(IReadOnlyList<IgnoredUpdate> ignores, ListFilterOptions? options = null);
     void InstalledModsList(

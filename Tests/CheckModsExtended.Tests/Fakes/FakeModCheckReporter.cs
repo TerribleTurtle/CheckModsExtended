@@ -207,6 +207,8 @@ public sealed class FakeModCheckReporter : IModCheckReporter
     /// <inheritdoc />
     public void VersionTable(List<Mod> mods) { }
 
+    public void CachedVersionTable(IReadOnlyList<CheckModsExtended.Services.Web.ModDto> mods) { }
+
     /// <inheritdoc />
     public bool PromptFetchRemoteIgnores()
     {
