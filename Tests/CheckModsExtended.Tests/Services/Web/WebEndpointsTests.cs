@@ -94,5 +94,140 @@ public class WebEndpointsTests
         cts.Cancel();
         try { await runTask; } catch { }
     }
+
+    [Fact]
+    public async Task Get_Status_WhenExceptionThrown_ReturnsInternalServerError()
+    {
+        var sptInstall = new FakeSptInstallationService { ThrowsException = true };
+        var updateCheck = new FakeUpdateCheckService();
+        var launcher = new TestBrowserLauncher();
+        using var cts = new CancellationTokenSource();
+        var runTask = WebManagerHost.RunAsync(new string[0], cts.Token, services =>
+        {
+            services.AddSingleton<ISptInstallationService>(sptInstall);
+            services.AddSingleton<IUpdateCheckService>(updateCheck);
+            services.AddSingleton<IBrowserLauncher>(launcher);
+        });
+
+        var url = await launcher.WaitForUrlAsync();
+        using var client = new HttpClient();
+        var response = await client.GetAsync($"{url}/api/status");
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+        cts.Cancel();
+        try { await runTask; } catch { }
+    }
+
+    [Fact]
+    public async Task Post_Scan_WhenExceptionThrown_ReturnsInternalServerError()
+    {
+        var orchestrator = new FakeUpdateWorkflowOrchestrator { ShouldThrow = true };
+        var launcher = new TestBrowserLauncher();
+        using var cts = new CancellationTokenSource();
+        var runTask = WebManagerHost.RunAsync(new string[0], cts.Token, services =>
+        {
+            services.AddSingleton<IUpdateWorkflowOrchestrator>(orchestrator);
+            services.AddSingleton<IBrowserLauncher>(launcher);
+        });
+
+        var url = await launcher.WaitForUrlAsync();
+        using var client = new HttpClient();
+        var response = await client.PostAsync($"{url}/api/scan", new StringContent(""));
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+        cts.Cancel();
+        try { await runTask; } catch { }
+    }
+
+    [Fact]
+    public async Task Get_Cache_WhenExceptionThrown_ReturnsInternalServerError()
+    {
+        var cacheService = new FakeScanCacheService { ShouldThrow = true };
+        var launcher = new TestBrowserLauncher();
+        using var cts = new CancellationTokenSource();
+        var runTask = WebManagerHost.RunAsync(new string[0], cts.Token, services =>
+        {
+            services.AddSingleton<IScanCacheService>(cacheService);
+            services.AddSingleton<IBrowserLauncher>(launcher);
+        });
+
+        var url = await launcher.WaitForUrlAsync();
+        using var client = new HttpClient();
+        var response = await client.GetAsync($"{url}/api/cache");
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+        cts.Cancel();
+        try { await runTask; } catch { }
+    }
+
+    [Fact]
+    public async Task Post_Ignore_WhenExceptionThrown_ReturnsInternalServerError()
+    {
+        var ignoreService = new FakeIgnoreService { ShouldThrow = true };
+        var launcher = new TestBrowserLauncher();
+        using var cts = new CancellationTokenSource();
+        var runTask = WebManagerHost.RunAsync(new string[0], cts.Token, services =>
+        {
+            services.AddSingleton<IIgnoreService>(ignoreService);
+            services.AddSingleton<IBrowserLauncher>(launcher);
+        });
+
+        var url = await launcher.WaitForUrlAsync();
+        using var client = new HttpClient();
+        var request = new IgnoreRequest(123, "1.0", "1.1");
+        var response = await client.PostAsJsonAsync($"{url}/api/ignore", request);
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+        cts.Cancel();
+        try { await runTask; } catch { }
+    }
+
+    [Fact]
+    public async Task Get_Ignores_WhenExceptionThrown_ReturnsInternalServerError()
+    {
+        var ignoreService = new FakeIgnoreService { ShouldThrow = true };
+        var launcher = new TestBrowserLauncher();
+        using var cts = new CancellationTokenSource();
+        var runTask = WebManagerHost.RunAsync(new string[0], cts.Token, services =>
+        {
+            services.AddSingleton<IIgnoreService>(ignoreService);
+            services.AddSingleton<IBrowserLauncher>(launcher);
+        });
+
+        var url = await launcher.WaitForUrlAsync();
+        using var client = new HttpClient();
+        var response = await client.GetAsync($"{url}/api/ignores");
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+        cts.Cancel();
+        try { await runTask; } catch { }
+    }
+
+    [Fact]
+    public async Task Delete_Ignore_WhenExceptionThrown_ReturnsInternalServerError()
+    {
+        var ignoreService = new FakeIgnoreService { ShouldThrow = true };
+        var launcher = new TestBrowserLauncher();
+        using var cts = new CancellationTokenSource();
+        var runTask = WebManagerHost.RunAsync(new string[0], cts.Token, services =>
+        {
+            services.AddSingleton<IIgnoreService>(ignoreService);
+            services.AddSingleton<IBrowserLauncher>(launcher);
+        });
+
+        var url = await launcher.WaitForUrlAsync();
+        using var client = new HttpClient();
+        var response = await client.DeleteAsync($"{url}/api/ignore/123");
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+        cts.Cancel();
+        try { await runTask; } catch { }
+    }
 }
 

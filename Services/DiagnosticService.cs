@@ -30,7 +30,30 @@ public class DiagnosticService : IDiagnosticService
             Directory.GetCurrentDirectory(),
             $"spt-check-mods-logs-{DateTime.Now:yyyyMMdd-HHmmss}.zip"
         );
-        ZipFile.CreateFromDirectory(logsDir, zipPath);
+
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            foreach (var file in Directory.GetFiles(logsDir))
+            {
+                var fileName = Path.GetFileName(file);
+                var tempFile = Path.Combine(tempDir, fileName);
+                using var sourceStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using var destStream = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None);
+                sourceStream.CopyTo(destStream);
+            }
+            ZipFile.CreateFromDirectory(tempDir, zipPath);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+            {
+                Directory.Delete(tempDir, true);
+            }
+        }
+
         return Task.FromResult<string?>(zipPath);
     }
 }

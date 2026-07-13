@@ -39,6 +39,30 @@ public static class DependencyGraphBuilder
             return null;
         }
 
+        var node = BuildDependencySubtreeInternal(
+            dependency,
+            modByGuid,
+            modById,
+            installedGuids,
+            missingDeps,
+            conflicts,
+            visited
+        );
+
+        visited.Remove(dependency.Guid);
+        return node;
+    }
+
+    private static DependencyNode BuildDependencySubtreeInternal(
+        ModDependency dependency,
+        Dictionary<string, Mod> modByGuid,
+        Dictionary<int, Mod> modById,
+        ISet<string> installedGuids,
+        Dictionary<string, MissingDependency> missingDeps,
+        List<DependencyConflict> conflicts,
+        HashSet<string> visited
+    )
+    {
         if (
             dependency.Conflict
             && !conflicts.Any(c => c.ModGuid.Equals(dependency.Guid, StringComparison.OrdinalIgnoreCase))

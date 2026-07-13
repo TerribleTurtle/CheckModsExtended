@@ -8,6 +8,7 @@ namespace CheckModsExtended.Tests.Fakes;
 public class FakeScanCacheService : IScanCacheService
 {
     public ScanCacheRecord? SavedRecord { get; private set; }
+    public bool ShouldThrow { get; set; } = false;
 
     public Task SaveCacheAsync(ScanCacheRecord record, CancellationToken cancellationToken = default)
     {
@@ -17,6 +18,7 @@ public class FakeScanCacheService : IScanCacheService
 
     public Task<ScanCacheRecord?> LoadCacheAsync(CancellationToken cancellationToken = default)
     {
+        if (ShouldThrow) throw new System.Exception("Simulated exception from FakeScanCacheService");
         return Task.FromResult(SavedRecord);
     }
 }

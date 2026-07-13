@@ -11,6 +11,7 @@ namespace CheckModsExtended.Tests.Fakes;
 public sealed class FakeSptInstallationService : ISptInstallationService
 {
     private List<SptVersionResult> _updates = [];
+    public bool ThrowsException { get; set; } = false;
 
     /// <summary> Gets or sets validated version. </summary>
     public Version? ValidatedVersion { get; set; }
@@ -25,6 +26,7 @@ public sealed class FakeSptInstallationService : ISptInstallationService
     /// <inheritdoc />
     public Task<Version?> GetAndValidateSptVersionAsync(string sptPath, CancellationToken cancellationToken = default)
     {
+        if (ThrowsException) throw new System.Exception("Simulated exception from FakeSptInstallationService");
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult(ValidatedVersion);
     }

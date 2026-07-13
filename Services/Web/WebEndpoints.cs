@@ -56,6 +56,10 @@ public static class WebEndpoints
 
             return Results.Ok(new StatusResponse("running", VersionInfo.SemVer, sptVer?.ToString(), latestAppVersion, updateAvailable));
         }
+        catch (Exception ex)
+        {
+            return Results.Json(new ErrorResponse(ex.Message), statusCode: StatusCodes.Status500InternalServerError);
+        }
         finally
         {
             _statusLock.Release();
@@ -64,42 +68,77 @@ public static class WebEndpoints
 
     private static async Task<IResult> GetCacheAsync(IScanCacheService cacheService, CancellationToken token)
     {
-        var cache = await cacheService.LoadCacheAsync(token);
-        if (cache != null)
+        try
         {
-            return Results.Ok(cache);
+            var cache = await cacheService.LoadCacheAsync(token);
+            if (cache != null)
+            {
+                return Results.Ok(cache);
+            }
+            return Results.NotFound(new ErrorResponse("No cache available"));
         }
-        return Results.NotFound(new ErrorResponse("No cache available"));
+        catch (Exception ex)
+        {
+            return Results.Json(new ErrorResponse(ex.Message), statusCode: StatusCodes.Status500InternalServerError);
+        }
     }
 
     private static async Task<IResult> PostScanAsync(IUpdateWorkflowOrchestrator orchestrator, CancellationToken token)
     {
-        var context = await orchestrator.RunPipelineAsync(_args, token);
-        var response = ScanResponseMapper.Map(context);
-        return Results.Ok(response);
+        try
+        {
+            var context = await orchestrator.RunPipelineAsync(_args, token);
+            var response = ScanResponseMapper.Map(context);
+            return Results.Ok(response);
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(new ErrorResponse(ex.Message), statusCode: StatusCodes.Status500InternalServerError);
+        }
     }
 
     private static async Task<IResult> PostIgnoreAsync(IIgnoreService ignoreService, HttpRequest request, CancellationToken token)
     {
-        var req = await request.ReadFromJsonAsync(CheckModsExtendedJsonSerializerContext.Default.IgnoreRequest, cancellationToken: token) as IgnoreRequest;
-        if (req != null && req.Id > 0 && !string.IsNullOrEmpty(req.LocalVersion) && !string.IsNullOrEmpty(req.LatestVersion))
+        try
         {
-            await ignoreService.AddIgnoreAsync(req.Id, req.LocalVersion, req.LatestVersion, token);
-            return Results.Ok(new MessageResponse($"Ignored {req.Id}"));
+            var req = await request.ReadFromJsonAsync(CheckModsExtendedJsonSerializerContext.Default.IgnoreRequest, cancellationToken: token) as IgnoreRequest;
+            if (req != null && req.Id > 0 && !string.IsNullOrEmpty(req.LocalVersion) && !string.IsNullOrEmpty(req.LatestVersion))
+            {
+                await ignoreService.AddIgnoreAsync(req.Id, req.LocalVersion, req.LatestVersion, token);
+                return Results.Ok(new MessageResponse($"Ignored {req.Id}"));
+            }
+            return Results.BadRequest(new ErrorResponse("Missing or invalid mod parameters"));
         }
-        return Results.BadRequest(new ErrorResponse("Missing or invalid mod parameters"));
+        catch (Exception ex)
+        {
+            return Results.Json(new ErrorResponse(ex.Message), statusCode: StatusCodes.Status500InternalServerError);
+        }
     }
 
     private static async Task<IResult> GetIgnoresAsync(IIgnoreService ignoreService, CancellationToken token)
     {
-        var existing = await ignoreService.GetIgnoresAsync(token);
-        return Results.Ok(existing);
+        try
+        {
+            var existing = await ignoreService.GetIgnoresAsync(token);
+            return Results.Ok(existing);
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(new ErrorResponse(ex.Message), statusCode: StatusCodes.Status500InternalServerError);
+        }
     }
 
     private static async Task<IResult> DeleteIgnoreAsync(int modId, IIgnoreService ignoreService, CancellationToken token)
     {
-        await ignoreService.RemoveIgnoreAsync(modId, token);
-        return Results.Ok(new MessageResponse($"Removed ignore for {modId}"));
+        try
+        {
+            await ignoreService.RemoveIgnoreAsync(modId, token);
+            return Results.Ok(new MessageResponse($"Removed ignore for {modId}"));
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(new ErrorResponse(ex.Message), statusCode: StatusCodes.Status500InternalServerError);
+        }
     }
 
     private static IResult PostSystemOpen(OpenSystemRequest req, IBrowserLauncher browserLauncher)

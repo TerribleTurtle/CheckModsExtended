@@ -181,6 +181,32 @@ public sealed class ModDependencyServiceTests
         Assert.Empty(nodeB.Children); // the circular back-edge to com.a was pruned
     }
 
+    [Fact]
+    public async Task Allows_diamond_dependencies()
+    {
+        // main -> A -> D
+        // main -> B -> D
+        var d = Dep("com.d", "D");
+        var a = Dep("com.a", "A", nested: [d]);
+        var b = Dep("com.b", "B", nested: [d]);
+        
+        var api = new FakeModUpdateClient { OnGetModDependencies = _ => new List<ModDependency> { a, b } };
+
+        var result = await CreateService(api)
+            .AnalyzeDependenciesAsync([MatchedMod("com.main", "Main", 100)], new HashSet<string>());
+
+        var root = Assert.Single(result.Result.RootMods);
+        Assert.Equal(2, root.Children.Count);
+        
+        var nodeA = root.Children.First(c => c.DependencyInfo?.Guid == "com.a");
+        var nodeAChild = Assert.Single(nodeA.Children);
+        Assert.Equal("com.d", nodeAChild.DependencyInfo?.Guid);
+        
+        var nodeB = root.Children.First(c => c.DependencyInfo?.Guid == "com.b");
+        var nodeBChild = Assert.Single(nodeB.Children);
+        Assert.Equal("com.d", nodeBChild.DependencyInfo?.Guid);
+    }
+
     private sealed class SyncProgress<T> : IProgress<T>
     {
         private readonly Action<T> _handler;

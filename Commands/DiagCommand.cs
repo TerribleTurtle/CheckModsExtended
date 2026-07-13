@@ -41,14 +41,22 @@ public sealed class DiagCommand : AsyncCommand<GlobalSettings>
         CancellationToken cancellationToken
     )
     {
-        var zipPath = await _diagnosticService.ExportLogsAsync(cancellationToken);
-        if (zipPath == null)
+        try
         {
-            AnsiConsole.MarkupLine("[yellow]Logs directory does not exist, nothing to export.[/]");
+            var zipPath = await _diagnosticService.ExportLogsAsync(cancellationToken);
+            if (zipPath == null)
+            {
+                AnsiConsole.MarkupLine("[yellow]Logs directory does not exist, nothing to export.[/]");
+                return 0;
+            }
+
+            AnsiConsole.MarkupLine($"[green]Successfully exported logs to {zipPath}[/]");
             return 0;
         }
-
-        AnsiConsole.MarkupLine($"[green]Successfully exported logs to {zipPath}[/]");
-        return 0;
+        catch (Exception ex) when (ex is System.IO.IOException or System.UnauthorizedAccessException)
+        {
+            AnsiConsole.MarkupLine($"[red]Failed to export logs: {ex.Message}[/]");
+            return 1;
+        }
     }
 }
