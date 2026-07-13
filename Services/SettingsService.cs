@@ -41,7 +41,9 @@ public class SettingsService : ISettingsService
         try { JsonDocument.Parse(jsonPayload); }
         catch { return new ApiError("Invalid JSON payload"); }
 
-        await _fileSystem.WriteAllTextAsync("appsettings.json", jsonPayload, token);
+        var tempPath = "appsettings.json.tmp";
+        await _fileSystem.WriteAllTextAsync(tempPath, jsonPayload, token);
+        _fileSystem.MoveFile(tempPath, "appsettings.json", overwrite: true);
         return new MessageResponse("Settings saved successfully. A restart may be required for some settings to take effect.");
     }
 }
