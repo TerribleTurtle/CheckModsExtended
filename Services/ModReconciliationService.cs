@@ -13,7 +13,17 @@ namespace CheckModsExtended.Services;
 [Injectable(InjectionType.Transient)]
 public sealed class ModReconciliationService(ILogger<ModReconciliationService> logger) : IModReconciliationService
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Reconciles server and client mods into a unified list, pairing matching components and selecting the optimal version.
+    /// Heuristics applied:
+    /// - Matches mods first by exact GUID.
+    /// - Then matches remaining mods by normalized names (removing common component suffixes).
+    /// - When pairing components, selects the component with a valid, newer version.
+    /// - Defaults to the server component if versions are identical or cannot be determined.
+    /// </summary>
+    /// <param name="serverMods">The list of installed server mods.</param>
+    /// <param name="clientMods">The list of installed client mods.</param>
+    /// <returns>A result object containing the unified mod list and details of paired/unpaired mods.</returns>
     public ModReconciliationResult ReconcileMods(List<Mod> serverMods, List<Mod> clientMods)
     {
         logger.LogDebug(

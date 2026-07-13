@@ -24,6 +24,16 @@ public interface IModUpdateClient
     /// - <see cref="NotFound"/> if the update information could not be found.
     /// - <see cref="ApiError"/> if an error occurs while communicating with the Forge API.
     /// </returns>
+    /// <example>
+    /// <code>
+    /// var result = await client.GetModUpdatesAsync(modUpdates, version);
+    /// result.Switch(
+    ///     updates => Console.WriteLine($"Found {updates.Mods.Count} updates"),
+    ///     notFound => Console.WriteLine("Updates not found"),
+    ///     error => Console.WriteLine($"Error: {error.Message}")
+    /// );
+    /// </code>
+    /// </example>
     Task<OneOf<ModUpdatesData, NotFound, ApiError>> GetModUpdatesAsync(
         IEnumerable<(int ModId, string CurrentVersion)> modUpdates,
         SemanticVersioning.Version sptVersion,
@@ -41,6 +51,16 @@ public interface IModUpdateClient
     /// - <see cref="NotFound"/> if the dependency information could not be found.
     /// - <see cref="ApiError"/> if an error occurs while communicating with the Forge API.
     /// </returns>
+    /// <example>
+    /// <code>
+    /// var result = await client.GetModDependenciesAsync(modVersions);
+    /// result.Switch(
+    ///     dependencies => Console.WriteLine($"Found {dependencies.Count} dependencies"),
+    ///     notFound => Console.WriteLine("Dependencies not found"),
+    ///     error => Console.WriteLine($"Error: {error.Message}")
+    /// );
+    /// </code>
+    /// </example>
     Task<OneOf<List<ModDependency>, NotFound, ApiError>> GetModDependenciesAsync(
         IEnumerable<(string Identifier, string Version)> modVersions,
         CancellationToken cancellationToken = default
