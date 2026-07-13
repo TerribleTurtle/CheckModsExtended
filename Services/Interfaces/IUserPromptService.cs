@@ -14,4 +14,5 @@ public interface IUserPromptService
     IReadOnlyList<Mod> SelectUpdatesToIgnore(IReadOnlyList<Mod> candidates, ISet<int> preIgnoredApiModIds);
     bool PromptReportIgnores();
     Task<bool> PromptForConfirmationAsync(PendingConfirmation confirmation);
+    bool PromptLoadFromCache(System.DateTimeOffset cacheTime);
 }

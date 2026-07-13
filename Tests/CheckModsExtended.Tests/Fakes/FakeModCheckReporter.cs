@@ -256,6 +256,11 @@ public sealed class FakeModCheckReporter : IModCheckReporter
         return Task.FromResult(true);
     }
 
+    public bool PromptLoadFromCache(DateTimeOffset cacheTime)
+    {
+        return false;
+    }
+
     public void IgnoreAddAlreadyIgnored(int apiModId, string localVersion, string latestVersion) { }
 
     public void IgnoreAddSuccess(int apiModId, string localVersion, string latestVersion) { }

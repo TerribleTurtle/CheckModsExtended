@@ -356,6 +356,11 @@ public sealed class SpectreModCheckReporter : IModCheckReporter
         return _promptService.PromptForConfirmationAsync(confirmation);
     }
 
+    public bool PromptLoadFromCache(DateTimeOffset cacheTime)
+    {
+        return _promptService.PromptLoadFromCache(cacheTime);
+    }
+
     public void IgnoreAddAlreadyIgnored(int apiModId, string localVersion, string latestVersion)
     {
         if (ShouldRender())

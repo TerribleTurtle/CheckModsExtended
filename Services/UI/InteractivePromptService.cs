@@ -125,6 +125,21 @@ public sealed class InteractivePromptService : IUserPromptService
         );
     }
 
+    public bool PromptLoadFromCache(DateTimeOffset cacheTime)
+    {
+        if (IsHeadless())
+        {
+            return false;
+        }
+
+        DrainBufferedKeys();
+        AnsiConsole.WriteLine();
+
+        return AnsiConsole.Prompt(
+            new ConfirmationPrompt($"[yellow]A cache from {cacheTime.ToLocalTime():g} was found. Would you like to launch the Web GUI immediately using the cached data?[/]") { DefaultValue = true }
+        );
+    }
+
     private static string FormatEndOfRunChoice(EndOfRunChoice choice, int openableUpdateCount)
     {
         return choice switch

@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
+using CheckModsExtended.Models;
 using CheckModsExtended.Services.Interfaces;
 using Spectre.Console.Cli;
 
@@ -14,6 +15,9 @@ public sealed class CheckModsCommand : AsyncCommand<CheckModsCommand.Settings>
 {
     private readonly IUpdateWorkflowOrchestrator _orchestrator;
     private readonly IIgnoredUpdateWorkflow _ignoredUpdateWorkflow;
+    private readonly IScanCacheService _scanCacheService;
+    private readonly IUserPromptService _userPromptService;
+    private readonly CheckModsExtended.Utils.IProcessRunner _processRunner;
 
     /// <summary>
     /// Command line settings.
@@ -25,10 +29,18 @@ public sealed class CheckModsCommand : AsyncCommand<CheckModsCommand.Settings>
         public string? SptPath { get; set; }
     }
 
-    public CheckModsCommand(IUpdateWorkflowOrchestrator orchestrator, IIgnoredUpdateWorkflow ignoredUpdateWorkflow)
+    public CheckModsCommand(
+        IUpdateWorkflowOrchestrator orchestrator, 
+        IIgnoredUpdateWorkflow ignoredUpdateWorkflow,
+        IScanCacheService scanCacheService,
+        IUserPromptService userPromptService,
+        CheckModsExtended.Utils.IProcessRunner processRunner)
     {
         _orchestrator = orchestrator;
         _ignoredUpdateWorkflow = ignoredUpdateWorkflow;
+        _scanCacheService = scanCacheService;
+        _userPromptService = userPromptService;
+        _processRunner = processRunner;
     }
 
     protected override async Task<int> ExecuteAsync(
@@ -39,12 +51,52 @@ public sealed class CheckModsCommand : AsyncCommand<CheckModsCommand.Settings>
     {
         var args = string.IsNullOrWhiteSpace(settings.SptPath) ? Array.Empty<string>() : new[] { settings.SptPath };
 
-        var contextResult = await _orchestrator.RunPipelineAsync(args, cancellationToken);
-
-        if (contextResult?.Mods is not null)
+        var cache = await _scanCacheService.LoadCacheAsync(cancellationToken);
+        if (cache != null && _userPromptService.PromptLoadFromCache(cache.CachedAtUtc))
         {
-            var endOfRunChoice = await _ignoredUpdateWorkflow.RunAsync(contextResult.Mods, cancellationToken);
-            // TODO: Route endOfRunChoice in Step 6.3
+            var processPath = System.Environment.ProcessPath;
+            if (processPath != null)
+            {
+                var guiArgs = string.IsNullOrWhiteSpace(settings.SptPath) ? "gui" : $"gui \"{settings.SptPath}\"";
+                var startInfo = new System.Diagnostics.ProcessStartInfo(processPath, guiArgs)
+                {
+                    UseShellExecute = true
+                };
+                _processRunner.Start(startInfo);
+                return 0;
+            }
+        }
+
+        while (true)
+        {
+            var contextResult = await _orchestrator.RunPipelineAsync(args, cancellationToken);
+
+            if (contextResult?.Mods is not null)
+            {
+                var endOfRunChoice = await _ignoredUpdateWorkflow.RunAsync(contextResult.Mods, cancellationToken);
+                
+                if (endOfRunChoice == EndOfRunChoice.Rescan)
+                {
+                    continue;
+                }
+                
+                if (endOfRunChoice == EndOfRunChoice.LaunchWebGui)
+                {
+                    var processPath = System.Environment.ProcessPath;
+                    if (processPath != null)
+                    {
+                        var guiArgs = string.IsNullOrWhiteSpace(settings.SptPath) ? "gui" : $"gui \"{settings.SptPath}\"";
+                        var startInfo = new System.Diagnostics.ProcessStartInfo(processPath, guiArgs)
+                        {
+                            UseShellExecute = true
+                        };
+                        _processRunner.Start(startInfo);
+                    }
+                    break;
+                }
+            }
+
+            break;
         }
 
         return 0; // Success
