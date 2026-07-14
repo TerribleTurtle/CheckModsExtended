@@ -292,7 +292,12 @@ public sealed class VersionTableUiRenderer(ITextRenderer textRenderer) : IVersio
 
         if (mod.Update.UpdateSuppressed)
         {
-            return $"[grey]{latestVersion.EscapeMarkup()} (ignored)[/]";
+            return mod.Update.UpdateSuppressedSource switch
+            {
+                IgnoreSource.User => $"[grey]{latestVersion.EscapeMarkup()} (Ignored by You)[/]",
+                IgnoreSource.Remote => $"[grey]{latestVersion.EscapeMarkup()} (Ignored by Community)[/]",
+                _ => $"[grey]{latestVersion.EscapeMarkup()} (ignored)[/]"
+            };
         }
 
         return mod.Update.UpdateStatus switch
