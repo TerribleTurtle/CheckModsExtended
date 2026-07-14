@@ -136,7 +136,7 @@ public sealed class InteractivePromptService : IUserPromptService
         AnsiConsole.WriteLine();
 
         return AnsiConsole.Prompt(
-            new ConfirmationPrompt($"[yellow]A cache from {cacheTime.ToLocalTime():g} was found. Would you like to launch the Web GUI immediately using the cached data?[/]") { DefaultValue = true }
+            new ConfirmationPrompt($"[yellow]A cache from {cacheTime.ToLocalTime():g} was found. Would you like to view the cached results?[/]") { DefaultValue = true }
         );
     }
 

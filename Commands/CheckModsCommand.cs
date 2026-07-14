@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CheckModsExtended.Models;
 using CheckModsExtended.Services.Interfaces;
+using CheckModsExtended.Services.Web;
 using Spectre.Console.Cli;
 
 namespace CheckModsExtended.Commands;
@@ -78,24 +79,32 @@ public sealed class CheckModsCommand : AsyncCommand<CheckModsCommand.Settings>
     )
     {
         var args = string.IsNullOrWhiteSpace(settings.SptPath) ? Array.Empty<string>() : new[] { settings.SptPath };
+        bool loadedFromCache = false;
+        IReadOnlyList<Mod>? currentMods = null;
 
         var cache = await _scanCacheService.LoadCacheAsync(cancellationToken);
         if (cache != null && _userPromptService.PromptLoadFromCache(cache.CachedAtUtc))
         {
             _reporter.CachedVersionTable(cache.Response.Mods);
-            return 0;
+            currentMods = cache.Response.Mods.Select(m => m.ToDomain()).ToList();
+            loadedFromCache = true;
         }
 
         while (true)
         {
-            var contextResult = await _orchestrator.RunPipelineAsync(args, cancellationToken);
-
-            if (contextResult?.Mods is not null)
+            if (!loadedFromCache)
             {
-                var endOfRunChoice = await _ignoredUpdateWorkflow.RunAsync(contextResult.Mods, cancellationToken);
+                var contextResult = await _orchestrator.RunPipelineAsync(args, cancellationToken);
+                currentMods = contextResult?.Mods;
+            }
+
+            if (currentMods is not null || loadedFromCache)
+            {
+                var endOfRunChoice = await _ignoredUpdateWorkflow.RunAsync(currentMods, cancellationToken);
 
                 if (endOfRunChoice == EndOfRunChoice.Rescan)
                 {
+                    loadedFromCache = false; // Next iteration will trigger a scan
                     _pluginScanCache.Clear();
                     _cacheManager.Clear();
                     continue;
@@ -110,6 +119,6 @@ public sealed class CheckModsCommand : AsyncCommand<CheckModsCommand.Settings>
             break;
         }
 
-        return 0; // Success
+        return ExitCodes.Success;
     }
 }

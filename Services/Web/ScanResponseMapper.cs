@@ -1,4 +1,6 @@
+using System;
 using System.Linq;
+using CheckModsExtended.Models;
 using CheckModsExtended.Models.Pipeline;
 
 namespace CheckModsExtended.Services.Web;
@@ -83,5 +85,45 @@ public static class ScanResponseMapper
         }
 
         return new ScanResponse(response, misplacedReportDto, context.SptVersion?.ToString());
+    }
+
+    public static Mod ToDomain(this ModDto dto)
+    {
+        return new Mod
+        {
+            Local = new LocalModIdentity
+            {
+                Guid = dto.Id?.ToString() ?? Guid.NewGuid().ToString(),
+                LocalName = dto.Name,
+                LocalAuthor = dto.Author,
+                LocalVersion = dto.LocalVersion,
+                IsServerMod = dto.IsServerMod,
+                FilePath = dto.LocalDirectory != null ? System.IO.Path.Combine(dto.LocalDirectory, "package.json") : "",
+                LocalSptVersion = dto.LocalSptVersion,
+                PairedComponentPath = dto.IsPaired ? "paired" : null
+            },
+            Api = new ForgeApiMetadata
+            {
+                ApiModId = dto.Id,
+                ApiName = dto.Name,
+                ApiAuthor = new CheckModsExtended.Models.ModAuthor(0, dto.Author, null),
+                ApiUrl = dto.ModUrl,
+                ApiSourceCodeUrl = dto.SourceCodeUrl
+            },
+            Update = new ModUpdateState
+            {
+                UpdateStatus = Enum.TryParse<UpdateStatus>(dto.Status, out var status) ? status : UpdateStatus.Unknown,
+                LatestVersion = dto.LatestVersion == "Unknown" ? null : dto.LatestVersion,
+                DownloadLink = dto.DownloadUrl,
+                IncompatibilityReason = dto.IncompatibilityReason,
+                CompatibleVersionString = dto.CompatibleVersion,
+                BlockReason = dto.BlockReason,
+                UpdateSuppressed = dto.IsIgnored,
+                UpdateSuppressedSource = Enum.TryParse<CheckModsExtended.Models.IgnoreSource>(dto.IgnoreSource, out var igSource) ? igSource : null
+            },
+            Status = Enum.TryParse<UpdateStatus>(dto.Status, out _) ? ModStatus.Verified : ModStatus.NoMatch,
+            IsDuplicate = dto.IsDuplicate,
+            LoadWarnings = dto.LoadWarnings ?? []
+        };
     }
 }
