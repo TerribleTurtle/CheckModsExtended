@@ -9,6 +9,10 @@ All notable changes to this project will be documented in this file.
 - **End-of-Run Routing**: The CLI now prompts you after a scan finishes, allowing you to instantly launch the Web GUI or trigger a rescan without having to close and reopen the application.
 - **Strict Error Handling**: Enforced strict API response destructuring and specific exception filters across the new Web Endpoints and GitHub Release client to prevent exceptions from being swallowed silently.
 
+- **Settings Modal**: Added a dedicated settings modal to the Web GUI, allowing users to configure application settings seamlessly.
+- **Robust IO Operations**: The settings persistence layer was rewritten to use atomic file swaps, preventing file corruption if the application exits unexpectedly during a write.
+- **Codebase Health Check**: A swarm of audit agents successfully swept the codebase to enforce `public sealed` composition, explicit typing, and strict exception filtering per the `.editorconfig` standards.
+
 ### Changed
 - **Web UI Polish & Accessibility**: Refactored the Web GUI using a mobile-first responsive architecture. Standardized CSS styling, added non-intrusive Toast notifications for background actions, and improved screen reader accessibility.
 
