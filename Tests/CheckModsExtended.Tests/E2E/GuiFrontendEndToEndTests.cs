@@ -163,6 +163,7 @@ public sealed class GuiFrontendEndToEndTests
             var fakeCacheService = new FakeScanCacheService();
             await fakeCacheService.SaveCacheAsync(new ScanCacheRecord(
                 DateTimeOffset.UtcNow,
+                null,
                 new ScanResponse(
                     new List<ModDto>
                     {

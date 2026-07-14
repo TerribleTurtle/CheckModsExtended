@@ -28,7 +28,7 @@ public sealed class CacheResultsStep : IWorkflowStep
         }
 
         var response = ScanResponseMapper.Map(context);
-        var record = new ScanCacheRecord(DateTimeOffset.UtcNow, response);
+        var record = new ScanCacheRecord(DateTimeOffset.UtcNow, context.SptPath, response);
         await _cacheService.SaveCacheAsync(record, cancellationToken);
     }
 }

@@ -8,5 +8,6 @@ namespace CheckModsExtended.Models;
 /// </summary>
 public record ScanCacheRecord(
     DateTimeOffset CachedAtUtc,
+    string? SptPath,
     ScanResponse Response
 );

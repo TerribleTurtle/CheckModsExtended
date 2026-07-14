@@ -39,7 +39,7 @@ public class ScanCacheServiceTests
     public async Task SaveAndLoadCacheAsync_WorksCorrectly()
     {
         var response = new ScanResponse(new List<ModDto>(), null, "3.8.0");
-        var record = new ScanCacheRecord(TimeProvider.System.GetUtcNow(), response);
+        var record = new ScanCacheRecord(TimeProvider.System.GetUtcNow(), null, response);
 
         await _service.SaveCacheAsync(record);
 
@@ -54,7 +54,7 @@ public class ScanCacheServiceTests
     {
         _fileSystem.UnauthorizedPaths.Add("C:\\AppData\\scan_cache.json.tmp");
         var response = new ScanResponse(new List<ModDto>(), null, "3.8.0");
-        var record = new ScanCacheRecord(TimeProvider.System.GetUtcNow(), response);
+        var record = new ScanCacheRecord(TimeProvider.System.GetUtcNow(), null, response);
         
         // Should not throw
         await _service.SaveCacheAsync(record);

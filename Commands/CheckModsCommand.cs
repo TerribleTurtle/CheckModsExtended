@@ -22,6 +22,7 @@ public sealed class CheckModsCommand : AsyncCommand<CheckModsCommand.Settings>
     private readonly ICacheManager _cacheManager;
     private readonly IScanCacheService _scanCacheService;
     private readonly IModCheckReporter _reporter;
+    private readonly IInitializationService _initializationService;
 
     /// <summary>
     /// Command line settings.
@@ -44,6 +45,7 @@ public sealed class CheckModsCommand : AsyncCommand<CheckModsCommand.Settings>
     /// <param name="cacheManager">The manager for application caching.</param>
     /// <param name="scanCacheService">The service for managing scan caches.</param>
     /// <param name="reporter">The reporter for presenting mod check results.</param>
+    /// <param name="initializationService">The service for resolving the SPT path.</param>
     public CheckModsCommand(
         IUpdateWorkflowOrchestrator orchestrator,
         IIgnoredUpdateWorkflow ignoredUpdateWorkflow,
@@ -52,7 +54,8 @@ public sealed class CheckModsCommand : AsyncCommand<CheckModsCommand.Settings>
         IPluginScanCache pluginScanCache,
         ICacheManager cacheManager,
         IScanCacheService scanCacheService,
-        IModCheckReporter reporter)
+        IModCheckReporter reporter,
+        IInitializationService initializationService)
     {
         _orchestrator = orchestrator;
         _ignoredUpdateWorkflow = ignoredUpdateWorkflow;
@@ -62,6 +65,7 @@ public sealed class CheckModsCommand : AsyncCommand<CheckModsCommand.Settings>
         _cacheManager = cacheManager;
         _scanCacheService = scanCacheService;
         _reporter = reporter;
+        _initializationService = initializationService;
     }
 
     /// <summary>
@@ -79,11 +83,14 @@ public sealed class CheckModsCommand : AsyncCommand<CheckModsCommand.Settings>
     )
     {
         var args = string.IsNullOrWhiteSpace(settings.SptPath) ? Array.Empty<string>() : new[] { settings.SptPath };
+        var sptPath = _initializationService.GetValidatedSptPath(args);
         bool loadedFromCache = false;
         IReadOnlyList<Mod>? currentMods = null;
 
         var cache = await _scanCacheService.LoadCacheAsync(cancellationToken);
-        if (cache?.Response?.Mods != null && cache.Response.Mods.Count > 0 && _userPromptService.PromptLoadFromCache(cache.CachedAtUtc))
+        bool isCacheValidForPath = cache != null && string.Equals(cache.SptPath, sptPath, StringComparison.OrdinalIgnoreCase);
+
+        if (isCacheValidForPath && cache?.Response?.Mods != null && cache.Response.Mods.Count > 0 && _userPromptService.PromptLoadFromCache(cache.CachedAtUtc))
         {
             _reporter.CachedVersionTable(cache.Response.Mods);
             currentMods = cache.Response.Mods.Select(m => m.ToDomain()).ToList();
