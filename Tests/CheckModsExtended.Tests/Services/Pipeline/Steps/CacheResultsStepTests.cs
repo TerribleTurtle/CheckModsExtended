@@ -32,6 +32,7 @@ public class CacheResultsStepTests
         // Assert
         Assert.NotNull(cacheService.SavedRecord);
         Assert.Empty(cacheService.SavedRecord.Response.Mods);
+        Assert.Equal("C:\\SPT", cacheService.SavedRecord.SptPath);
     }
 
     [Fact]
