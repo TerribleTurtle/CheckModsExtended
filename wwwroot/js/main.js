@@ -34,7 +34,7 @@ document.addEventListener('alpine:init', () => {
         selectedMod: null,
         loaderProgress: 0,
         loaderText: '> Initiating workspace scan…',
-        loaderInterval: null,
+        loaderEventSource: null,
         filteredMods: [],
 
         updateFilteredMods() {
@@ -279,19 +279,25 @@ document.addEventListener('alpine:init', () => {
         startLoader() {
             this.loaderProgress = 0;
             this.loaderText = '> Initiating workspace scan…';
-            this.loaderInterval = setInterval(() => {
-                if (this.loaderProgress < 95) {
-                    const remaining = 95 - this.loaderProgress;
-                    this.loaderProgress += Math.max(remaining * 0.05, 0.1);
-                    if (this.loaderProgress > 20) this.loaderText = '> Indexing local mod directories…';
-                    if (this.loaderProgress > 50) this.loaderText = '> Reconciling version hashes…';
-                    if (this.loaderProgress > 80) this.loaderText = '> Analyzing dependencies…';
+            this.loaderEventSource = new EventSource('/api/scan/progress');
+            this.loaderEventSource.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    const text = data.text !== undefined ? data.text : data.Text;
+                    const progress = data.progress !== undefined ? data.progress : data.Progress;
+                    if (text !== undefined) this.loaderText = text;
+                    if (progress !== undefined) this.loaderProgress = progress;
+                } catch (e) {
+                    console.error('Error parsing progress data', e);
                 }
-            }, 100);
+            };
         },
 
         stopLoader() {
-            if (this.loaderInterval) clearInterval(this.loaderInterval);
+            if (this.loaderEventSource) {
+                this.loaderEventSource.close();
+                this.loaderEventSource = null;
+            }
             this.loaderProgress = 100;
             this.loaderText = '> SCAN COMPLETE';
         },
