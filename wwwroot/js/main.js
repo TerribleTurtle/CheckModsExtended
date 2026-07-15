@@ -473,6 +473,9 @@ document.addEventListener('alpine:init', () => {
                 await saveSettings(this.settings);
                 this.ui.showCommunityListModal = false;
                 this.showToast('Community list preference saved.', 'success');
+                if (useCommunityList) {
+                    this.handleScan();
+                }
             } catch (e) {
                 this.showToast(`Error saving settings: ${e.message}`, 'error');
             } finally {
