@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - **Web UI Cache Invalidation**: Fixed an issue where clicking the "Scan Local Mods" button in the Web UI would instantly refresh using stale data. The backend memory cache is now properly cleared when a manual scan is triggered.
+- **False Positive Drift Detection**: Fixed an issue where refreshing the Web UI would instantly throw a "Potential Local Changes Detected" warning due to a mismatch in JSON serialization keys between the local scan and cache endpoints.
 - **Cache Scoping**: Fixed an issue where the global mod cache would prompt you to load results from a different SPT installation when running the CLI. The cache is now strictly bound to the specific SPT installation path it was scanned from.
 - **Immediate Exit**: Fixed an annoyance where selecting "Close Check Mods" at the end of a CLI run would unnecessarily prompt you to "Press any key to exit..." before actually closing.
 
