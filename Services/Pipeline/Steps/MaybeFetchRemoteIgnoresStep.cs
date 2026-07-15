@@ -17,7 +17,7 @@ public sealed class MaybeFetchRemoteIgnoresStep(
     IIgnoredUpdateStore ignoredUpdateStore,
     IModCheckReporter reporter,
     ILogger<MaybeFetchRemoteIgnoresStep> logger,
-    IOptions<IgnoredUpdateOptions> options,
+    IOptionsSnapshot<IgnoredUpdateOptions> options,
     ISettingsService settingsService
 ) : IWorkflowStep
 {

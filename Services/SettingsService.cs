@@ -57,8 +57,24 @@ public sealed class SettingsService(IFileSystem fileSystem) : ISettingsService
         var settingsJson = await GetSettingsAsync(token);
         
         // Parse the current settings dynamically
-        var jsonNode = System.Text.Json.Nodes.JsonNode.Parse(settingsJson)?.AsObject() 
-            ?? new System.Text.Json.Nodes.JsonObject();
+        var nodeOptions = new System.Text.Json.Nodes.JsonNodeOptions { PropertyNameCaseInsensitive = true };
+        var docOptions = new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
+        
+        System.Text.Json.Nodes.JsonObject jsonObject = new();
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(settingsJson))
+            {
+                jsonObject = System.Text.Json.Nodes.JsonNode.Parse(settingsJson, nodeOptions, docOptions)?.AsObject() 
+                    ?? new System.Text.Json.Nodes.JsonObject();
+            }
+        }
+        catch (JsonException)
+        {
+            // If the file is completely malformed, start fresh
+            jsonObject = new System.Text.Json.Nodes.JsonObject();
+        }
+        var jsonNode = jsonObject;
 
         // Extract or create the IgnoredUpdateOptions block
         CheckModsExtended.Configuration.IgnoredUpdateOptions options = new();
