@@ -137,13 +137,8 @@
                                 <template x-if="mods.length === 0 && ui.scanning">
                                     <tr><td colspan="5" class="p-0 border-none h-300">
                                         <div class="scan-loader-container">
-                                            <div class="progress-bar-container" style="background: transparent; display: flex; gap: 4px;">
-                                                <div style="flex: 1; background: var(--bg-elevated); border-radius: var(--radius-full); overflow: hidden;">
-                                                    <div class="progress-bar-fill pulsing" :style="`transform: scaleX(${loaderPhase > 0 ? 1 : (loaderPhase === 0 ? loaderProgress / 100 : 0)})`"></div>
-                                                </div>
-                                                <div style="flex: 1; background: var(--bg-elevated); border-radius: var(--radius-full); overflow: hidden;">
-                                                    <div class="progress-bar-fill pulsing" :style="`transform: scaleX(${loaderPhase > 1 ? 1 : (loaderPhase === 1 ? loaderProgress / 100 : 0)})`"></div>
-                                                </div>
+                                            <div class="progress-bar-container">
+                                                <div class="progress-bar-fill pulsing" :style="`transform: scaleX(${loaderProgress / 100})`"></div>
                                             </div>
                                             <div id="loader-text" class="text-muted font-mono mt-4 text-sm" x-text="loaderText"></div>
                                         </div>

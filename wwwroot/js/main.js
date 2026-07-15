@@ -292,8 +292,9 @@ document.addEventListener('alpine:init', () => {
                     
                     if (text !== undefined) {
                         this.loaderText = text;
-                        if (text.includes('Forge')) this.loaderPhase = 0;
-                        else if (text.includes('Dependencies') || text.includes('Resolving')) this.loaderPhase = 1;
+                        const lowerText = text.toLowerCase();
+                        if (lowerText.includes('forge')) this.loaderPhase = 0;
+                        else if (lowerText.includes('dependencies') || lowerText.includes('resolving')) this.loaderPhase = 1;
                     }
                     
                     if (rawProgress !== undefined) {
@@ -301,7 +302,7 @@ document.addEventListener('alpine:init', () => {
                             if (this.loaderPhase === 0) this.loaderPhase = 1;
                         }
                         this._lastRawProgress = rawProgress;
-                        this.loaderProgress = rawProgress;
+                        this.loaderProgress = (this.loaderPhase * 50) + (rawProgress / 2);
                     }
                 } catch (e) {
                     console.error('Error parsing progress data', e);
