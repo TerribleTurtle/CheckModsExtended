@@ -2,6 +2,7 @@ import { logToConsole } from './utils.js';
 
 /**
  * Performs a lightweight local file scan.
+ * @param {AbortSignal} signal
  * @returns {Promise<Object>} Local mods found on disk.
  */
 export async function fetchLocalScan(signal) {

@@ -2,6 +2,9 @@ import { fetchStatus, fetchScan, fetchCache, fetchLocalScan, ignoreMod, unignore
 
 
 document.addEventListener('alpine:init', () => {
+    /**
+     * @typedef {Object} ModManagerData
+     */
     Alpine.data('modManager', () => ({
         mods: [],
         filters: { search: '', status: 'all' },
@@ -35,6 +38,7 @@ document.addEventListener('alpine:init', () => {
         filteredMods: [],
 
         updateFilteredMods() {
+            // Why: We filter and sort the full mods array locally
             let res = this.mods.filter(mod => {
                 if (this.filters.search) {
                     const query = this.filters.search.toLowerCase();
@@ -219,6 +223,7 @@ document.addEventListener('alpine:init', () => {
 
 
         async checkDrift() {
+            // Why: Runs a lightweight hash check to see if local mods changed
             if (this.ui.scanning) return;
             
             this.ui.localScanController = new AbortController();
@@ -472,6 +477,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         handleKeydown(e) {
+            // Why: Enables keyboard navigation (Vim-style j/k or arrows)
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
 
             const modalOpen = this.ui.showIgnoreModal || this.ui.showSettingsModal;
