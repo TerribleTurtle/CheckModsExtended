@@ -10,6 +10,11 @@ public sealed class IgnoredUpdateOptions
     public string FilePath { get; set; } = "ignored-updates.json";
 
     /// <summary>
+    /// Whether to fetch and merge the author-maintained remote base list. If null, the user will be prompted on startup.
+    /// </summary>
+    public bool? UseCommunityList { get; set; } = null;
+
+    /// <summary>
     /// URL of the author-maintained remote base list, or null/empty to disable the remote-fetch prompt entirely.
     /// </summary>
     public string? RemoteUrl { get; set; } =

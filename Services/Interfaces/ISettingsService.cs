@@ -25,4 +25,14 @@ public interface ISettingsService
     /// <param name="token">Cancellation token.</param>
     /// <returns>A message response on success, or an API error if validation fails.</returns>
     Task<OneOf<MessageResponse, ApiError>> UpdateSettingsAsync(string jsonPayload, CancellationToken token = default);
+
+    /// <summary>
+    /// Helper to programmatically update the ignored updates options.
+    /// </summary>
+    /// <param name="updateAction">Action to modify the options object.</param>
+    /// <param name="token">Cancellation token.</param>
+    Task<OneOf<MessageResponse, ApiError>> UpdateIgnoredUpdateOptionsAsync(
+        System.Action<CheckModsExtended.Configuration.IgnoredUpdateOptions> updateAction,
+        CancellationToken token = default
+    );
 }

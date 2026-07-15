@@ -188,6 +188,53 @@ public sealed class IgnoredUpdateStore(
         }
     }
 
+    /// <inheritdoc />
+    public async Task<int> SyncRemoteIgnoresAsync(
+        IReadOnlyList<IgnoredUpdate> remoteList,
+        CancellationToken cancellationToken = default
+    )
+    {
+        await _lock.WaitAsync(cancellationToken);
+        try
+        {
+            if (_cache is null)
+            {
+                _cache = await ReadFromDiskAsync(cancellationToken);
+            }
+
+            var current = _cache.Where(e => e.Source == IgnoreSource.User).ToList();
+            var userKeys = current.Select(e => e.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var added = 0;
+            foreach (var entry in remoteList)
+            {
+                if (userKeys.Contains(entry.Key))
+                {
+                    continue;
+                }
+
+                current.Add(
+                    entry with
+                    {
+                        Source = IgnoreSource.Remote,
+                        DismissedUtc = entry.DismissedUtc ?? DateTimeOffset.UtcNow,
+                    }
+                );
+                added++;
+            }
+
+            await WriteToDiskAsync(current, cancellationToken);
+            _cache = current;
+            RebuildKeys();
+
+            return added;
+        }
+        finally
+        {
+            _lock.Release();
+        }
+    }
+
     private async Task<List<IgnoredUpdate>> ReadFromDiskAsync(CancellationToken cancellationToken)
     {
         if (!_fileSystem.FileExists(_resolvedFilePath))

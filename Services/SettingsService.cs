@@ -44,4 +44,39 @@ public sealed class SettingsService(IFileSystem fileSystem) : ISettingsService
         fileSystem.MoveFile(tempPath, "appsettings.json", overwrite: true);
         return new MessageResponse("Settings saved successfully. A restart may be required for some settings to take effect.");
     }
+
+    /// <inheritdoc />
+    public async Task<OneOf<MessageResponse, ApiError>> UpdateIgnoredUpdateOptionsAsync(
+        System.Action<CheckModsExtended.Configuration.IgnoredUpdateOptions> updateAction,
+        CancellationToken token = default
+    )
+    {
+        var settingsJson = await GetSettingsAsync(token);
+        
+        // Parse the current settings dynamically
+        var jsonNode = System.Text.Json.Nodes.JsonNode.Parse(settingsJson)?.AsObject() 
+            ?? new System.Text.Json.Nodes.JsonObject();
+
+        // Extract or create the IgnoredUpdateOptions block
+        CheckModsExtended.Configuration.IgnoredUpdateOptions options = new();
+        if (jsonNode.TryGetPropertyValue("IgnoredUpdateOptions", out var optionsNode) && optionsNode is not null)
+        {
+            options = JsonSerializer.Deserialize<CheckModsExtended.Configuration.IgnoredUpdateOptions>(
+                optionsNode.ToJsonString(),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            ) ?? new();
+        }
+
+        // Apply the requested updates
+        updateAction(options);
+
+        // Save back into the JSON node
+        jsonNode["IgnoredUpdateOptions"] = System.Text.Json.Nodes.JsonNode.Parse(
+            JsonSerializer.Serialize(options, new JsonSerializerOptions { WriteIndented = true })
+        );
+
+        // Write the updated document
+        var newSettingsJson = jsonNode.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+        return await UpdateSettingsAsync(newSettingsJson, token);
+    }
 }

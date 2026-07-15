@@ -40,4 +40,15 @@ public interface IIgnoredUpdateStore
         IReadOnlyList<IgnoredUpdate> incoming,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Synchronizes the remote ignore list. Discards old remote entries, keeps user entries, and adds new remote entries.
+    /// </summary>
+    /// <param name="remoteList">The latest fetched remote list.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <returns>The number of remote entries applied.</returns>
+    Task<int> SyncRemoteIgnoresAsync(
+        IReadOnlyList<IgnoredUpdate> remoteList,
+        CancellationToken cancellationToken = default
+    );
 }
