@@ -203,6 +203,7 @@
 
 /* ───── Utility Classes ───── */
 .flex { display: flex; }
+.flex-wrap { flex-wrap: wrap; }
 .gap-sm { gap: var(--space-sm); }
 .text-right { text-align: right; }
 .hidden { display: none !important; }
