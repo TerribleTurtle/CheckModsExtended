@@ -11,19 +11,25 @@ public sealed class SemVerTests
     [Fact]
     public void Tryparse_returns_version_for_valid_input_standard()
     {
-        Assert.True(SemVer.TryParse("1.2.3", "test").IsT0);
+        var result = SemVer.TryParse("1.2.3", "test");
+        Assert.True(result.IsT0);
+        Assert.Equal("1.2.3", result.AsT0.ToString());
     }
 
     [Fact]
     public void Tryparse_returns_version_for_valid_input_minor()
     {
-        Assert.True(SemVer.TryParse("0.0.1", "test").IsT0);
+        var result = SemVer.TryParse("0.0.1", "test");
+        Assert.True(result.IsT0);
+        Assert.Equal("0.0.1", result.AsT0.ToString());
     }
 
     [Fact]
     public void Tryparse_returns_version_for_valid_input_prerelease()
     {
-        Assert.True(SemVer.TryParse("1.0.0-beta.1", "test").IsT0);
+        var result = SemVer.TryParse("1.0.0-beta.1", "test");
+        Assert.True(result.IsT0);
+        Assert.Equal("1.0.0-beta.1", result.AsT0.ToString());
     }
 
     [Fact]
@@ -90,5 +96,11 @@ public sealed class SemVerTests
     public void Satisfiesrange_returns_false_for_missing_constraint_empty()
     {
         Assert.False(SemVer.SatisfiesRange("", new SemanticVersioning.Version("1.0.0")));
+    }
+
+    [Fact]
+    public void Satisfiesrange_returns_false_for_invalid_constraint_text()
+    {
+        Assert.False(SemVer.SatisfiesRange("not-a-version", new SemanticVersioning.Version("1.0.0")));
     }
 }

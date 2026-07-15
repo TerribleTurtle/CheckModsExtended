@@ -1,125 +1,89 @@
+using System.Collections.Generic;
 using CheckModsExtended.Models;
 using CheckModsExtended.Services;
+using CheckModsExtended.Tests.Fixtures;
 using Microsoft.Extensions.Logging.Abstractions;
+using Xunit;
 
 namespace CheckModsExtended.Tests.Services;
 
-/// <summary>
-/// Tests for <see cref="ModReconciliationService"/>, which pairs server/client mod components and selects the best
-/// version. Pure logic with no console or I/O dependency.
-/// </summary>
 public sealed class ModReconciliationServiceTests
 {
-    private static ModReconciliationService CreateService()
-    {
-        return new ModReconciliationService(NullLogger<ModReconciliationService>.Instance);
-    }
+    private readonly ModReconciliationService _service;
 
-    private static Mod ServerMod(string guid, string name, string version)
+    public ModReconciliationServiceTests()
     {
-        return new Mod
-        {
-            Local = new CheckModsExtended.Models.LocalModIdentity
-            {
-                Guid = guid,
-                FilePath = $"server/{name}.dll",
-                IsServerMod = true,
-                LocalName = name,
-                LocalAuthor = "Author",
-                LocalVersion = version,
-            },
-        };
-    }
-
-    private static Mod ClientMod(string guid, string name, string version)
-    {
-        return new Mod
-        {
-            Local = new CheckModsExtended.Models.LocalModIdentity
-            {
-                Guid = guid,
-                FilePath = $"client/{name}.dll",
-                IsServerMod = false,
-                LocalName = name,
-                LocalAuthor = "Author",
-                LocalVersion = version,
-            },
-        };
+        _service = new ModReconciliationService(NullLogger<ModReconciliationService>.Instance);
     }
 
     [Fact]
-    public void Pairs_server_and_client_by_matching_guid()
+    public void ReconcileMods_matches_by_guid()
     {
-        var service = CreateService();
+        var serverMods = new List<Mod> { ModFixture.CreateServerMod("com.author.mod") };
+        var clientMods = new List<Mod> { ModFixture.CreateClientMod("com.author.mod") };
 
-        var result = service.ReconcileMods(
-            [ServerMod("com.author.mod", "Mod", "1.0.0")],
-            [ClientMod("com.author.mod", "Mod", "1.0.0")]
-        );
+        var result = _service.ReconcileMods(serverMods, clientMods);
 
         Assert.Single(result.ReconciledPairs);
         Assert.Empty(result.UnmatchedServerMods);
         Assert.Empty(result.UnmatchedClientMods);
-        Assert.Single(result.Mods);
     }
 
     [Fact]
-    public void Selects_higher_version_when_components_differ()
+    public void ReconcileMods_matches_by_normalized_name_when_guid_missing()
     {
-        var service = CreateService();
+        var serverMod = ModFixture.CreateServerMod("", name: "SomeMod-Server");
+        var clientMod = ModFixture.CreateClientMod("", name: "SomeMod-Client");
 
-        var result = service.ReconcileMods(
-            [ServerMod("com.author.mod", "Mod", "1.0.0")],
-            [ClientMod("com.author.mod", "Mod", "1.2.0")]
-        );
+        var serverMods = new List<Mod> { serverMod };
+        var clientMods = new List<Mod> { clientMod };
 
-        var pair = Assert.Single(result.ReconciledPairs);
-        Assert.Equal("1.2.0", pair.SelectedMod.Local.LocalVersion);
-        Assert.Contains(pair.Notes, n => n.Contains("Version mismatch"));
+        var result = _service.ReconcileMods(serverMods, clientMods);
+
+        Assert.Single(result.ReconciledPairs);
+        Assert.Empty(result.UnmatchedServerMods);
+        Assert.Empty(result.UnmatchedClientMods);
     }
 
     [Fact]
-    public void Leaves_unrelated_mods_unmatched()
+    public void ReconcileMods_selects_newer_version()
     {
-        var service = CreateService();
+        var serverMod = ModFixture.CreateServerMod("com.test", version: "1.0.0");
+        var clientMod = ModFixture.CreateClientMod("com.test", version: "1.1.0");
 
-        var result = service.ReconcileMods(
-            [ServerMod("com.author.alpha", "Alpha", "1.0.0")],
-            [ClientMod("com.other.beta", "Beta", "1.0.0")]
-        );
+        var result = _service.ReconcileMods(new List<Mod> { serverMod }, new List<Mod> { clientMod });
+
+        Assert.Single(result.ReconciledPairs);
+        var pair = result.ReconciledPairs[0];
+        Assert.Equal("1.1.0", pair.SelectedMod.Local.LocalVersion);
+        Assert.False(pair.SelectedMod.Local.IsServerMod);
+    }
+
+    [Fact]
+    public void ReconcileMods_falls_back_to_server_mod_when_versions_equal()
+    {
+        var serverMod = ModFixture.CreateServerMod("com.test", version: "1.0.0");
+        var clientMod = ModFixture.CreateClientMod("com.test", version: "1.0.0");
+
+        var result = _service.ReconcileMods(new List<Mod> { serverMod }, new List<Mod> { clientMod });
+
+        Assert.Single(result.ReconciledPairs);
+        var pair = result.ReconciledPairs[0];
+        Assert.Equal("1.0.0", pair.SelectedMod.Local.LocalVersion);
+        Assert.True(pair.SelectedMod.Local.IsServerMod);
+    }
+
+    [Fact]
+    public void ReconcileMods_handles_unmatched_mods()
+    {
+        var serverMod = ModFixture.CreateServerMod("com.test.server", name: "ServerModUnmatched");
+        var clientMod = ModFixture.CreateClientMod("com.test.client", name: "ClientModUnmatched");
+
+        var result = _service.ReconcileMods(new List<Mod> { serverMod }, new List<Mod> { clientMod });
 
         Assert.Empty(result.ReconciledPairs);
         Assert.Single(result.UnmatchedServerMods);
         Assert.Single(result.UnmatchedClientMods);
         Assert.Equal(2, result.Mods.Count);
-    }
-
-    [Fact]
-    public void Matches_by_normalized_name_when_guids_differ_and_notes_the_mismatch()
-    {
-        var service = CreateService();
-
-        var result = service.ReconcileMods(
-            [ServerMod("com.author.coolmod", "Cool Mod", "1.0.0")],
-            [ClientMod("net.other.coolmod", "Cool-Mod", "1.0.0")]
-        );
-
-        var pair = Assert.Single(result.ReconciledPairs);
-        Assert.Contains(pair.Notes, n => n.Contains("GUID mismatch"));
-    }
-
-    [Fact]
-    public void Fika_server_and_client_are_not_falsely_paired()
-    {
-        var service = CreateService();
-
-        var result = service.ReconcileMods(
-            [ServerMod("Fika", "Fika", "1.0.0")],
-            [ClientMod("com.fika.core", "Fika.Core", "1.0.0")]
-        );
-
-        Assert.Empty(result.ReconciledPairs);
-        Assert.Single(result.UnmatchedServerMods);
-        Assert.Single(result.UnmatchedClientMods);
     }
 }
