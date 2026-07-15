@@ -13,6 +13,8 @@ namespace CheckModsExtended.Services;
 public sealed class GitHubReleaseClient(HttpClient httpClient, ILogger<GitHubReleaseClient> logger) : IGitHubReleaseClient
 {
     internal sealed record GitHubReleaseResponse(
+        [property: JsonPropertyName("tag_name")] string? TagName,
+        [property: JsonPropertyName("html_url")] string? HtmlUrl,
         [property: JsonPropertyName("assets")] GitHubAsset[]? Assets
     );
 
@@ -89,6 +91,47 @@ public sealed class GitHubReleaseClient(HttpClient httpClient, ILogger<GitHubRel
         {
             logger.LogDebug(ex, "Failed to fetch GitHub release asset for {Repo}", repo);
             return null;
+        }
+    }
+
+    public async Task<(string? Version, string? Url)> GetLatestReleaseVersionAsync(string owner, string repo, CancellationToken token = default)
+    {
+        var apiUrl = $"https://api.github.com/repos/{owner}/{repo}/releases/latest";
+
+        try
+        {
+            logger.LogDebug("Querying GitHub API for latest release of {Owner}/{Repo}", owner, repo);
+
+            var response = await httpClient.GetAsync(apiUrl, token);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                logger.LogWarning("GitHub API rate limit hit when querying {Repo}. Falling back gracefully.", repo);
+                return (null, null);
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                logger.LogDebug("GitHub API returned {StatusCode} for {Repo}", response.StatusCode, repo);
+                return (null, null);
+            }
+
+            var release = await response.Content.ReadFromJsonAsync(
+                CheckModsExtended.Configuration.CheckModsExtendedJsonSerializerContext.Default.GitHubReleaseResponse,
+                cancellationToken: token);
+
+            if (release == null)
+            {
+                return (null, null);
+            }
+
+            var version = release.TagName?.TrimStart('v');
+            return (version, release.HtmlUrl);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or System.Text.Json.JsonException)
+        {
+            logger.LogDebug(ex, "Failed to fetch GitHub release version for {Repo}", repo);
+            return (null, null);
         }
     }
 }

@@ -24,8 +24,14 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore CheckModsExtended.slnx
 
+      - name: Build
+        run: dotnet build CheckModsExtended.slnx --no-restore
+
+      - name: Install Playwright Browsers
+        run: pwsh Tests/CheckModsExtended.Tests/bin/Debug/net9.0/playwright.ps1 install --with-deps
+
       - name: Test
-        run: dotnet test CheckModsExtended.slnx --no-restore --verbosity normal
+        run: dotnet test CheckModsExtended.slnx --no-build --no-restore --verbosity normal
 
       - name: Enforce Formatting & Analyzers
         run: dotnet format analyzers --verify-no-changes CheckModsExtended.slnx
