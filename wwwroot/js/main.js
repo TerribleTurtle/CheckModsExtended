@@ -297,7 +297,7 @@ document.addEventListener('alpine:init', () => {
                         else if (lowerText.includes('dependencies') || lowerText.includes('resolving')) this.loaderPhase = 1;
                     }
                     
-                    if (rawProgress !== undefined) {
+                    if (rawProgress !== undefined && rawProgress !== null) {
                         if (rawProgress < this._lastRawProgress && rawProgress === 0) {
                             if (this.loaderPhase === 0) this.loaderPhase = 1;
                         }

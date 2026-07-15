@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace CheckModsExtended.Services.UI;
 
-public record ScanProgress(string Text, double Progress);
+public record ScanProgress(string Text, double? Progress);
 
 public interface IWebProgressTracker
 {

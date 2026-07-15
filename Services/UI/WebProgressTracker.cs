@@ -8,7 +8,7 @@ namespace CheckModsExtended.Services.UI;
 public class WebProgressTracker : IWebProgressTracker
 {
     private string _currentText = string.Empty;
-    private double _currentProgress;
+    private double? _currentProgress = 0;
     private readonly object _lock = new object();
     
     private readonly List<Channel<ScanProgress>> _subscribers = new();
@@ -19,6 +19,7 @@ public class WebProgressTracker : IWebProgressTracker
         lock (_lock)
         {
             _currentText = text;
+            // Deliberately do NOT reset _currentProgress to 0 so we don't cause UI flashes
             state = new ScanProgress(_currentText, _currentProgress);
         }
         Broadcast(state);
