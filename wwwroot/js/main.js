@@ -301,7 +301,7 @@ document.addEventListener('alpine:init', () => {
                             if (this.loaderPhase === 0) this.loaderPhase = 1;
                         }
                         this._lastRawProgress = rawProgress;
-                        this.loaderProgress = (this.loaderPhase * 50) + (rawProgress / 2);
+                        this.loaderProgress = rawProgress;
                     }
                 } catch (e) {
                     console.error('Error parsing progress data', e);
