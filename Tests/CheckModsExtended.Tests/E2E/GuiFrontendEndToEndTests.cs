@@ -220,8 +220,15 @@ public sealed class GuiFrontendEndToEndTests
             var cacheText = await cacheIndicator.InnerTextAsync();
             Assert.Contains("UPDATED", cacheText);
 
+            // Dismiss the community list setup modal if it appears
+            var skipButton = page.Locator("button", new PageLocatorOptions { HasText = "No, skip" });
+            if (await skipButton.IsVisibleAsync())
+            {
+                await skipButton.ClickAsync();
+            }
+
             // Since there is no auto-scan on load, we manually click the scan button
-            var scanButton = page.Locator("button", new PageLocatorOptions { HasText = "SCAN LOCAL MODS" });
+            var scanButton = page.Locator("button", new PageLocatorOptions { HasText = "RESCAN MODS" });
             await scanButton.ClickAsync();
 
             // Wait for the toast to indicate the manual scan finished
@@ -256,7 +263,12 @@ public sealed class GuiFrontendEndToEndTests
 
             if (Directory.Exists(tempDir))
             {
-                Directory.Delete(tempDir, true);
+                try 
+                { 
+                    Directory.Delete(tempDir, true); 
+                } 
+                catch (IOException) { }
+                catch (UnauthorizedAccessException) { }
             }
         }
     }

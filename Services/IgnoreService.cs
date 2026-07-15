@@ -28,7 +28,9 @@ public class IgnoreService : IIgnoreService
             DismissedUtc: DateTimeOffset.UtcNow
         );
 
-        if (ignores.Any(i => string.Equals(i.Key, newIgnore.Key, StringComparison.OrdinalIgnoreCase)))
+        if (ignores.Any(i => i.ApiModId == apiModId && 
+            CheckModsExtended.Utils.SemVer.AreVersionsEquivalent(i.LocalVersion, localVersion) && 
+            CheckModsExtended.Utils.SemVer.AreVersionsEquivalent(i.IgnoredLatestVersion, latestVersion)))
         {
             return false;
         }

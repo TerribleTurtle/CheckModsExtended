@@ -85,8 +85,7 @@ public sealed class IgnoredUpdateStore(
         CancellationToken cancellationToken = default
     )
     {
-        await LoadAsync(cancellationToken);
-        return _keys.Contains(MakeKey(apiModId, localVersion, latestVersion));
+        return await GetIgnoredUpdateAsync(apiModId, localVersion, latestVersion, cancellationToken) is not null;
     }
 
     /// <inheritdoc />
@@ -114,8 +113,19 @@ public sealed class IgnoredUpdateStore(
     )
     {
         await LoadAsync(cancellationToken);
+        
         var key = MakeKey(apiModId, localVersion, latestVersion);
-        return _cache?.FirstOrDefault(x => string.Equals(x.Key, key, StringComparison.OrdinalIgnoreCase));
+        var exactMatch = _cache?.FirstOrDefault(x => string.Equals(x.Key, key, StringComparison.OrdinalIgnoreCase));
+        if (exactMatch is not null)
+        {
+            return exactMatch;
+        }
+
+        return _cache?.FirstOrDefault(x => 
+            x.ApiModId == apiModId &&
+            SemVer.AreVersionsEquivalent(x.LocalVersion, localVersion) &&
+            SemVer.AreVersionsEquivalent(x.IgnoredLatestVersion, latestVersion)
+        );
     }
 
     /// <inheritdoc />

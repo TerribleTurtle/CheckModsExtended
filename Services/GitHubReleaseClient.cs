@@ -87,9 +87,14 @@ public sealed class GitHubReleaseClient(HttpClient httpClient, ILogger<GitHubRel
 
             return asset?.BrowserDownloadUrl;
         }
-        catch (Exception ex)
+        catch (HttpRequestException ex)
         {
-            logger.LogDebug(ex, "Failed to fetch GitHub release asset for {Repo}", repo);
+            logger.LogDebug(ex, "Network error fetching GitHub release asset for {Repo}", repo);
+            return null;
+        }
+        catch (System.Text.Json.JsonException ex)
+        {
+            logger.LogDebug(ex, "Malformed JSON fetching GitHub release asset for {Repo}", repo);
             return null;
         }
     }
@@ -128,9 +133,14 @@ public sealed class GitHubReleaseClient(HttpClient httpClient, ILogger<GitHubRel
             var version = release.TagName?.TrimStart('v');
             return (version, release.HtmlUrl);
         }
-        catch (Exception ex)
+        catch (HttpRequestException ex)
         {
-            logger.LogDebug(ex, "Failed to fetch GitHub release version for {Repo}", repo);
+            logger.LogDebug(ex, "Network error fetching GitHub release version for {Repo}", repo);
+            return (null, null);
+        }
+        catch (System.Text.Json.JsonException ex)
+        {
+            logger.LogDebug(ex, "Malformed JSON fetching GitHub release version for {Repo}", repo);
             return (null, null);
         }
     }

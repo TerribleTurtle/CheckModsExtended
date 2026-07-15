@@ -53,4 +53,48 @@ public static class SemVer
 
         return parsed;
     }
+
+    /// <summary>
+    /// Determines whether two version strings represent the same logical version,
+    /// handling differences like "1.0.0" vs "1.0.0.0" or "v1.0.0" vs "1.0.0".
+    /// </summary>
+    /// <param name="a">The first version string.</param>
+    /// <param name="b">The second version string.</param>
+    /// <returns>True if the versions are equivalent, otherwise false.</returns>
+    public static bool AreVersionsEquivalent(string? a, string? b)
+    {
+        if (string.Equals(a, b, System.StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(a) || string.IsNullOrWhiteSpace(b))
+        {
+            return false;
+        }
+
+        var aClean = a!.TrimStart('v', 'V');
+        var bClean = b!.TrimStart('v', 'V');
+
+        // Try System.Version first (handles 1.0.0 vs 1.0.0.0)
+        if (System.Version.TryParse(aClean, out var va) && System.Version.TryParse(bClean, out var vb))
+        {
+            return NormalizeSystemVersion(va) == NormalizeSystemVersion(vb);
+        }
+
+        // Try SemanticVersioning if System.Version fails (handles 1.0.0-beta)
+        if (SemanticVersioning.Version.TryParse(aClean, out var sva) && SemanticVersioning.Version.TryParse(bClean, out var svb))
+        {
+            return sva == svb;
+        }
+
+        return false;
+    }
+
+    private static System.Version NormalizeSystemVersion(System.Version v)
+    {
+        var build = v.Build >= 0 ? v.Build : 0;
+        var revision = v.Revision >= 0 ? v.Revision : 0;
+        return new System.Version(v.Major, v.Minor, build, revision);
+    }
 }
