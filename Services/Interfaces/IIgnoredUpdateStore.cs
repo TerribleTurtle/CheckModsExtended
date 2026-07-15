@@ -40,4 +40,8 @@ public interface IIgnoredUpdateStore
         IReadOnlyList<IgnoredUpdate> incoming,
         CancellationToken cancellationToken = default
     );
+    Task<int> SyncRemoteIgnoresAsync(
+        IReadOnlyList<IgnoredUpdate> incoming,
+        CancellationToken cancellationToken = default
+    );
 }

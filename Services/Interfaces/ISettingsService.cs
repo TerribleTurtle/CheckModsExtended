@@ -25,4 +25,11 @@ public interface ISettingsService
     /// <param name="token">Cancellation token.</param>
     /// <returns>A message response on success, or an API error if validation fails.</returns>
     Task<OneOf<MessageResponse, ApiError>> UpdateSettingsAsync(string jsonPayload, CancellationToken token = default);
+
+    /// <summary>
+    /// Updates the IgnoredUpdateOptions UseCommunityList flag.
+    /// </summary>
+    /// <param name="useCommunityList">The value to set.</param>
+    /// <param name="token">Cancellation token.</param>
+    Task UpdateIgnoredUpdateOptionsAsync(bool useCommunityList, CancellationToken token = default);
 }
