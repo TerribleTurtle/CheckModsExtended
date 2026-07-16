@@ -53,27 +53,67 @@ public sealed class InitializationService(
         reporter.Banner();
         reporter.Heading("Validating SPT installation...");
 
+        string? basePath;
         if (args.Length == 0)
         {
-            var currentPath = fileSystem.GetCurrentDirectory();
-            reporter.UsingPath(currentPath);
-            return currentPath;
+            basePath = fileSystem.GetCurrentDirectory();
+        }
+        else
+        {
+            basePath = SecurityHelper.GetSafePath(args[0]);
+            if (basePath is null)
+            {
+                reporter.Error("Error: Invalid path provided.");
+                return null;
+            }
         }
 
-        var safePath = SecurityHelper.GetSafePath(args[0]);
-        if (safePath is null)
+        if (!fileSystem.DirectoryExists(basePath))
         {
-            reporter.Error("Error: Invalid path provided.");
+            reporter.DirectoryDoesNotExist(basePath);
             return null;
         }
 
-        if (!fileSystem.DirectoryExists(safePath))
+        var resolvedPath = ResolveNestedSptPath(basePath);
+
+        reporter.UsingPath(resolvedPath);
+        return resolvedPath;
+    }
+
+    private string ResolveNestedSptPath(string basePath)
+    {
+        var possibleExecutables = new[] { "SPT.Server.exe", "SPTarkov.Server.Core.dll", "Aki.Server.exe" };
+        
+        // First check the base path
+        foreach (var exe in possibleExecutables)
         {
-            reporter.DirectoryDoesNotExist(safePath);
-            return null;
+            if (fileSystem.FileExists(Path.Combine(basePath, exe)))
+            {
+                return basePath;
+            }
         }
 
-        reporter.UsingPath(safePath);
-        return safePath;
+        // If not found, check immediate subdirectories (depth 1)
+        try
+        {
+            var subDirs = fileSystem.GetDirectories(basePath);
+            foreach (var dir in subDirs)
+            {
+                foreach (var exe in possibleExecutables)
+                {
+                    if (fileSystem.FileExists(Path.Combine(dir, exe)))
+                    {
+                        reporter.Warning($"Auto-detected nested SPT folder: {Path.GetFileName(dir)}");
+                        return dir;
+                    }
+                }
+            }
+        }
+        catch (System.Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to inspect subdirectories for nested SPT installation");
+        }
+
+        return basePath;
     }
 }
